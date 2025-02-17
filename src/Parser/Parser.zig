@@ -114,14 +114,20 @@ fn parseTerm(self: *Self) ParseStatus!Expr {
     const lhs = try self.parseFactor();
 
     if (self.peek(&[_]TokenKind{ TokenKind.Star, TokenKind.Slash })) {
-        const op = try self.next(&[_]TokenKind{ TokenKind.Star, TokenKind.Slash });
+        const op = self.next(&[_]TokenKind{ TokenKind.Star, TokenKind.Slash }) catch |err| {
+            lhs.deinit();
+            return err;
+        };
         const fin_op = switch (op.kind) {
             TokenKind.Star => OperatorType.Mul,
             TokenKind.Slash => OperatorType.Div,
             else => unreachable,
         };
 
-        const rhs = try self.parseTerm();
+        const rhs = self.parseTerm() catch |err| {
+            lhs.deinit();
+            return err;
+        };
 
         return Expr.init_binary(lhs, rhs, fin_op, self.allocator);
     }
@@ -133,14 +139,20 @@ fn parseExpr(self: *Self) ParseStatus!Expr {
     const lhs = try self.parseTerm();
 
     if (self.peek(&[_]TokenKind{ TokenKind.Plus, TokenKind.Minus })) {
-        const op = try self.next(&[_]TokenKind{ TokenKind.Plus, TokenKind.Minus });
+        const op = self.next(&[_]TokenKind{ TokenKind.Plus, TokenKind.Minus }) catch |err| {
+            lhs.deinit();
+            return err;
+        };
         const fin_op = switch (op.kind) {
             TokenKind.Plus => OperatorType.Add,
             TokenKind.Minus => OperatorType.Sub,
             else => unreachable,
         };
 
-        const rhs = try self.parseExpr();
+        const rhs = self.parseExpr() catch |err| {
+            lhs.deinit();
+            return err;
+        };
 
         return Expr.init_binary(lhs, rhs, fin_op, self.allocator);
     }
