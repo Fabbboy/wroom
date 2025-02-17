@@ -53,3 +53,9 @@ pub fn empty() Self {
         .pos = Position.init(0, 0, 0, 0),
     };
 }
+
+pub fn fmt(self: *const Self, fbuf: anytype) !void {
+    try fbuf.print("Token{{ kind: {s}, lexeme: '{s}', pos: ", .{self.kind.fmt(), self.lexeme});
+    try self.pos.fmt(fbuf);
+    try fbuf.writeAll(" }}");
+}

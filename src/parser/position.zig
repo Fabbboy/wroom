@@ -17,3 +17,7 @@ pub fn init(line: usize, column: usize, start: usize, end: usize) Self {
         .end = end,
     };
 }
+
+pub fn fmt(self: *const Self, fbuf: anytype) !void {
+    try fbuf.print("Pos{{ line: {}, column: {}, start: {}, end: {} }}", .{ self.line, self.column, self.start, self.end });
+}
