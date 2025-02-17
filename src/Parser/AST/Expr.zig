@@ -11,40 +11,48 @@ pub const ValueType = enum {
     Float,
 };
 
-pub const Expr = union(enum) {
+pub const ExprKind = enum {
+    Literal,
+    Binary,
+};
+
+pub const ExprData = union(ExprKind) {
     Literal: LiteralExpr,
     Binary: BinaryExpr,
 
-    pub fn init_literal(val: Token, allocator: mem.Allocator) !*Expr {
-        const lit = try allocator.create(Expr);
-        lit.* = @unionInit(Expr, "Literal", LiteralExpr.init(val, allocator)); // Fix
-        return lit;
+    pub fn deinit(self: *ExprData, allocator: mem.Allocator) void {
+        switch (self.*) {
+            ExprKind.Binary => self.Binary.deinit(),
+            ExprKind.Literal => {},
+        }
+        allocator.destroy(self);
+    }
+};
+
+pub const Expr = struct {
+    data: *ExprData,
+    allocator: mem.Allocator,   
+
+    pub fn init_literal(val: Token, allocator: mem.Allocator) !Expr {
+        const lit_data = try allocator.create(ExprData);
+        lit_data.* = ExprData{ .Literal = LiteralExpr.init(val, allocator) };
+        return Expr{ .data = lit_data, .allocator = allocator };
     }
 
-    pub fn init_binary(lhs: Expr, rhs: Expr, op: BinaryExpr.OperatorType, allocator: mem.Allocator) !*Expr {
-        const bin = try allocator.create(Expr);
-        bin.* = @unionInit(Expr, "Binary", BinaryExpr.init(lhs, rhs, op, allocator)); // Fix
-        return bin;
+    pub fn init_binary(lhs: Expr, rhs: Expr, op: BinaryExpr.OperatorType, allocator: mem.Allocator) !Expr {
+        const bin_data = try allocator.create(ExprData);
+        bin_data.* = ExprData{ .Binary = BinaryExpr.init(lhs, rhs, op, allocator) };
+        return Expr{ .data = bin_data, .allocator = allocator };
     }
 
     pub fn fmt(self: *const Expr, fbuf: anytype) !void {
-        return switch (self.*) {
-            Expr.Literal => self.Literal.fmt(fbuf),
-            Expr.Binary => self.Binary.fmt(fbuf),
+        return switch (self.data.*) {
+            ExprKind.Literal => self.data.Literal.fmt(fbuf),
+            ExprKind.Binary => self.data.Binary.fmt(fbuf),
         };
     }
 
-    pub fn deinit(self: *Expr) void {
-        switch (self.*) {
-            Expr.Binary => {
-                const allocator = self.Binary.getAllocator();
-                self.Binary.deinit();
-                allocator.destroy(self);
-            },
-            Expr.Literal => {
-                const allocator = self.Literal.getAllocator();
-                allocator.destroy(self);
-            },
-        }
+    pub fn deinit(self: *const Expr) void {
+        self.data.deinit(self.allocator);
     }
 };

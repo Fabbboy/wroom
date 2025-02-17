@@ -24,7 +24,3 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try self.val.fmt(fbuf);
     try fbuf.print(", value_type: {} }}", .{self.value_type});
 }
-
-pub fn getAllocator(self: *const Self) mem.Allocator {
-    return self.allocator;
-}

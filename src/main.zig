@@ -8,7 +8,11 @@ const Parser = @import("Parser/Parser.zig");
 
 pub fn main() !void {
     const source = "let x = ";
-    var gpa = std.heap.GeneralPurposeAllocator(.{ .verbose_log = true }){};
+    var gpa = std.heap.GeneralPurposeAllocator(.{
+        .verbose_log = true,
+        .enable_memory_limit = true,
+        .thread_safe = false,
+    }){};
     defer {
         if (gpa.deinit() == .leak) {
             @panic("Memory leak detected");
@@ -43,4 +47,6 @@ pub fn main() !void {
     }
 
     buf.clearAndFree();
+
+    std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
 }

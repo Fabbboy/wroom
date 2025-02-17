@@ -11,9 +11,9 @@ const Self = @This();
 
 ident: Token,
 type: ValueType,
-value: *Expr,
+value: Expr,
 
-pub fn init(ident: Token, ty: ValueType, value: *Expr) Self {
+pub fn init(ident: Token, ty: ValueType, value: Expr) Self {
     return Self{
         .ident = ident,
         .type = ty,

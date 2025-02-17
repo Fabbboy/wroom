@@ -13,12 +13,12 @@ pub const OperatorType = enum {
 
 const Self = @This();
 
-lhs: *Expr,
-rhs: *Expr,
+lhs: Expr,
+rhs: Expr,
 op: OperatorType,
 allocator: mem.Allocator,
 
-pub fn init(lhs: *Expr, rhs: *Expr, op: OperatorType, allocator: mem.Allocator) Self {
+pub fn init(lhs: Expr, rhs: Expr, op: OperatorType, allocator: mem.Allocator) Self {
     return Self{
         .lhs = lhs,
         .rhs = rhs,
@@ -38,8 +38,4 @@ pub fn fmt(self: *const Self, fbuf: anytype) error{OutOfMemory}!void {
 pub fn deinit(self: *Self) void {
     self.rhs.deinit();
     self.lhs.deinit();
-}
-
-pub fn getAllocator(self: *const Self) mem.Allocator {
-    return self.allocator;
 }
