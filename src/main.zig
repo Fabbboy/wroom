@@ -22,7 +22,17 @@ pub fn main() !void {
     var parser = Parser.init(&lexer, gpa.allocator());
     defer parser.deinit();
 
-    try parser.parse();
+    parser.parse() catch {
+        const errs = parser.getErrs();
+        for (errs.items) |err| {
+            try err.fmt(buf_writer);
+            std.debug.print("{s}\n", .{buf.items});
+            buf.clearRetainingCapacity();
+        }
+
+        buf.clearAndFree();
+        return;
+    };
 
     const ast = parser.getAst();
 
