@@ -21,6 +21,9 @@ pub fn main() !void {
     var lexer = Lexer.init(source);
     var parser = Parser.init(&lexer, gpa.allocator());
     defer parser.deinit();
+
+    try parser.parse();
+
     const ast = parser.getAst();
 
     for (ast.globals.items) |glbl| {
