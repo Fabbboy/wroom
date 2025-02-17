@@ -17,6 +17,7 @@ pub const TokenKind = enum {
     Minus,
     Star,
     Slash,
+    Let,
 
     pub fn fmt(self: TokenKind) []const u8 {
         return switch (self) {
@@ -30,6 +31,7 @@ pub const TokenKind = enum {
             TokenKind.Minus => "Minus",
             TokenKind.Star => "Star",
             TokenKind.Slash => "Slash",
+            TokenKind.Let => "Let",
         };
     }
 };
@@ -55,7 +57,11 @@ pub fn empty() Self {
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
-    try fbuf.print("Token{{ kind: {s}, lexeme: '{s}', pos: ", .{self.kind.fmt(), self.lexeme});
+    try fbuf.print("Token{{ kind: {s}, lexeme: '{s}', pos: ", .{ self.kind.fmt(), self.lexeme });
     try self.pos.fmt(fbuf);
     try fbuf.writeAll(" }}");
 }
+
+pub const keywords = std.StaticStringMap(TokenKind).initComptime(.{
+    .{ "let", TokenKind.Let },
+});

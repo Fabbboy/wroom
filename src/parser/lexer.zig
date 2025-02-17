@@ -2,7 +2,9 @@ const std = @import("std");
 const ascii = std.ascii;
 
 const Token = @import("token.zig");
-const TokenKind = @import("token.zig").TokenKind;
+const TokenKind = Token.TokenKind;
+const keywords = Token.keywords;
+
 const Position = @import("position.zig");
 
 const Self = @This();
@@ -71,6 +73,12 @@ fn lexTrivia(self: *Self) void {
 fn lexIdentifier(self: *Self) Token {
     while (ascii.isAlphanumeric(self.getChar()) or self.getChar() == '_') {
         self.advance();
+    }
+
+    const lexeme = self.getLexeme();
+    const kind = keywords.get(lexeme);
+    if (kind) |k| {
+        return self.getToken(k);
     }
 
     return self.getToken(TokenKind.Ident);
