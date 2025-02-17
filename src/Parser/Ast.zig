@@ -22,5 +22,8 @@ pub fn pushGlobal(self: *Self, assign: AssignStatement) !void {
 }
 
 pub fn deinit(self: *Self) void {
+    for (self.globals.items) |global| {
+        global.deinit();
+    }
     self.globals.deinit();
 }

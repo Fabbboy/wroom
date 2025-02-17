@@ -65,7 +65,7 @@ fn advance(self: *Self) void {
 }
 
 fn lexTrivia(self: *Self) void {
-    while (ascii.isWhitespace(self.getChar())) {
+    while (self.idx < self.source.len and ascii.isWhitespace(self.getChar())) {
         self.advance();
     }
 }
@@ -103,11 +103,10 @@ fn lexNumber(self: *Self) Token {
 }
 
 fn lex(self: *Self) Token {
+    self.lexTrivia();
     if (self.idx >= self.source.len) {
         return self.getToken(TokenKind.EOF);
     }
-
-    self.lexTrivia();
 
     self.start = self.idx;
     const c = self.getChar();

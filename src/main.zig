@@ -7,7 +7,7 @@ const Lexer = @import("Parser/Lexer.zig");
 const Parser = @import("Parser/Parser.zig");
 
 pub fn main() !void {
-    const source = "let x = 1 + 2 * 3";
+    const source = "let x = ";
     var gpa = std.heap.GeneralPurposeAllocator(.{ .verbose_log = true }){};
     defer {
         if (gpa.deinit() == .leak) {

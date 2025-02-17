@@ -6,6 +6,12 @@ const TokenKind = Token.TokenKind;
 
 const Lexer = @import("Lexer.zig");
 const Ast = @import("Ast.zig");
+
+const AssignStatement = @import("AST/AssignStatement.zig");
+const ExprNs = @import("AST/Expr.zig");
+const Expr = ExprNs.Expr;
+const ValueType = ExprNs.ValueType;
+
 const Error = @import("Error.zig");
 const ParseError = Error.ParseError;
 const ParseStatus = Error.ParseStatus;
@@ -52,10 +58,28 @@ fn next(self: *Self, expected: []const TokenKind) ParseStatus!Token {
     return error.NotGood;
 }
 
+pub fn parseAssignStmt(self: *Self) ParseStatus!AssignStatement {
+    const ident = self.next(&[_]TokenKind{TokenKind.Ident}) catch {
+        return error.NotGood;
+    };
+
+    _ = self.next(&[_]TokenKind{TokenKind.Assign}) catch {
+        return error.NotGood;
+    };
+
+    const ty = ValueType.Untyped;
+    const value = try Expr.init_literal(ident, self.allocator);
+
+    return AssignStatement.init(ident, ty, value);
+}
+
 pub fn parse(self: *Self) ParseStatus!void {
+    var hasErr = false;
+
     const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.EOF };
     while (true) {
         const tok = self.next(&tl_expected) catch {
+            hasErr = true;
             continue;
         };
 
@@ -65,13 +89,24 @@ pub fn parse(self: *Self) ParseStatus!void {
 
         switch (tok.kind) {
             TokenKind.Let => {
-                continue;
+                const stmt = self.parseAssignStmt() catch {
+                    hasErr = true;
+                    continue;
+                };
+
+                self.ast.pushGlobal(stmt) catch {
+                    continue;
+                };
             },
             else => unreachable,
         }
     }
 
-    return error.NotGood;
+    if (hasErr) {
+        return error.NotGood;
+    }
+
+    return;
 }
 
 pub fn getAst(self: *const Self) *const Ast {

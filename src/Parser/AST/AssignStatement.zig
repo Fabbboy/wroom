@@ -2,23 +2,22 @@ const std = @import("std");
 const mem = std.mem;
 
 const Token = @import("../Token.zig");
-const Expr = @import("Expr.zig");
-const ValueType = Expr.ValueType;
-const ExprKind = Expr.ExprKind;
+const ExprNs = @import("Expr.zig");
+const Expr = ExprNs.Expr;
+const ValueType = ExprNs.ValueType;
+const ExprKind = ExprNs.ExprKind;
 
 const Self = @This();
 
 ident: Token,
 type: ValueType,
-value: Expr.Expr,
-allocator: mem.Allocator,
+value: *Expr,
 
-pub fn init(ident: Token, ty: ValueType, value: Expr, allocator: mem.Allocator) Self {
+pub fn init(ident: Token, ty: ValueType, value: *Expr) Self {
     return Self{
         .ident = ident,
         .type = ty,
         .value = value,
-        .allocator = allocator,
     };
 }
 
@@ -28,4 +27,8 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try self.value.fmt(fbuf);
 
     try fbuf.writeAll(" }}");
+}
+
+pub fn deinit(self: *const Self) void {
+    self.value.deinit();
 }
