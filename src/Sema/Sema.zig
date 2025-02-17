@@ -2,8 +2,8 @@ const Ast = @import("../Parser/Ast.zig");
 
 const Self = @This();
 
-ast: *const Ast,
+ast: *Ast,
 
-pub fn init(ast: *const Ast) Self {
+pub fn init(ast: *Ast) Self {
     return Self{ .ast = ast };
 }

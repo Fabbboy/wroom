@@ -208,7 +208,7 @@ pub fn parse(self: *Self) ParseStatus!void {
     return;
 }
 
-pub fn getAst(self: *const Self) *const Ast {
+pub fn getAst(self: *Self) *Ast {
     return &self.ast;
 }
 
