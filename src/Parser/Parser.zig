@@ -21,3 +21,7 @@ pub fn init(lexer: *Lexer, allocator: mem.Allocator) Self {
 pub fn getAst(self: *const Self) *const Ast {
     return &self.ast;
 }
+
+pub fn deinit(self: *Self) void {
+    self.ast.deinit();
+}

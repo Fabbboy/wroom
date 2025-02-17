@@ -19,7 +19,8 @@ pub fn main() !void {
     const buf_writer = buf.writer();
 
     var lexer = Lexer.init(source);
-    const parser = Parser.init(&lexer, gpa.allocator());
+    var parser = Parser.init(&lexer, gpa.allocator());
+    defer parser.deinit();
     const ast = parser.getAst();
 
     for (ast.globals.items) |glbl| {
