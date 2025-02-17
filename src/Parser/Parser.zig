@@ -1,5 +1,5 @@
-const Lexer = @import("lexer.zig");
-const Ast = @import("ast.zig");
+const Lexer = @import("Lexer.zig");
+const Ast = @import("Ast.zig");
 
 const Self = @This();
 

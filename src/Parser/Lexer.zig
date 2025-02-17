@@ -1,11 +1,11 @@
 const std = @import("std");
 const ascii = std.ascii;
 
-const Token = @import("token.zig");
+const Token = @import("Token.zig");
 const TokenKind = Token.TokenKind;
 const keywords = Token.keywords;
 
-const Position = @import("position.zig");
+const Position = @import("Position.zig");
 
 const Self = @This();
 

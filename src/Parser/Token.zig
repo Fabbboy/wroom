@@ -2,7 +2,7 @@ const std = @import("std");
 const sys_fmt = std.fmt;
 const io = std.io;
 const mem = std.mem;
-const Position = @import("position.zig");
+const Position = @import("Position.zig");
 
 const Self = @This();
 
