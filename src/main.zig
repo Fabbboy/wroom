@@ -5,6 +5,7 @@ const io = std.io;
 const TokenKind = @import("Parser/Token.zig").TokenKind;
 const Lexer = @import("Parser/Lexer.zig");
 const Parser = @import("Parser/Parser.zig");
+const Sema = @import("Sema/Sema.zig");
 
 pub fn main() !void {
     const source = "let x = 3 * 2 + 1 * 2";
@@ -47,6 +48,9 @@ pub fn main() !void {
     }
 
     buf.clearAndFree();
+
+    const sema = Sema.init(ast);
+    _ = sema;
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
 }
