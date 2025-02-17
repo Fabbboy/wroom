@@ -12,6 +12,9 @@ const ExprNs = @import("AST/Expr.zig");
 const Expr = ExprNs.Expr;
 const ValueType = ExprNs.ValueType;
 
+const BinaryExpr = @import("AST/BinaryExpr.zig");
+const OperatorType = BinaryExpr.OperatorType;
+
 const Error = @import("Error.zig");
 const ParseError = Error.ParseError;
 const ParseStatus = Error.ParseStatus;
@@ -58,17 +61,99 @@ fn next(self: *Self, expected: []const TokenKind) ParseStatus!Token {
     return error.NotGood;
 }
 
-pub fn parseAssignStmt(self: *Self) ParseStatus!AssignStatement {
-    const ident = self.next(&[_]TokenKind{TokenKind.Ident}) catch {
-        return error.NotGood;
-    };
+fn peek(self: *const Self, expected: []const TokenKind) bool {
+    if (expected.len > MAX_EXPECTED_KINDS) {
+        @panic("Too many expected kinds");
+    }
 
-    _ = self.next(&[_]TokenKind{TokenKind.Assign}) catch {
-        return error.NotGood;
-    };
+    const tok = self.lexer.peek();
+    if (tok.kind == TokenKind.Invalid) {
+        return false;
+    }
+
+    if (expected.len == 0) {
+        return true;
+    }
+
+    for (expected) |kind| {
+        if (tok.kind == kind) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+fn sync(self: *Self, expected: []const TokenKind) void {
+    while (true) {
+        const tok = self.lexer.peek();
+        if (tok.kind == TokenKind.Invalid) {
+            return;
+        }
+
+        for (expected) |kind| {
+            if (tok.kind == kind) {
+                return;
+            }
+        }
+
+        _ = self.lexer.next();
+    }
+}
+
+fn parseFactor(self: *Self) ParseStatus!Expr {
+    const tok = try self.next(&[_]TokenKind{ TokenKind.Int, TokenKind.Float });
+
+    switch (tok.kind) {
+        TokenKind.Int, TokenKind.Float => return Expr.init_literal(tok, self.allocator),
+        else => unreachable,
+    }
+}
+
+fn parseTerm(self: *Self) ParseStatus!Expr {
+    const lhs = try self.parseFactor();
+
+    if (self.peek(&[_]TokenKind{ TokenKind.Star, TokenKind.Slash })) {
+        const op = try self.next(&[_]TokenKind{ TokenKind.Star, TokenKind.Slash });
+        const fin_op = switch (op.kind) {
+            TokenKind.Star => OperatorType.Mul,
+            TokenKind.Slash => OperatorType.Div,
+            else => unreachable,
+        };
+
+        const rhs = try self.parseTerm();
+
+        return Expr.init_binary(lhs, rhs, fin_op, self.allocator);
+    }
+
+    return lhs;
+}
+
+fn parseExpr(self: *Self) ParseStatus!Expr {
+    const lhs = try self.parseTerm();
+
+    if (self.peek(&[_]TokenKind{ TokenKind.Plus, TokenKind.Minus })) {
+        const op = try self.next(&[_]TokenKind{ TokenKind.Plus, TokenKind.Minus });
+        const fin_op = switch (op.kind) {
+            TokenKind.Plus => OperatorType.Add,
+            TokenKind.Minus => OperatorType.Sub,
+            else => unreachable,
+        };
+
+        const rhs = try self.parseExpr();
+
+        return Expr.init_binary(lhs, rhs, fin_op, self.allocator);
+    }
+
+    return lhs;
+}
+
+pub fn parseAssignStmt(self: *Self) ParseStatus!AssignStatement {
+    const ident = try self.next(&[_]TokenKind{TokenKind.Ident});
+    _ = try self.next(&[_]TokenKind{TokenKind.Assign});
 
     const ty = ValueType.Untyped;
-    const value = try Expr.init_literal(ident, self.allocator);
+    const value = try self.parseExpr();
 
     return AssignStatement.init(ident, ty, value);
 }
@@ -80,6 +165,7 @@ pub fn parse(self: *Self) ParseStatus!void {
     while (true) {
         const tok = self.next(&tl_expected) catch {
             hasErr = true;
+            self.sync(&tl_expected);
             continue;
         };
 
@@ -91,6 +177,7 @@ pub fn parse(self: *Self) ParseStatus!void {
             TokenKind.Let => {
                 const stmt = self.parseAssignStmt() catch {
                     hasErr = true;
+                    self.sync(&tl_expected);
                     continue;
                 };
 

@@ -129,3 +129,7 @@ pub fn next(self: *Self) Token {
     self.nextTok = self.lex();
     return self.currTok;
 }
+
+pub fn peek(self: *Self) Token {
+    return self.nextTok;
+}
