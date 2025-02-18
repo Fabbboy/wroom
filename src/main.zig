@@ -21,6 +21,7 @@ pub fn main() !void {
     }
 
     var buf = std.ArrayList(u8).init(gpa.allocator());
+    defer buf.deinit();
     const buf_writer = buf.writer();
 
     var lexer = Lexer.init(source);
@@ -35,19 +36,11 @@ pub fn main() !void {
             buf.clearRetainingCapacity();
         }
 
-        buf.clearAndFree();
+        buf.clearRetainingCapacity();
         return;
     };
 
     const ast = parser.getAst();
-
-    for (ast.globals.items) |glbl| {
-        try glbl.fmt(buf_writer);
-        std.debug.print("{s}\n", .{buf.items});
-        buf.clearRetainingCapacity();
-    }
-
-    buf.clearAndFree();
 
     var sema = try Sema.init(ast, gpa.allocator());
     defer sema.deinit();
@@ -59,9 +52,15 @@ pub fn main() !void {
             buf.clearRetainingCapacity();
         }
 
-        buf.clearAndFree();
+        buf.clearRetainingCapacity();
         return;
     };
+
+    for (ast.globals.items) |glbl| {
+        try glbl.fmt(buf_writer);
+        std.debug.print("{s}\n", .{buf.items});
+        buf.clearRetainingCapacity();
+    }
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
 }

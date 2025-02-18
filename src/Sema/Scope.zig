@@ -17,6 +17,22 @@ pub fn init(allocator: mem.Allocator, parent: ?*Self) !*Self {
     return self;
 }
 
+pub fn find(self: *Self, name: []const u8) ?*AssignStatement {
+    if (self.symbols.contains(name)) {
+        return self.symbols.get(name);
+    }
+
+    if (self.parent) |parent| {
+        return parent.find(name);
+    }
+
+    return null;
+}
+
+pub fn push(self: *Self, name: []const u8, value: *AssignStatement) !void {
+    try self.symbols.put(name, value);
+}
+
 pub fn deinit(self: *Self) void {
     if (self.parent) |parent| {
         parent.deinit();

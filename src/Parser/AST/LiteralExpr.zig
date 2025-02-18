@@ -14,7 +14,11 @@ allocator: mem.Allocator,
 pub fn init(val: Token, allocator: mem.Allocator) Self {
     return Self{
         .val = val,
-        .value_type = ValueType.Untyped,
+        .value_type = switch (val.kind) {
+            TokenKind.Int => ValueType.Int,
+            TokenKind.Float => ValueType.Float,
+            else => ValueType.Untyped,
+        },
         .allocator = allocator,
     };
 }

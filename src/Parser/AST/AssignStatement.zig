@@ -29,6 +29,10 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try fbuf.writeAll(" }}");
 }
 
+pub fn setType(self: *Self, ty: ValueType) void {
+    self.type = ty;
+}
+
 pub fn deinit(self: *const Self) void {
     self.value.deinit();
 }
