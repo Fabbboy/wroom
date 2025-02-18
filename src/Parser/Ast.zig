@@ -5,7 +5,7 @@ const TokenKind = Token.TokenKind;
 
 const Self = @This();
 
-const AssignStatement = @import("AST/AssignStatement.zig");
+const AssignStatement = @import("../AST/AssignStatement.zig");
 
 allocator: mem.Allocator,
 globals: std.ArrayList(AssignStatement),

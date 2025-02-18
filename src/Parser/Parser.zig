@@ -7,12 +7,12 @@ const TokenKind = Token.TokenKind;
 const Lexer = @import("Lexer.zig");
 const Ast = @import("Ast.zig");
 
-const AssignStatement = @import("AST/AssignStatement.zig");
-const ExprNs = @import("AST/Expr.zig");
+const AssignStatement = @import("../AST/AssignStatement.zig");
+const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
 const ValueType = ExprNs.ValueType;
 
-const BinaryExpr = @import("AST/BinaryExpr.zig");
+const BinaryExpr = @import("../AST/BinaryExpr.zig");
 const OperatorType = BinaryExpr.OperatorType;
 
 const Error = @import("Error.zig");

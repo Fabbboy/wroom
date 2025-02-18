@@ -1,7 +1,7 @@
 const std = @import("std");
 const mem = std.mem;
 
-const Token = @import("../Token.zig");
+const Token = @import("../Parser/Token.zig");
 const ExprNs = @import("Expr.zig");
 const Expr = ExprNs.Expr;
 const ValueType = ExprNs.ValueType;

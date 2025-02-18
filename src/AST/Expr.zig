@@ -3,7 +3,7 @@ const mem = std.mem;
 
 const LiteralExpr = @import("LiteralExpr.zig");
 const BinaryExpr = @import("BinaryExpr.zig");
-const Token = @import("../Token.zig");
+const Token = @import("../Parser/Token.zig");
 
 pub const ValueType = enum {
     Untyped,

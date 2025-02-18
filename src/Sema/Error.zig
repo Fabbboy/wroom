@@ -1,4 +1,4 @@
-const ExprNs = @import("../Parser/AST/Expr.zig");
+const ExprNs = @import("../AST/Expr.zig");
 const ValueType = ExprNs.ValueType;
 
 pub const SemaStatus = error{

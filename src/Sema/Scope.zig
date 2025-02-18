@@ -1,7 +1,7 @@
 const std = @import("std");
 const mem = std.mem;
 
-const AssignStatement = @import("../Parser/AST/AssignStatement.zig");
+const AssignStatement = @import("../AST/AssignStatement.zig");
 
 const Self = @This();
 
