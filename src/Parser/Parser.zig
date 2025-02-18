@@ -11,6 +11,7 @@ const Ast = @import("Ast.zig");
 const AssignStatement = @import("../AST/AssignStatement.zig");
 const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
+const ExprKind = ExprNs.ExprKind;
 
 const BinaryExpr = @import("../AST/BinaryExpr.zig");
 const OperatorType = BinaryExpr.OperatorType;
@@ -235,4 +236,82 @@ pub fn getErrs(self: *const Self) *const std.ArrayList(ParseError) {
 pub fn deinit(self: *Self) void {
     self.ast.deinit();
     self.errs.deinit();
+}
+
+test "parser - simple assignment" {
+    const source = "let x: int = 42";
+    var lexer = Lexer.init(source);
+    var parser = Self.init(&lexer, std.testing.allocator);
+    defer parser.deinit();
+
+    try parser.parse();
+    try std.testing.expectEqual(@as(usize, 1), parser.ast.globals.items.len);
+
+    const stmt = parser.ast.globals.items[0];
+    try std.testing.expectEqual(TokenKind.Ident, stmt.ident.kind);
+    try std.testing.expectEqualStrings("x", stmt.ident.lexeme);
+    try std.testing.expectEqual(ValueType.Int, stmt.type);
+
+    const expr = stmt.value;
+    try std.testing.expectEqual(ExprKind.Literal, @as(ExprKind, expr.data.*));
+    try std.testing.expectEqualStrings("42", expr.data.Literal.val.lexeme);
+}
+
+test "parser - binary expressions" {
+    const source = "let calc = 2 * 3 + 4";
+    var lexer = Lexer.init(source);
+    var parser = Self.init(&lexer, std.testing.allocator);
+    defer parser.deinit();
+
+    try parser.parse();
+    try std.testing.expectEqual(@as(usize, 1), parser.ast.globals.items.len);
+
+    const stmt = parser.ast.globals.items[0];
+    try std.testing.expectEqualStrings("calc", stmt.ident.lexeme);
+    try std.testing.expectEqual(ValueType.Untyped, stmt.type);
+
+    const expr = stmt.value;
+    try std.testing.expectEqual(ExprKind.Binary, @as(ExprKind, expr.data.*));
+    try std.testing.expectEqual(OperatorType.Add, expr.data.Binary.op);
+
+    const mul = expr.data.Binary.lhs;
+    try std.testing.expectEqual(ExprKind.Binary, @as(ExprKind, mul.data.*));
+    try std.testing.expectEqual(OperatorType.Mul, mul.data.Binary.op);
+}
+
+test "parser - error handling" {
+    const source = "let 123 = 42";
+    var lexer = Lexer.init(source);
+    var parser = Self.init(&lexer, std.testing.allocator);
+    defer parser.deinit();
+
+    try std.testing.expectError(error.NotGood, parser.parse());
+    try std.testing.expectEqual(@as(usize, 1), parser.errs.items.len);
+
+    const err = parser.errs.items[0];
+    switch (err) {
+        .UnexpectedToken => |e| {
+            try std.testing.expectEqual(TokenKind.Int, e.got.kind);
+            try std.testing.expectEqual(TokenKind.Ident, e.expected[0]);
+        },
+        else => try std.testing.expect(false),
+    }
+}
+
+test "parser - multiple declarations" {
+    const source =
+        \\let x: int = 1
+        \\let y: float = 2.5
+        \\let z = 3
+    ;
+    var lexer = Lexer.init(source);
+    var parser = Self.init(&lexer, std.testing.allocator);
+    defer parser.deinit();
+
+    try parser.parse();
+    try std.testing.expectEqual(@as(usize, 3), parser.ast.globals.items.len);
+
+    try std.testing.expectEqual(ValueType.Int, parser.ast.globals.items[0].type);
+    try std.testing.expectEqual(ValueType.Float, parser.ast.globals.items[1].type);
+    try std.testing.expectEqual(ValueType.Untyped, parser.ast.globals.items[2].type);
 }
