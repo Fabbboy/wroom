@@ -3,6 +3,8 @@ const mem = std.mem;
 
 const ErrorNs = @import("Error.zig");
 const SemaError = ErrorNs.SemaError;
+const SemaStatus = ErrorNs.SemaStatus;
+
 const Ast = @import("../Parser/Ast.zig");
 
 const Self = @This();
@@ -19,6 +21,15 @@ pub fn init(ast: *Ast, allocator: mem.Allocator) Self {
     };
 }
 
-pub fn deinit(self: *const Self) void {
+pub fn getErrs(self: *const Self) *const std.ArrayList(SemaError) {
+    return &self.errs;
+}
+
+pub fn analyze(self: *Self) SemaStatus!void {
+    _ = self;
+    return SemaStatus.NotGood;
+}
+
+pub fn deinit(self: *Self) void {
     self.errs.deinit();
 }

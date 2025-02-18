@@ -49,8 +49,19 @@ pub fn main() !void {
 
     buf.clearAndFree();
 
-    const sema = Sema.init(ast, gpa.allocator());
-    sema.deinit();
+    var sema = Sema.init(ast, gpa.allocator());
+    defer sema.deinit();
+    sema.analyze() catch {
+        const errs = sema.getErrs();
+        for (errs.items) |err| {
+            try err.fmt(buf_writer);
+            std.debug.print("{s}\n", .{buf.items});
+            buf.clearRetainingCapacity();
+        }
+
+        buf.clearAndFree();
+        return;
+    };
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
 }
