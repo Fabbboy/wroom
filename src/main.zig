@@ -64,3 +64,7 @@ pub fn main() !void {
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
 }
+
+test {
+    std.testing.refAllDecls(@This());
+}

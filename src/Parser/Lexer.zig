@@ -152,3 +152,62 @@ pub fn next(self: *Self) Token {
 pub fn peek(self: *Self) Token {
     return self.nextTok;
 }
+
+test "lexer - simple tokens" {
+    const source = "= + - * / . :";
+    var lexer = Self.init(source);
+
+    try std.testing.expectEqual(TokenKind.Assign, lexer.next().kind);
+    try std.testing.expectEqual(TokenKind.Plus, lexer.next().kind);
+    try std.testing.expectEqual(TokenKind.Minus, lexer.next().kind);
+    try std.testing.expectEqual(TokenKind.Star, lexer.next().kind);
+    try std.testing.expectEqual(TokenKind.Slash, lexer.next().kind);
+    try std.testing.expectEqual(TokenKind.Period, lexer.next().kind);
+    try std.testing.expectEqual(TokenKind.Colon, lexer.next().kind);
+    try std.testing.expectEqual(TokenKind.EOF, lexer.next().kind);
+}
+
+test "lexer - numbers" {
+    const source = "123 45.67";
+    var lexer = Self.init(source);
+
+    const intToken = lexer.next();
+    try std.testing.expectEqual(TokenKind.Int, intToken.kind);
+    try std.testing.expectEqualStrings("123", intToken.lexeme);
+
+    const floatToken = lexer.next();
+    try std.testing.expectEqual(TokenKind.Float, floatToken.kind);
+    try std.testing.expectEqualStrings("45.67", floatToken.lexeme);
+}
+
+test "lexer - identifiers and keywords" {
+    const source = "foo bar_baz _test";
+    var lexer = Self.init(source);
+
+    const id1 = lexer.next();
+    try std.testing.expectEqual(TokenKind.Ident, id1.kind);
+    try std.testing.expectEqualStrings("foo", id1.lexeme);
+
+    const id2 = lexer.next();
+    try std.testing.expectEqual(TokenKind.Ident, id2.kind);
+    try std.testing.expectEqualStrings("bar_baz", id2.lexeme);
+
+    const id3 = lexer.next();
+    try std.testing.expectEqual(TokenKind.Ident, id3.kind);
+    try std.testing.expectEqualStrings("_test", id3.lexeme);
+}
+
+test "lexer - whitespace handling" {
+    const source = "  \n\t  123  foo  \n  ";
+    var lexer = Self.init(source);
+
+    const numToken = lexer.next();
+    try std.testing.expectEqual(TokenKind.Int, numToken.kind);
+    try std.testing.expectEqualStrings("123", numToken.lexeme);
+
+    const idToken = lexer.next();
+    try std.testing.expectEqual(TokenKind.Ident, idToken.kind);
+    try std.testing.expectEqualStrings("foo", idToken.lexeme);
+
+    try std.testing.expectEqual(TokenKind.EOF, lexer.next().kind);
+}
