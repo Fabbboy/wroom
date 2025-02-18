@@ -18,6 +18,7 @@ pub const TokenKind = enum {
     Star,
     Slash,
     Let,
+    Period,
 
     pub fn fmt(self: TokenKind) []const u8 {
         return switch (self) {
@@ -32,6 +33,7 @@ pub const TokenKind = enum {
             TokenKind.Star => "Star",
             TokenKind.Slash => "Slash",
             TokenKind.Let => "Let",
+            TokenKind.Period => "Period",
         };
     }
 };

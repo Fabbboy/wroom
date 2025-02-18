@@ -52,6 +52,14 @@ fn getChar(self: *Self) u8 {
     return self.source[self.idx];
 }
 
+fn getPeekChar(self: *Self) u8 {
+    if (self.idx + 1 >= self.source.len) {
+        return 0;
+    }
+
+    return self.source[self.idx + 1];
+}
+
 fn advance(self: *Self) void {
     const c = self.getChar();
     if (c == '\n') {
@@ -91,7 +99,7 @@ fn lexNumber(self: *Self) Token {
         self.advance();
     }
 
-    if (ascii.isDigit(self.getChar())) {
+    if (self.getChar() == '.' and ascii.isDigit(self.getPeekChar())) {
         self.advance();
         kind = TokenKind.Float;
         while (ascii.isDigit(self.getChar())) {
@@ -120,6 +128,7 @@ fn lex(self: *Self) Token {
         '-' => return self.getToken(TokenKind.Minus),
         '*' => return self.getToken(TokenKind.Star),
         '/' => return self.getToken(TokenKind.Slash),
+        '.' => return self.getToken(TokenKind.Period),
         else => return self.getToken(TokenKind.Invalid),
     }
 }
