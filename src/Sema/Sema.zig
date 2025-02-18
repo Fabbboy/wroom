@@ -6,6 +6,7 @@ const SemaError = ErrorNs.SemaError;
 const SemaStatus = ErrorNs.SemaStatus;
 
 const Ast = @import("../Parser/Ast.zig");
+const AssignStatement = @import("../Parser/AST/AssignStatement.zig");
 
 const Self = @This();
 
@@ -25,8 +26,17 @@ pub fn getErrs(self: *const Self) *const std.ArrayList(SemaError) {
     return &self.errs;
 }
 
-pub fn analyze(self: *Self) SemaStatus!void {
+fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
     _ = self;
+    _ = variable;
+}
+
+pub fn analyze(self: *Self) SemaStatus!void {
+    for (self.ast.globals.items) |*glbl| {
+        self.analyze_variable(glbl) catch {
+            continue;
+        };
+    }
     return SemaStatus.NotGood;
 }
 
