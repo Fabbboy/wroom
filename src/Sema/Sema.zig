@@ -13,14 +13,14 @@ const Scope = @import("Scope.zig");
 const Self = @This();
 
 ast: *Ast,
-currentScope: Scope,
+currentScope: *Scope,
 errs: std.ArrayList(SemaError),
 allocator: mem.Allocator,
 
-pub fn init(ast: *Ast, allocator: mem.Allocator) Self {
+pub fn init(ast: *Ast, allocator: mem.Allocator) !Self {
     return Self{
         .ast = ast,
-        .currentScope = Scope.init(allocator, null),
+        .currentScope = try Scope.init(allocator, null),
         .errs = std.ArrayList(SemaError).init(allocator),
         .allocator = allocator,
     };
@@ -41,7 +41,11 @@ pub fn analyze(self: *Self) SemaStatus!void {
             continue;
         };
     }
-    return SemaStatus.NotGood;
+    if (self.errs.items.len > 0) {
+        return error.NotGood;
+    }
+
+    return;
 }
 
 pub fn deinit(self: *Self) void {

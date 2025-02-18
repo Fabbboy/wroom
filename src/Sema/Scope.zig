@@ -9,12 +9,12 @@ parent: ?*Self,
 symbols: std.StringHashMap(*AssignStatement),
 allocator: mem.Allocator,
 
-pub fn init(allocator: mem.Allocator, parent: ?*Self) Self {
-    return Self{
-        .parent = parent,
-        .symbols = std.StringHashMap(*AssignStatement).init(allocator),
-        .allocator = allocator,
-    };
+pub fn init(allocator: mem.Allocator, parent: ?*Self) !*Self {
+    const self = try allocator.create(Self);
+    self.parent = parent;
+    self.symbols = std.StringHashMap(*AssignStatement).init(allocator);
+    self.allocator = allocator;
+    return self;
 }
 
 pub fn deinit(self: *Self) void {
@@ -23,4 +23,5 @@ pub fn deinit(self: *Self) void {
         self.parent = null;
     }
     self.symbols.deinit();
+    self.allocator.destroy(self);
 }

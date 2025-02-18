@@ -49,7 +49,7 @@ pub fn main() !void {
 
     buf.clearAndFree();
 
-    var sema = Sema.init(ast, gpa.allocator());
+    var sema = try Sema.init(ast, gpa.allocator());
     defer sema.deinit();
     sema.analyze() catch {
         const errs = sema.getErrs();
