@@ -49,8 +49,8 @@ pub fn main() !void {
 
     buf.clearAndFree();
 
-    const sema = Sema.init(ast);
-    _ = sema;
+    const sema = Sema.init(ast, gpa.allocator());
+    sema.deinit();
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
 }
