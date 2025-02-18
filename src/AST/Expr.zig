@@ -4,12 +4,7 @@ const mem = std.mem;
 const LiteralExpr = @import("LiteralExpr.zig");
 const BinaryExpr = @import("BinaryExpr.zig");
 const Token = @import("../Parser/Token.zig");
-
-pub const ValueType = enum {
-    Untyped,
-    Int,
-    Float,
-};
+const ValueType = Token.ValueType;
 
 pub const ExprKind = enum {
     Literal,
@@ -31,7 +26,7 @@ pub const ExprData = union(ExprKind) {
 
 pub const Expr = struct {
     data: *ExprData,
-    allocator: mem.Allocator,   
+    allocator: mem.Allocator,
 
     pub fn init_literal(val: Token, allocator: mem.Allocator) !Expr {
         const lit_data = try allocator.create(ExprData);

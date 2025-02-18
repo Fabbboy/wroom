@@ -3,6 +3,7 @@ const ascii = std.ascii;
 
 const Token = @import("Token.zig");
 const TokenKind = Token.TokenKind;
+const TokenData = Token.TokenData;
 const keywords = Token.keywords;
 
 const Position = @import("Position.zig");
@@ -42,6 +43,10 @@ fn getLexeme(self: *Self) []const u8 {
 
 fn getToken(self: *Self, kind: TokenKind) Token {
     return Token.init(kind, self.getLexeme(), self.getPosition());
+}
+
+fn getTokenWithValue(self: *Self, kind: TokenKind, value: TokenData) Token {
+    return Token.initWithValue(kind, self.getLexeme(), self.getPosition(), value);
 }
 
 fn getChar(self: *Self) u8 {
@@ -84,9 +89,13 @@ fn lexIdentifier(self: *Self) Token {
     }
 
     const lexeme = self.getLexeme();
-    const kind = keywords.get(lexeme);
-    if (kind) |k| {
-        return self.getToken(k);
+    const kv_raw = keywords.get(lexeme);
+    if (kv_raw) |kv| {
+        if (kv.data) |data| {
+            return self.getTokenWithValue(kv.kind, data);
+        } else {
+            return self.getToken(kv.kind);
+        }
     }
 
     return self.getToken(TokenKind.Ident);

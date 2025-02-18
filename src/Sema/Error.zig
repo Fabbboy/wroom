@@ -1,5 +1,5 @@
-const ExprNs = @import("../AST/Expr.zig");
-const ValueType = ExprNs.ValueType;
+const Token = @import("../Parser/Token.zig");
+const ValueType = Token.ValueType;
 
 pub const SemaStatus = error{
     NotGood,

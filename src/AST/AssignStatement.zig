@@ -2,9 +2,9 @@ const std = @import("std");
 const mem = std.mem;
 
 const Token = @import("../Parser/Token.zig");
+const ValueType = Token.ValueType;
 const ExprNs = @import("Expr.zig");
 const Expr = ExprNs.Expr;
-const ValueType = ExprNs.ValueType;
 const ExprKind = ExprNs.ExprKind;
 
 const Self = @This();

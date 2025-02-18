@@ -1,6 +1,9 @@
 const std = @import("std");
 const mem = std.mem;
 
+const Token = @import("../Parser/Token.zig");
+const ValueType = Token.ValueType;
+
 const ErrorNs = @import("Error.zig");
 const SemaError = ErrorNs.SemaError;
 const SemaStatus = ErrorNs.SemaStatus;
@@ -9,7 +12,6 @@ const Ast = @import("../Parser/Ast.zig");
 const AssignStatement = @import("../AST/AssignStatement.zig");
 const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
-const ValueType = ExprNs.ValueType;
 const ExprKind = ExprNs.ExprKind;
 
 const Scope = @import("Scope.zig");

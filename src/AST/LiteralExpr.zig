@@ -3,7 +3,7 @@ const mem = std.mem;
 
 const Token = @import("../Parser/Token.zig");
 const TokenKind = Token.TokenKind;
-const ValueType = @import("Expr.zig").ValueType;
+const ValueType = Token.ValueType;
 
 const Self = @This();
 

@@ -3,6 +3,7 @@ const mem = std.mem;
 
 const Token = @import("Token.zig");
 const TokenKind = Token.TokenKind;
+const ValueType = Token.ValueType;
 
 const Lexer = @import("Lexer.zig");
 const Ast = @import("Ast.zig");
@@ -10,7 +11,6 @@ const Ast = @import("Ast.zig");
 const AssignStatement = @import("../AST/AssignStatement.zig");
 const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
-const ValueType = ExprNs.ValueType;
 
 const BinaryExpr = @import("../AST/BinaryExpr.zig");
 const OperatorType = BinaryExpr.OperatorType;
@@ -167,11 +167,16 @@ pub fn parseAssignStmt(self: *Self) ParseStatus!AssignStatement {
     if (self.peek(&[_]TokenKind{TokenKind.Colon})) {
         _ = try self.next(&[_]TokenKind{TokenKind.Colon});
 
-        const tyTok = try self.next(&[_]TokenKind{ TokenKind.TyFloat, TokenKind.TyInt });
-        switch (tyTok.kind) {
-            TokenKind.TyInt => ty = ValueType.Int,
-            TokenKind.TyFloat => ty = ValueType.Float,
-            else => unreachable,
+        const tyTok = try self.next(&[_]TokenKind{TokenKind.Type});
+        if (tyTok.data) |data| {
+            switch (data) {
+                TokenKind.Type => {
+                    ty = tyTok.data.?.Type;
+                },
+                else => unreachable,
+            }
+        } else {
+            unreachable;
         }
     }
 

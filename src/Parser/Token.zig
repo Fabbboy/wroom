@@ -20,8 +20,7 @@ pub const TokenKind = enum {
     Let,
     Period,
     Colon,
-    TyInt,
-    TyFloat,
+    Type,
 
     pub fn fmt(self: TokenKind) []const u8 {
         return switch (self) {
@@ -38,21 +37,54 @@ pub const TokenKind = enum {
             TokenKind.Let => "Let",
             TokenKind.Period => "Period",
             TokenKind.Colon => "Colon",
-            TokenKind.TyInt => "TyInt",
-            TokenKind.TyFloat => "TyFloat",
+            TokenKind.Type => "Type",
         };
     }
+};
+
+pub const ValueType = enum {
+    Untyped,
+    Int,
+    Float,
+};
+
+pub const TokenData = union(TokenKind) {
+    EOF: void,
+    Invalid: void,
+    Ident: void,
+    Int: void,
+    Float: void,
+    Assign: void,
+    Plus: void,
+    Minus: void,
+    Star: void,
+    Slash: void,
+    Let: void,
+    Period: void,
+    Colon: void,
+    Type: ValueType,
 };
 
 kind: TokenKind,
 lexeme: []const u8,
 pos: Position,
+data: ?TokenData,
 
 pub fn init(kind: TokenKind, lexeme: []const u8, pos: Position) Self {
     return Self{
         .kind = kind,
         .lexeme = lexeme,
         .pos = pos,
+        .data = null,
+    };
+}
+
+pub fn initWithValue(kind: TokenKind, lexeme: []const u8, pos: Position, data: TokenData) Self {
+    return Self{
+        .kind = kind,
+        .lexeme = lexeme,
+        .pos = pos,
+        .data = data,
     };
 }
 
@@ -61,6 +93,7 @@ pub fn empty() Self {
         .kind = TokenKind.Invalid,
         .lexeme = &[_]u8{},
         .pos = Position.init(0, 0, 0, 0),
+        .data = null,
     };
 }
 
@@ -70,8 +103,13 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try fbuf.writeAll(" }}");
 }
 
-pub const keywords = std.StaticStringMap(TokenKind).initComptime(.{
-    .{ "let", TokenKind.Let },
-    .{ "int", TokenKind.TyInt },
-    .{ "float", TokenKind.TyFloat },
+pub const KeywordValue = struct {
+    kind: TokenKind,
+    data: ?TokenData,
+};
+
+pub const keywords = std.StaticStringMap(KeywordValue).initComptime(.{
+    .{ "let", .{ .kind = TokenKind.Let, .data = null } },
+    .{ "int", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.Int } } },
+    .{ "float", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.Float } } },
 });
