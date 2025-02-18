@@ -19,6 +19,9 @@ pub const TokenKind = enum {
     Slash,
     Let,
     Period,
+    Colon,
+    TyInt,
+    TyFloat,
 
     pub fn fmt(self: TokenKind) []const u8 {
         return switch (self) {
@@ -34,6 +37,9 @@ pub const TokenKind = enum {
             TokenKind.Slash => "Slash",
             TokenKind.Let => "Let",
             TokenKind.Period => "Period",
+            TokenKind.Colon => "Colon",
+            TokenKind.TyInt => "TyInt",
+            TokenKind.TyFloat => "TyFloat",
         };
     }
 };
@@ -66,4 +72,6 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
 
 pub const keywords = std.StaticStringMap(TokenKind).initComptime(.{
     .{ "let", TokenKind.Let },
+    .{ "int", TokenKind.TyInt },
+    .{ "float", TokenKind.TyFloat },
 });

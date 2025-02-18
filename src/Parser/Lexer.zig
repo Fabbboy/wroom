@@ -129,6 +129,7 @@ fn lex(self: *Self) Token {
         '*' => return self.getToken(TokenKind.Star),
         '/' => return self.getToken(TokenKind.Slash),
         '.' => return self.getToken(TokenKind.Period),
+        ':' => return self.getToken(TokenKind.Colon),
         else => return self.getToken(TokenKind.Invalid),
     }
 }

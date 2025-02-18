@@ -162,9 +162,20 @@ fn parseExpr(self: *Self) ParseStatus!Expr {
 
 pub fn parseAssignStmt(self: *Self) ParseStatus!AssignStatement {
     const ident = try self.next(&[_]TokenKind{TokenKind.Ident});
-    _ = try self.next(&[_]TokenKind{TokenKind.Assign});
 
-    const ty = ValueType.Untyped;
+    var ty = ValueType.Untyped;
+    if (self.peek(&[_]TokenKind{TokenKind.Colon})) {
+        _ = try self.next(&[_]TokenKind{TokenKind.Colon});
+
+        const tyTok = try self.next(&[_]TokenKind{ TokenKind.TyFloat, TokenKind.TyInt });
+        switch (tyTok.kind) {
+            TokenKind.TyInt => ty = ValueType.Int,
+            TokenKind.TyFloat => ty = ValueType.Float,
+            else => unreachable,
+        }
+    }
+
+    _ = try self.next(&[_]TokenKind{TokenKind.Assign});
     const value = try self.parseExpr();
 
     return AssignStatement.init(ident, ty, value);
