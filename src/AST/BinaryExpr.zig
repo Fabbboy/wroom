@@ -35,16 +35,16 @@ pub fn fmt(self: *const Self, fbuf: anytype) error{OutOfMemory}!void {
     try fbuf.print(", op: {} }}", .{self.op});
 }
 
-pub fn deinit(self: *Self) void {
+pub fn deinit(self: *const Self) void {
     self.rhs.deinit();
     self.lhs.deinit();
 }
 
-pub fn start(self: *Self) usize {
+pub fn start(self: *const Self) usize {
     return self.lhs.start();
 }
 
-pub fn stop(self: *Self) usize {
+pub fn stop(self: *const Self) usize {
     return self.rhs.stop();
 }
 
