@@ -9,9 +9,8 @@ const Self = @This();
 
 val: Token,
 value_type: ValueType,
-allocator: mem.Allocator,
 
-pub fn init(val: Token, allocator: mem.Allocator) Self {
+pub fn init(val: Token) Self {
     return Self{
         .val = val,
         .value_type = switch (val.kind) {
@@ -19,7 +18,6 @@ pub fn init(val: Token, allocator: mem.Allocator) Self {
             TokenKind.Float => ValueType.Float,
             else => ValueType.Untyped,
         },
-        .allocator = allocator,
     };
 }
 

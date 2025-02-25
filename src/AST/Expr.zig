@@ -30,13 +30,13 @@ pub const Expr = struct {
 
     pub fn init_literal(val: Token, allocator: mem.Allocator) !Expr {
         const lit_data = try allocator.create(ExprData);
-        lit_data.* = ExprData{ .Literal = LiteralExpr.init(val, allocator) };
+        lit_data.* = ExprData{ .Literal = LiteralExpr.init(val) };
         return Expr{ .data = lit_data, .allocator = allocator };
     }
 
     pub fn init_binary(lhs: Expr, rhs: Expr, op: BinaryExpr.OperatorType, allocator: mem.Allocator) !Expr {
         const bin_data = try allocator.create(ExprData);
-        bin_data.* = ExprData{ .Binary = BinaryExpr.init(lhs, rhs, op, allocator) };
+        bin_data.* = ExprData{ .Binary = BinaryExpr.init(lhs, rhs, op) };
         return Expr{ .data = bin_data, .allocator = allocator };
     }
 

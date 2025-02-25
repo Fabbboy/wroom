@@ -16,14 +16,12 @@ const Self = @This();
 lhs: Expr,
 rhs: Expr,
 op: OperatorType,
-allocator: mem.Allocator,
 
-pub fn init(lhs: Expr, rhs: Expr, op: OperatorType, allocator: mem.Allocator) Self {
+pub fn init(lhs: Expr, rhs: Expr, op: OperatorType) Self {
     return Self{
         .lhs = lhs,
         .rhs = rhs,
         .op = op,
-        .allocator = allocator,
     };
 }
 
