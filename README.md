@@ -4,4 +4,8 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 
 ### Next Steps
 - Create snippets for error
-- Add functions
+- Add function body
+- Create Statment tagged union
+- Parse parameters
+- Add void type
+- Add checking for void type
