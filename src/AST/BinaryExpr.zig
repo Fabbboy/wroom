@@ -4,6 +4,8 @@ const mem = std.mem;
 const ExprNs = @import("Expr.zig");
 const Expr = ExprNs.Expr;
 
+const Position = @import("../Parser/Position.zig");
+
 pub const OperatorType = enum {
     Add,
     Sub,
@@ -36,4 +38,12 @@ pub fn fmt(self: *const Self, fbuf: anytype) error{OutOfMemory}!void {
 pub fn deinit(self: *Self) void {
     self.rhs.deinit();
     self.lhs.deinit();
+}
+
+pub fn start(self: *Self) Position {
+    return self.lhs.start();
+}
+
+pub fn stop(self: *Self) Position {
+    return self.rhs.stop();
 }

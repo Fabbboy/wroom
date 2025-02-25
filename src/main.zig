@@ -60,6 +60,8 @@ pub fn main() !void {
         try glbl.fmt(buf_writer);
         std.debug.print("{s}\n", .{buf.items});
         buf.clearRetainingCapacity();
+        const range = source[glbl.start().start..glbl.stop().end];
+        std.debug.print("Source: {s}\n", .{range});
     }
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});

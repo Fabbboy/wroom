@@ -7,6 +7,8 @@ const ExprNs = @import("Expr.zig");
 const Expr = ExprNs.Expr;
 const ExprKind = ExprNs.ExprKind;
 
+const Position = @import("../Parser/Position.zig");
+
 const Self = @This();
 
 ident: Token,
@@ -35,4 +37,12 @@ pub fn setType(self: *Self, ty: ValueType) void {
 
 pub fn deinit(self: *const Self) void {
     self.value.deinit();
+}
+
+pub fn start(self: *const Self) Position {
+    return self.ident.pos;
+}
+
+pub fn stop(self: *const Self) Position {
+    return self.value.stop();
 }

@@ -6,6 +6,8 @@ const BinaryExpr = @import("BinaryExpr.zig");
 const Token = @import("../Parser/Token.zig");
 const ValueType = Token.ValueType;
 
+const Position = @import("../Parser/Position.zig");
+
 pub const ExprKind = enum {
     Literal,
     Binary,
@@ -49,5 +51,19 @@ pub const Expr = struct {
 
     pub fn deinit(self: *const Expr) void {
         self.data.deinit(self.allocator);
+    }
+
+    pub fn start(self: *const Expr) Position {
+        return switch (self.data.*) {
+            ExprKind.Literal => self.data.Literal.start(),
+            ExprKind.Binary => self.data.Binary.start(),
+        };
+    }
+
+    pub fn stop(self: *const Expr) Position {
+        return switch (self.data.*) {
+            ExprKind.Literal => self.data.Literal.stop(),
+            ExprKind.Binary => self.data.Binary.stop(),
+        };
     }
 };
