@@ -52,7 +52,8 @@ pub const UnexpectedToken = struct {
     }
 
     pub fn fmt(self: *const UnexpectedToken, fbuf: anytype) !void {
-        try fbuf.print("Unexpected token: {s}, expected one of: ", .{self.got.kind.fmt()});
+        const pos = self.got.pos;
+        try fbuf.print("{}:{} Unexpected token: {s}, expected one of: ", .{ pos.line, pos.column, self.got.kind.fmt() });
         for (0..self.expected_len) |i| {
             try fbuf.print("{s}", .{self.expected[i].fmt()});
             if (i + 1 != self.expected_len) {
@@ -66,7 +67,7 @@ pub const LexerError = struct {
     got: Token,
 
     pub fn fmt(self: *const LexerError, fbuf: anytype) !void {
-        try fbuf.writeAll("Lexer error: ");
+        try fbuf.print("{}:{} Lexer error: {s}", .{ self.got.pos.line, self.got.pos.column, self.got.kind.fmt() });
         try self.got.fmt(fbuf);
     }
 
