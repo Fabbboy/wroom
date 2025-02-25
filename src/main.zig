@@ -8,7 +8,7 @@ const Parser = @import("Parser/Parser.zig");
 const Sema = @import("Sema/Sema.zig");
 
 pub fn main() !void {
-    const source = "let x: float = 3 * 2 + 1 * 2.2";
+    const source = "let y = 12.2 let x = y * 2 + 1 * 2.2";
     var gpa = std.heap.GeneralPurposeAllocator(.{
         .verbose_log = true,
         .enable_memory_limit = true,

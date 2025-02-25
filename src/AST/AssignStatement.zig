@@ -35,6 +35,10 @@ pub fn setType(self: *Self, ty: ValueType) void {
     self.type = ty;
 }
 
+pub fn getType(self: *const Self) ValueType {
+    return self.type;
+}
+
 pub fn deinit(self: *const Self) void {
     self.value.deinit();
 }

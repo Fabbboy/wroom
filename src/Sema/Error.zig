@@ -11,6 +11,7 @@ pub const SemaStatus = error{
 pub const SemaError = union(enum) {
     SymbolAlreadyDeclared: SymbolAlreadyDeclared,
     TypeMismatch: TypeMismatch,
+    SymbolUndefined: SymbolUndefined,
 
     pub fn init_symbol_already_declared(name: []const u8, pos: Position) SemaError {
         return SemaError{ .SymbolAlreadyDeclared = SymbolAlreadyDeclared.init(name, pos) };
@@ -20,10 +21,15 @@ pub const SemaError = union(enum) {
         return SemaError{ .TypeMismatch = TypeMismatch.init(lhs, rhs, pos) };
     }
 
+    pub fn init_symbol_undefined(name: []const u8, pos: Position) SemaError {
+        return SemaError{ .SymbolUndefined = SymbolUndefined.init(name, pos) };
+    }
+
     pub fn fmt(self: *const SemaError, fbuf: anytype) !void {
         switch (self.*) {
             SemaError.SymbolAlreadyDeclared => try self.SymbolAlreadyDeclared.fmt(fbuf),
             SemaError.TypeMismatch => try self.TypeMismatch.fmt(fbuf),
+            SemaError.SymbolUndefined => try self.SymbolUndefined.fmt(fbuf),
         }
     }
 };
@@ -59,5 +65,21 @@ pub const SymbolAlreadyDeclared = struct {
 
     pub fn fmt(self: *const SymbolAlreadyDeclared, fbuf: anytype) !void {
         try fbuf.print("{}:{} Symbol already declared: '{s}'", .{ self.pos.line, self.pos.column, self.name });
+    }
+};
+
+pub const SymbolUndefined = struct {
+    name: []const u8,
+    pos: Position,
+
+    pub fn init(name: []const u8, pos: Position) SymbolUndefined {
+        return SymbolUndefined{
+            .name = name,
+            .pos = pos,
+        };
+    }
+
+    pub fn fmt(self: *const SymbolUndefined, fbuf: anytype) !void {
+        try fbuf.print("{}:{} Symbol undefined: '{s}'", .{ self.pos.line, self.pos.column, self.name });
     }
 };

@@ -6,21 +6,26 @@ const BinaryExpr = @import("BinaryExpr.zig");
 const Token = @import("../Parser/Token.zig");
 const ValueType = Token.ValueType;
 
+const VariableExpr = @import("VariableExpr.zig");
+
 const Position = @import("../Parser/Position.zig");
 
 pub const ExprKind = enum {
     Literal,
     Binary,
+    Variable,
 };
 
 pub const ExprData = union(ExprKind) {
     Literal: LiteralExpr,
     Binary: BinaryExpr,
+    Variable: VariableExpr,
 
     pub fn deinit(self: *ExprData, allocator: mem.Allocator) void {
         switch (self.*) {
             ExprKind.Binary => self.Binary.deinit(),
             ExprKind.Literal => {},
+            ExprKind.Variable => {},
         }
         allocator.destroy(self);
     }
@@ -42,10 +47,17 @@ pub const Expr = struct {
         return Expr{ .data = bin_data, .allocator = allocator };
     }
 
+    pub fn init_variable(name: Token, allocator: mem.Allocator) !Expr {
+        const var_data = try allocator.create(ExprData);
+        var_data.* = ExprData{ .Variable = VariableExpr.init(name) };
+        return Expr{ .data = var_data, .allocator = allocator };
+    }
+
     pub fn fmt(self: *const Expr, fbuf: anytype) !void {
         return switch (self.data.*) {
             ExprKind.Literal => self.data.Literal.fmt(fbuf),
             ExprKind.Binary => self.data.Binary.fmt(fbuf),
+            ExprKind.Variable => self.data.Variable.fmt(fbuf),
         };
     }
 
@@ -57,6 +69,7 @@ pub const Expr = struct {
         return switch (self.data.*) {
             ExprKind.Literal => self.data.Literal.start(),
             ExprKind.Binary => self.data.Binary.start(),
+            ExprKind.Variable => self.data.Variable.start(),
         };
     }
 
@@ -64,6 +77,7 @@ pub const Expr = struct {
         return switch (self.data.*) {
             ExprKind.Literal => self.data.Literal.stop(),
             ExprKind.Binary => self.data.Binary.stop(),
+            ExprKind.Variable => self.data.Variable.stop(),
         };
     }
 
@@ -71,6 +85,7 @@ pub const Expr = struct {
         return switch (self.data.*) {
             ExprKind.Literal => self.data.Literal.pos(),
             ExprKind.Binary => self.data.Binary.pos(),
+            ExprKind.Variable => self.data.Variable.pos(),
         };
     }
 };
