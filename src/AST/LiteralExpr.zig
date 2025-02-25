@@ -13,15 +13,11 @@ value_type: ValueType,
 position: Position,
 
 pub fn init(val: Token) Self {
-    return Self{
-        .val = val,
-        .value_type = switch (val.kind) {
-            TokenKind.Int => ValueType.Int,
-            TokenKind.Float => ValueType.Float,
-            else => ValueType.Untyped,
-        },
-        .position = val.pos
-    };
+    return Self{ .val = val, .value_type = switch (val.kind) {
+        TokenKind.Int => ValueType.Int,
+        TokenKind.Float => ValueType.Float,
+        else => ValueType.Untyped,
+    }, .position = val.pos };
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
@@ -30,10 +26,14 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try fbuf.print(", value_type: {} }}", .{self.value_type});
 }
 
-pub fn start(self: *const Self) Position {
-    return self.position;
+pub fn start(self: *const Self) usize {
+    return self.position.start;
 }
 
-pub fn stop(self: *const Self) Position {
+pub fn stop(self: *const Self) usize {
+    return self.position.end;
+}
+
+pub fn pos(self: *const Self) Position {
     return self.position;
 }

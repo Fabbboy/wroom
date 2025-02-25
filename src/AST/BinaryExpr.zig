@@ -40,10 +40,14 @@ pub fn deinit(self: *Self) void {
     self.lhs.deinit();
 }
 
-pub fn start(self: *Self) Position {
+pub fn start(self: *Self) usize {
     return self.lhs.start();
 }
 
-pub fn stop(self: *Self) Position {
+pub fn stop(self: *Self) usize {
     return self.rhs.stop();
+}
+
+pub fn pos(self: *const Self) Position {
+    return Position.init(self.lhs.pos().line, self.lhs.pos().column, self.lhs.start(), self.rhs.stop());
 }

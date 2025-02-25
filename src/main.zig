@@ -60,7 +60,7 @@ pub fn main() !void {
         try glbl.fmt(buf_writer);
         std.debug.print("{s}\n", .{buf.items});
         buf.clearRetainingCapacity();
-        const range = source[glbl.start().start..glbl.stop().end];
+        const range = source[glbl.start()..glbl.stop()];
         std.debug.print("Source: {s}\n", .{range});
     }
 

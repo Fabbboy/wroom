@@ -53,17 +53,24 @@ pub const Expr = struct {
         self.data.deinit(self.allocator);
     }
 
-    pub fn start(self: *const Expr) Position {
+    pub fn start(self: *const Expr) usize {
         return switch (self.data.*) {
             ExprKind.Literal => self.data.Literal.start(),
             ExprKind.Binary => self.data.Binary.start(),
         };
     }
 
-    pub fn stop(self: *const Expr) Position {
+    pub fn stop(self: *const Expr) usize {
         return switch (self.data.*) {
             ExprKind.Literal => self.data.Literal.stop(),
             ExprKind.Binary => self.data.Binary.stop(),
+        };
+    }
+
+    pub fn pos(self: *const Expr) Position {
+        return switch (self.data.*) {
+            ExprKind.Literal => self.data.Literal.pos(),
+            ExprKind.Binary => self.data.Binary.pos(),
         };
     }
 };

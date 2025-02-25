@@ -65,7 +65,7 @@ fn infer_expr(self: *Self, expr: *const Expr) ValueType {
 fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
     if (self.currentScope.find(variable.ident.lexeme)) |f| {
         _ = f;
-        try self.errs.append(SemaError.init_symbol_already_declared(variable.ident.lexeme, variable.start()));
+        try self.errs.append(SemaError.init_symbol_already_declared(variable.ident.lexeme, variable.pos()));
         return error.NotGood;
     }
 
@@ -77,7 +77,7 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
     }
 
     if (variable.type != val_type) {
-        try self.errs.append(SemaError.init_type_mismatch(variable.type, val_type, variable.start()));
+        try self.errs.append(SemaError.init_type_mismatch(variable.type, val_type, variable.pos()));
         return error.NotGood;
     }
 }

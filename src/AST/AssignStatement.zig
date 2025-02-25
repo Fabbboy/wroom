@@ -39,10 +39,14 @@ pub fn deinit(self: *const Self) void {
     self.value.deinit();
 }
 
-pub fn start(self: *const Self) Position {
-    return self.ident.pos;
+pub fn start(self: *const Self) usize {
+    return self.ident.pos.start;
 }
 
-pub fn stop(self: *const Self) Position {
+pub fn stop(self: *const Self) usize {
     return self.value.stop();
+}
+
+pub fn pos(self: *const Self) Position {
+    return Position.init(self.ident.pos.line, self.ident.pos.column, self.start(), self.stop());
 }
