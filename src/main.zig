@@ -8,7 +8,7 @@ const Parser = @import("Parser/Parser.zig");
 const Sema = @import("Sema/Sema.zig");
 
 pub fn main() !void {
-    const source = "let y = 12.2 let x = y * 2 + 1 * 2.2";
+    const source = "func main() int";
     var gpa = std.heap.GeneralPurposeAllocator(.{
         .verbose_log = true,
         .enable_memory_limit = true,
@@ -61,6 +61,14 @@ pub fn main() !void {
         std.debug.print("{s}\n", .{buf.items});
         buf.clearRetainingCapacity();
         const range = source[glbl.start()..glbl.stop()];
+        std.debug.print("Source: {s}\n", .{range});
+    }
+
+    for (ast.functions.items) |func| {
+        try func.fmt(buf_writer);
+        std.debug.print("{s}\n", .{buf.items});
+        buf.clearRetainingCapacity();
+        const range = source[func.start()..func.stop()];
         std.debug.print("Source: {s}\n", .{range});
     }
 

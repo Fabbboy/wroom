@@ -5,6 +5,8 @@ const Token = @import("Token.zig");
 const TokenKind = Token.TokenKind;
 const ValueType = Token.ValueType;
 
+const Position = @import("Position.zig");
+
 const Lexer = @import("Lexer.zig");
 const Ast = @import("Ast.zig");
 
@@ -15,6 +17,8 @@ const ExprKind = ExprNs.ExprKind;
 
 const BinaryExpr = @import("../AST/BinaryExpr.zig");
 const OperatorType = BinaryExpr.OperatorType;
+
+const FunctionDecl = @import("../AST/FunctionDecl.zig");
 
 const Error = @import("Error.zig");
 const ParseError = Error.ParseError;
@@ -188,10 +192,23 @@ pub fn parseAssignStmt(self: *Self) ParseStatus!AssignStatement {
     return AssignStatement.init(ident, ty, value);
 }
 
+pub fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
+    const name = try self.next(&[_]TokenKind{TokenKind.Ident});
+    _ = try self.next(&[_]TokenKind{TokenKind.LParen});
+    //handle params
+    _ = try self.next(&[_]TokenKind{TokenKind.RParen});
+    const ftype = try self.next(&[_]TokenKind{TokenKind.Type});
+    //handle body
+
+    var final_pos = name.pos;
+    final_pos.end = ftype.pos.end;
+    return FunctionDecl.init(name, ftype.data.?.Type, final_pos);
+}
+
 pub fn parse(self: *Self) ParseStatus!void {
     var hasErr = false;
 
-    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.EOF };
+    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.EOF, TokenKind.Func };
     while (true) {
         const tok = self.next(&tl_expected) catch {
             hasErr = true;
@@ -212,6 +229,17 @@ pub fn parse(self: *Self) ParseStatus!void {
                 };
 
                 self.ast.pushGlobal(stmt) catch {
+                    continue;
+                };
+            },
+            TokenKind.Func => {
+                const func = self.parseFunctionDecl() catch {
+                    hasErr = true;
+                    self.sync(&tl_expected);
+                    continue;
+                };
+
+                self.ast.pushFunction(func) catch {
                     continue;
                 };
             },
