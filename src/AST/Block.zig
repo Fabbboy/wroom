@@ -36,5 +36,5 @@ pub fn stop(self: *const Self) usize {
 }
 
 pub fn pos(self: *const Self) Stmt.Position {
-    return self.stmts.items[0].pos();
+    return self.stmts.items[0].position();
 }

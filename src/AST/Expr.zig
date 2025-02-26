@@ -100,7 +100,7 @@ pub const Expr = struct {
             ExprKind.Literal => self.data.Literal.pos(),
             ExprKind.Binary => self.data.Binary.pos(),
             ExprKind.Variable => self.data.Variable.pos(),
-            ExprKind.Parameter => self.data.Parameter.pos(),
+            ExprKind.Parameter => self.data.Parameter.position(),
         };
     }
 };

@@ -64,7 +64,7 @@ fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
         ExprKind.Variable => {
             const fvar = expr.data.Variable;
             if (self.currentScope.find(fvar.name.lexeme)) |f| {
-                return f.getType();
+                return f;
             }
             try self.errs.append(SemaError.init_symbol_undefined(fvar.name.lexeme, fvar.pos()));
             return error.NotGood;
@@ -80,7 +80,7 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
         return error.NotGood;
     }
 
-    try self.currentScope.push(variable.ident.lexeme, variable);
+    try self.currentScope.push(variable.ident.lexeme, variable.getType());
 
     const val_type = try self.infer_expr(&variable.value);
     if (variable.type == ValueType.Untyped) {
@@ -88,7 +88,7 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
     }
 
     if (variable.type != val_type) {
-        try self.errs.append(SemaError.init_type_mismatch(variable.type, val_type, variable.pos()));
+        try self.errs.append(SemaError.init_type_mismatch(variable.getType(), val_type, variable.pos()));
         return error.NotGood;
     }
 }
@@ -101,6 +101,16 @@ fn analyze_function(self: *Self, func: *FunctionDecl) SemaStatus!void {
     }
 
     try self.currentScope.pushFunc(func);
+
+    for (func.params.items) |*param| {
+        if (self.currentScope.find(param.ident.lexeme)) |f| {
+            _ = f;
+            try self.errs.append(SemaError.init_symbol_already_declared(param.ident.lexeme, param.pos()));
+            return error.NotGood;
+        }
+
+        try self.currentScope.push(param.ident.lexeme, param.getType());
+    }
 }
 
 pub fn analyze(self: *Self) SemaStatus!void {

@@ -6,13 +6,13 @@ const Position = @import("../Parser/Position.zig");
 const Self = @This();
 
 ident: Token,
-pos: Position,
+position: Position,
 type: ValueType,
 
 pub fn init(ident: Token, _pos: Position, ty: ValueType) Self {
     return Self{
         .ident = ident,
-        .pos = _pos,
+        .position = _pos,
         .type = ty,
     };
 }
@@ -25,15 +25,18 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try fbuf.writeAll(" }");
 }
 
+pub fn getType(self: *const Self) ValueType {
+    return self.type;
+}
+
 pub fn start(self: *const Self) usize {
-    return self.pos.start;
+    return self.position.start;
 }
 
 pub fn stop(self: *const Self) usize {
-    return self.pos.end;
+    return self.position.end;
 }
 
 pub fn pos(self: *const Self) Position {
-    return self.pos;
+    return self.position;
 }
-
