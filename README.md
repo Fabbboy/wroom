@@ -9,3 +9,4 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 - Parse parameters
 - Add void type
 - Add checking for void type
+- Variable shadowing
