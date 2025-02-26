@@ -11,7 +11,7 @@ const IRModule = @import("IR/Module.zig");
 const IRGen = @import("IR/IRGen.zig");
 
 pub fn main() !void {
-    const source = "let heyy = 123 let hey = heyy + 2.2";
+    const source = "let test = 123 let test2 = test / 2.0 let test3 = test / 2";
     var gpa = std.heap.GeneralPurposeAllocator(.{
         .verbose_log = true,
         .enable_memory_limit = true,

@@ -15,7 +15,7 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 - [X] Assign to already declared variable
 - [X] Illegal assignment on undeclared variable 
 - [ ] Fix case where position is 0 because body is empty
-- [ ] Costexpr doesn't really allow implicit floats anymore
+- [X] ~~Costexpr doesn't really allow implicit floats anymore~~ => is actually expected behaviour
 - [~] Fix constant expr on division => 
 ```
 2 * 5 + 2 * 3 / 2 = 12
