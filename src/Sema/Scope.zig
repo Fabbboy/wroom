@@ -11,14 +11,14 @@ const Self = @This();
 
 parent: ?*Self,
 symbols: std.StringHashMap(ValueType),
-functions: std.StringHashMap(*FunctionDecl),
+functions: std.StringHashMap(*const FunctionDecl),
 allocator: mem.Allocator,
 
 pub fn init(allocator: mem.Allocator, parent: ?*Self) !*Self {
     const self = try allocator.create(Self);
     self.parent = parent;
     self.symbols = std.StringHashMap(ValueType).init(allocator);
-    self.functions = std.StringHashMap(*FunctionDecl).init(allocator);
+    self.functions = std.StringHashMap(*const FunctionDecl).init(allocator);
     self.allocator = allocator;
     return self;
 }
@@ -35,7 +35,7 @@ pub fn find(self: *Self, name: []const u8) ?ValueType {
     return null;
 }
 
-pub fn findFunc(self: *Self, name: []const u8) ?*FunctionDecl {
+pub fn findFunc(self: *Self, name: []const u8) ?*const FunctionDecl {
     if (self.functions.contains(name)) {
         return self.functions.get(name);
     }
@@ -51,7 +51,7 @@ pub fn push(self: *Self, name: []const u8, value: ValueType) !void {
     try self.symbols.put(name, value);
 }
 
-pub fn pushFunc(self: *Self, func: *FunctionDecl) !void {
+pub fn pushFunc(self: *Self, func: *const FunctionDecl) !void {
     try self.functions.put(func.name.lexeme, func);
 }
 

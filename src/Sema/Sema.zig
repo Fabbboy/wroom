@@ -16,6 +16,10 @@ const ExprKind = ExprNs.ExprKind;
 
 const FunctionDecl = @import("../AST/FunctionDecl.zig");
 
+const Block = @import("../AST/Block.zig");
+
+const Stmt = @import("../AST/Stmt.zig").Stmt;
+
 const Scope = @import("Scope.zig");
 
 const Self = @This();
@@ -43,7 +47,7 @@ fn popScope(self: *Self) void {
     while (iter.next()) |entry| {
         const key = entry.key_ptr.*;
         const value = entry.value_ptr.*;
-        std.debug.print("Popping scope: {s} {s}\n", .{key, value.fmt()});
+        std.debug.print("Popping scope: {s} {s}\n", .{ key, value.fmt() });
     }
 
     if (self.currentScope.parent) |parent| {
@@ -112,7 +116,7 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
     }
 }
 
-fn analyze_function(self: *Self, func: *FunctionDecl) SemaStatus!void {
+fn analyze_function(self: *Self, func: *const FunctionDecl) SemaStatus!void {
     if (self.currentScope.findFunc(func.name.lexeme)) |f| {
         _ = f;
         try self.errs.append(SemaError.init_symbol_already_declared(func.name.lexeme, func.pos()));
@@ -121,6 +125,7 @@ fn analyze_function(self: *Self, func: *FunctionDecl) SemaStatus!void {
 
     try self.currentScope.pushFunc(func);
     try self.pushScope();
+    defer self.popScope();
 
     for (func.params.items) |*param| {
         if (self.currentScope.find(param.ident.lexeme)) |f| {
@@ -132,7 +137,39 @@ fn analyze_function(self: *Self, func: *FunctionDecl) SemaStatus!void {
         try self.currentScope.push(param.ident.lexeme, param.getType());
     }
 
-    self.popScope();
+    if (func.body) |body| {
+        self.analyze_block(&body, false) catch {
+            return error.NotGood;
+        };
+    }
+}
+
+fn analyze_block(self: *Self, block: *const Block, needs_scope: bool) SemaStatus!void {
+    var hasErr = false;
+    if (needs_scope) {
+        try self.pushScope();
+    }
+
+    for (block.stmts.items) |*stmt| {
+        self.analyze_statement(stmt) catch {
+            hasErr = true;
+            continue;
+        };
+    }
+
+    if (needs_scope) {
+        self.popScope();
+    }
+
+    if (hasErr) {
+        return error.NotGood;
+    }
+}
+
+fn analyze_statement(self: *Self, stmt: *Stmt) SemaStatus!void {
+    return switch (stmt.*) {
+        Stmt.AssignStatement => self.analyze_variable(&stmt.AssignStatement),
+    };
 }
 
 pub fn analyze(self: *Self) SemaStatus!void {
