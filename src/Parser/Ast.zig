@@ -20,6 +20,14 @@ pub fn init(allocator: mem.Allocator) Self {
     };
 }
 
+pub fn getGlobals(self: *const Self) *const []AssignStatement {
+    return &self.globals.items;
+}
+
+pub fn getFunctions(self: *const Self) *const []FunctionDecl {
+    return &self.functions.items;
+}
+
 pub fn pushGlobal(self: *Self, assign: AssignStatement) !void {
     try self.globals.append(assign);
 }

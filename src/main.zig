@@ -51,7 +51,7 @@ pub fn main() !void {
     defer sema.deinit();
     sema.analyze() catch {
         const errs = sema.getErrs();
-        for (errs.items) |err| {
+        for (errs.*) |err| {
             try err.fmt(buf_writer);
             std.debug.print("{s}\n", .{buf.items});
             buf.clearRetainingCapacity();
@@ -61,7 +61,8 @@ pub fn main() !void {
         return;
     };
 
-    for (ast.globals.items) |glbl| {
+    const globals = ast.getGlobals();
+    for (globals.*) |glbl| {
         try glbl.fmt(buf_writer);
         std.debug.print("{s}\n", .{buf.items});
         buf.clearRetainingCapacity();
@@ -69,7 +70,8 @@ pub fn main() !void {
         std.debug.print("Source: {s}\n", .{range});
     }
 
-    for (ast.functions.items) |func| {
+    const functions = ast.getFunctions();
+    for (functions.*) |func| {
         try func.fmt(buf_writer);
         std.debug.print("{s}\n", .{buf.items});
         buf.clearRetainingCapacity();

@@ -57,8 +57,8 @@ fn popScope(self: *Self) void {
     }
 }
 
-pub fn getErrs(self: *const Self) *const std.ArrayList(SemaError) {
-    return &self.errs;
+pub fn getErrs(self: *const Self) *const []SemaError {
+    return &self.errs.items;
 }
 
 fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {

@@ -14,5 +14,6 @@ pub fn init(ast: *const Ast, module: *Module) Self {
 }
 
 pub fn generate(self: *const Self) !void {
-    _ = self;
+    const globals = self.ast.getGlobals();
+    _ = globals;
 }
