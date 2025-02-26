@@ -49,6 +49,10 @@ pub fn getName(self: *const Self) *const Token {
     return &self.ident;
 }
 
+pub fn getValue(self: *const Self) *const Expr {
+    return &self.value;
+}
+
 pub fn deinit(self: *const Self) void {
     self.value.deinit();
 }
