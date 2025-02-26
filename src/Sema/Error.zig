@@ -12,6 +12,7 @@ pub const SemaError = union(enum) {
     SymbolAlreadyDeclared: SymbolAlreadyDeclared,
     TypeMismatch: TypeMismatch,
     SymbolUndefined: SymbolUndefined,
+    IllegalAssignment: IllegalAssignment,
 
     pub fn init_symbol_already_declared(name: []const u8, pos: Position) SemaError {
         return SemaError{ .SymbolAlreadyDeclared = SymbolAlreadyDeclared.init(name, pos) };
@@ -25,11 +26,16 @@ pub const SemaError = union(enum) {
         return SemaError{ .SymbolUndefined = SymbolUndefined.init(name, pos) };
     }
 
+    pub fn init_illegal_assignment(pos: Position) SemaError {
+        return SemaError{ .IllegalAssignment = IllegalAssignment.init(pos) };
+    }
+
     pub fn fmt(self: *const SemaError, fbuf: anytype) !void {
         switch (self.*) {
             SemaError.SymbolAlreadyDeclared => try self.SymbolAlreadyDeclared.fmt(fbuf),
             SemaError.TypeMismatch => try self.TypeMismatch.fmt(fbuf),
             SemaError.SymbolUndefined => try self.SymbolUndefined.fmt(fbuf),
+            SemaError.IllegalAssignment => try self.IllegalAssignment.fmt(fbuf),
         }
     }
 };
@@ -81,5 +87,19 @@ pub const SymbolUndefined = struct {
 
     pub fn fmt(self: *const SymbolUndefined, fbuf: anytype) !void {
         try fbuf.print("{}:{} Symbol undefined: '{s}'", .{ self.pos.line, self.pos.column, self.name });
+    }
+};
+
+pub const IllegalAssignment = struct {
+    pos: Position,
+
+    pub fn init(pos: Position) IllegalAssignment {
+        return IllegalAssignment{
+            .pos = pos,
+        };
+    }
+
+    pub fn fmt(self: *const IllegalAssignment, fbuf: anytype) !void {
+        try fbuf.print("{}:{} Illegal assignment", .{ self.pos.line, self.pos.column });
     }
 };

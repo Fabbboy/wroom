@@ -120,6 +120,12 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
         return error.NotGood;
     }
 
+    const assign = variable.assign_type;
+    if (assign != Token.OperatorType.Assign) {
+        try self.errs.append(SemaError.init_illegal_assignment(variable.pos()));
+        return error.NotGood;
+    }
+
     const val_type = try self.infer_expr(&variable.value);
     if (variable.type == ValueType.Untyped) {
         variable.setType(val_type);
