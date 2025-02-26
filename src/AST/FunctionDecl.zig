@@ -14,7 +14,7 @@ name: Token,
 position: Position,
 ret_type: ValueType,
 params: std.ArrayList(ParameterExpr),
-block: ?Block,
+body: ?Block,
 
 pub fn init(name: Token, ret_type: ValueType, params: std.ArrayList(ParameterExpr), block: ?Block, position: Position) Self {
     return Self{
@@ -22,7 +22,7 @@ pub fn init(name: Token, ret_type: ValueType, params: std.ArrayList(ParameterExp
         .ret_type = ret_type,
         .position = position,
         .params = params,
-        .block = block,
+        .body = block,
     };
 }
 
@@ -36,7 +36,7 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
         try param.fmt(fbuf);
         try fbuf.writeAll(", ");
     }
-    if (self.block) |block| {
+    if (self.body) |block| {
         try fbuf.writeAll("], block: ");
         try block.fmt(fbuf);
         try fbuf.writeAll(" }");
@@ -59,7 +59,7 @@ pub fn pos(self: *const Self) Position {
 
 pub fn deinit(self: *const Self) void {
     self.params.deinit();
-    if (self.block) |block| {
+    if (self.body) |block| {
         block.deinit();
     }
 }
