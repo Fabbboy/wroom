@@ -22,5 +22,9 @@ pub fn SymTable(comptime T: type) type {
         pub fn insert(self: *Self, key: []const u8, value: T) !void {
             try self.table.put(key, value);
         }
+
+        pub fn get(self: *const Self, key: []const u8) ?*T {
+            return self.table.getPtr(key);
+        }
     };
 }

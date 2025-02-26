@@ -28,10 +28,11 @@ pub fn init(ast: *const Ast, module: *Module) Self {
     };
 }
 
-fn compileExpr(expr: *const Expr) IRStatus!IRValue {
-    switch (expr.data.*) {
+fn compileConstantExpr(self: *const Self, expr: *const Expr) IRStatus!IRValue {
+    const data = expr.data.*;
+    switch (data) {
         ExprKind.Literal => {
-            const literal = expr.*.data.Literal;
+            const literal = data.Literal;
             switch (literal.value_type) {
                 ValueType.Float => {
                     const value = try fmt.parseFloat(f64, literal.val.lexeme);
@@ -44,6 +45,14 @@ fn compileExpr(expr: *const Expr) IRStatus!IRValue {
                 else => @panic("Unsupported literal type"),
             }
         },
+        ExprKind.Variable => {
+            const name = data.Variable.name.lexeme;
+            const variable = self.module.globals.get(name);
+            if (variable) |v| {
+                return v.initializer;
+            }
+            @panic("Internal: Variable not found");
+        },
         else => @panic("Unsupported expression type"),
     }
 }
@@ -54,7 +63,7 @@ pub fn generate(self: *const Self) IRStatus!void {
         const name = glbl.getName().lexeme;
         const ty = glbl.getType();
 
-        const initializer = try compileExpr(glbl.getValue());
+        const initializer = try self.compileConstantExpr(glbl.getValue());
 
         const variable = Variable.init(initializer, ty);
         try self.module.globals.insert(name, variable);
