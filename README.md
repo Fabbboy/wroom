@@ -11,6 +11,6 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 - [ ] Add void type
 - [ ] Add checking for void type
 - [ ] Variable shadowing
-- [ ] Return statement
+- [X] Return statement
 - [X] Assign to already declared variable
 - [X] Illegal assignment on undeclared variable 

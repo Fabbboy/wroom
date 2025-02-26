@@ -30,23 +30,23 @@ pub const Stmt = union(enum) {
     }
 
     pub fn start(self: *const Stmt) usize {
-        switch (self.*) {
+        return switch (self.*) {
             Stmt.AssignStatement => self.AssignStatement.start(),
             Stmt.ReturnStatement => self.ReturnStatement.start(),
-        }
+        };
     }
 
     pub fn stop(self: *const Stmt) usize {
-        switch (self.*) {
+        return switch (self.*) {
             Stmt.AssignStatement => self.AssignStatement.stop(),
             Stmt.ReturnStatement => self.ReturnStatement.stop(),
-        }
+        };
     }
 
     pub fn pos(self: *const Stmt) Position {
-        switch (self.*) {
+        return switch (self.*) {
             Stmt.AssignStatement => self.AssignStatement.pos(),
             Stmt.ReturnStatement => self.ReturnStatement.pos(),
-        }
+        };
     }
 };
