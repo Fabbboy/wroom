@@ -14,6 +14,8 @@ const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
 const ExprKind = ExprNs.ExprKind;
 
+const FunctionDecl = @import("../AST/FunctionDecl.zig");
+
 const Scope = @import("Scope.zig");
 
 const Self = @This();
@@ -91,12 +93,29 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
     }
 }
 
+fn analyze_function(self: *Self, func: *FunctionDecl) SemaStatus!void {
+    if (self.currentScope.findFunc(func.name.lexeme)) |f| {
+        _ = f;
+        try self.errs.append(SemaError.init_symbol_already_declared(func.name.lexeme, func.pos()));
+        return error.NotGood;
+    }
+
+    try self.currentScope.pushFunc(func);
+}
+
 pub fn analyze(self: *Self) SemaStatus!void {
     for (self.ast.globals.items) |*glbl| {
         self.analyze_variable(glbl) catch {
             continue;
         };
     }
+
+    for (self.ast.functions.items) |*func| {
+        self.analyze_function(func) catch {
+            continue;
+        };
+    }
+
     if (self.errs.items.len > 0) {
         return error.NotGood;
     }
