@@ -1,3 +1,6 @@
+const std = @import("std");
+const zfmt = std.fmt;
+
 const Self = @This();
 
 pub const Constant = union(enum) {
@@ -14,5 +17,16 @@ pub const Constant = union(enum) {
         return .{
             .Floating = value,
         };
+    }
+
+    pub fn fmt(self: *const Constant, fbuf: anytype) !void {
+        switch (self.*) {
+            .Integer => |value| {
+                try fbuf.print("{}", .{value});
+            },
+            .Floating => |value| {
+                try fbuf.print("{}", .{value});
+            },
+        }
     }
 };

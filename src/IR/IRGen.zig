@@ -42,18 +42,16 @@ fn compileConstantBinary(self: *const Self, binary: *const BinaryExpr) IRStatus!
     const rhs = try self.compileConstantExpr(binary.getRHS());
     const op = binary.op;
 
-    const clhs = lhs.constant;
-    const crhs = rhs.constant;
+    const clhs = lhs.Constant;
+    const crhs = rhs.Constant;
 
     switch (op) {
         OperatorType.Plus => return IRValue.init_constant(ConstExprAdd(clhs, crhs)),
         OperatorType.Minus => return IRValue.init_constant(ConstExprSub(clhs, crhs)),
         OperatorType.Star => return IRValue.init_constant(ConstExprMul(clhs, crhs)),
         OperatorType.Slash => return IRValue.init_constant(ConstExprDiv(clhs, crhs)),
-        else => @panic("Unsupported operator"),
+        else => unreachable,
     }
-
-    @panic("Not implemented");
 }
 
 fn compileConstantExpr(self: *const Self, expr: *const Expr) IRStatus!IRValue {
@@ -95,6 +93,15 @@ pub fn generate(self: *const Self) IRStatus!void {
         const ty = glbl.getType();
 
         const initializer = try self.compileConstantExpr(glbl.getValue());
+
+        var fmt_buf: [4096]u8 = undefined;
+        var fixed_buf_allocator = std.heap.FixedBufferAllocator.init(fmt_buf[0..]);
+        var buf = std.ArrayList(u8).init(fixed_buf_allocator.allocator());
+        defer buf.deinit();
+        const buf_writer = buf.writer();
+
+        try initializer.fmt(buf_writer);
+        std.debug.print("{s}\n", .{buf.items});
 
         const variable = Variable.init(initializer, ty);
         try self.module.globals.insert(name, variable);

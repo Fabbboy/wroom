@@ -114,11 +114,20 @@ fn sync(self: *Self, expected: []const TokenKind) void {
 }
 
 fn parseFactor(self: *Self) ParseStatus!Expr {
-    const tok = try self.next(&[_]TokenKind{ TokenKind.Int, TokenKind.Float, TokenKind.Ident });
+    const tok = try self.next(&[_]TokenKind{ TokenKind.Int, TokenKind.Float, TokenKind.Ident, TokenKind.LParen });
 
     switch (tok.kind) {
         TokenKind.Int, TokenKind.Float => return Expr.init_literal(tok, self.allocator),
         TokenKind.Ident => return Expr.init_variable(tok, self.allocator),
+        TokenKind.LParen => {
+            const expr = self.parseExpr() catch {
+                return error.NotGood;
+            };
+
+            _ = try self.next(&[_]TokenKind{TokenKind.RParen});
+
+            return expr;
+        },
         else => unreachable,
     }
 }
