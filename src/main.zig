@@ -11,7 +11,7 @@ const IRModule = @import("IR/Module.zig");
 const IRGen = @import("IR/IRGen.zig");
 
 pub fn main() !void {
-    const source = "func hell() void { return null }";
+    const source = "func hell() void { let hell = 123 return null }";
     var gpa = std.heap.GeneralPurposeAllocator(.{
         .verbose_log = true,
         .enable_memory_limit = true,
@@ -85,7 +85,6 @@ pub fn main() !void {
     try generator.generate();
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
-    std.debug.print("Zig: {}\n", .{@as(i64, @intFromFloat(2 * 5 + 2 * 3 / 2))});
 }
 
 test {

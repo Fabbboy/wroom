@@ -13,6 +13,7 @@ pub const SemaError = union(enum) {
     TypeMismatch: TypeMismatch,
     SymbolUndefined: SymbolUndefined,
     IllegalAssignment: IllegalAssignment,
+    CannotAssignToVoid: CannotAssignToVoid,
 
     pub fn init_symbol_already_declared(name: []const u8, pos: Position) SemaError {
         return SemaError{ .SymbolAlreadyDeclared = SymbolAlreadyDeclared.init(name, pos) };
@@ -30,12 +31,17 @@ pub const SemaError = union(enum) {
         return SemaError{ .IllegalAssignment = IllegalAssignment.init(pos) };
     }
 
+    pub fn init_cannot_assign_to_void(pos: Position) SemaError {
+        return SemaError{ .CannotAssignToVoid = CannotAssignToVoid.init(pos) };
+    }
+
     pub fn fmt(self: *const SemaError, fbuf: anytype) !void {
         switch (self.*) {
             SemaError.SymbolAlreadyDeclared => try self.SymbolAlreadyDeclared.fmt(fbuf),
             SemaError.TypeMismatch => try self.TypeMismatch.fmt(fbuf),
             SemaError.SymbolUndefined => try self.SymbolUndefined.fmt(fbuf),
             SemaError.IllegalAssignment => try self.IllegalAssignment.fmt(fbuf),
+            SemaError.CannotAssignToVoid => try self.CannotAssignToVoid.fmt(fbuf),
         }
     }
 };
@@ -101,5 +107,19 @@ pub const IllegalAssignment = struct {
 
     pub fn fmt(self: *const IllegalAssignment, fbuf: anytype) !void {
         try fbuf.print("{}:{} Illegal assignment", .{ self.pos.line, self.pos.column });
+    }
+};
+
+pub const CannotAssignToVoid = struct {
+    pos: Position,
+
+    pub fn init(pos: Position) CannotAssignToVoid {
+        return CannotAssignToVoid{
+            .pos = pos,
+        };
+    }
+
+    pub fn fmt(self: *const CannotAssignToVoid, fbuf: anytype) !void {
+        try fbuf.print("{}:{} Cannot assign to void", .{ self.pos.line, self.pos.column });
     }
 };

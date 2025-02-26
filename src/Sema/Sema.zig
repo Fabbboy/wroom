@@ -127,6 +127,11 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
     }
 
     const val_type = try self.infer_expr(&variable.value);
+    if(variable.type == ValueType.Void) {
+        try self.errs.append(SemaError.init_cannot_assign_to_void(variable.pos()));
+        return error.NotGood;
+    }
+
     if (variable.type == ValueType.Untyped) {
         variable.setType(val_type);
     }
