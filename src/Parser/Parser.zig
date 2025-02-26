@@ -209,7 +209,7 @@ pub fn parseAssignStmt(self: *Self) ParseStatus!AssignStatement {
 }
 
 fn parseBlock(self: *Self) ParseStatus!Block {
-    _ = try self.next(&[_]TokenKind{TokenKind.LBrace});
+    const lbrace = try self.next(&[_]TokenKind{TokenKind.LBrace});
 
     var stmts = std.ArrayList(Stmt).init(self.allocator);
     while (!self.peek(&[_]TokenKind{TokenKind.RBrace})) {
@@ -226,7 +226,7 @@ fn parseBlock(self: *Self) ParseStatus!Block {
 
     _ = try self.next(&[_]TokenKind{TokenKind.RBrace});
 
-    return Block.init(stmts);
+    return Block.init(stmts, lbrace.pos);
 }
 
 pub fn parseStatement(self: *Self) ParseStatus!Stmt {
@@ -270,7 +270,7 @@ pub fn parseStatement(self: *Self) ParseStatus!Stmt {
                 return error.NotGood;
             };
 
-            return Stmt.init_return(ReturnStatement.init(value));
+            return Stmt.init_return(ReturnStatement.init(value, tok.pos));
         },
         else => unreachable,
     }

@@ -5,9 +5,13 @@ const Expr = @import("Expr.zig").Expr;
 const Self = @This();
 
 value: Expr,
+position: Position,
 
-pub fn init(value: Expr) Self {
-    return .{ .value = value };
+pub fn init(value: Expr, position: Position) Self {
+    return .{
+        .value = value,
+        .position = position,
+    };
 }
 
 pub fn deinit(self: *const Self) void {
@@ -21,7 +25,7 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
 }
 
 pub fn start(self: *const Self) usize {
-    return self.value.start();
+    return self.position.start;
 }
 
 pub fn stop(self: *const Self) usize {
@@ -29,5 +33,5 @@ pub fn stop(self: *const Self) usize {
 }
 
 pub fn pos(self: *const Self) Position {
-    return self.value.pos();
+    return self.position;
 }
