@@ -37,9 +37,9 @@ pub fn init(ast: *const Ast, module: *Module) Self {
     };
 }
 
-fn compileConstantBinary(self: *const Self, binary: *const BinaryExpr) IRStatus!IRValue {
-    const lhs = try self.compileConstantExpr(binary.getLHS());
-    const rhs = try self.compileConstantExpr(binary.getRHS());
+fn compileConstantBinary(self: *const Self, binary: *const BinaryExpr, ty: ValueType) IRStatus!IRValue {
+    const lhs = try self.compileConstantExpr(binary.getLHS(), ty);
+    const rhs = try self.compileConstantExpr(binary.getRHS(), ty);
     const op = binary.op;
 
     const clhs = lhs.Constant;
@@ -54,7 +54,7 @@ fn compileConstantBinary(self: *const Self, binary: *const BinaryExpr) IRStatus!
     }
 }
 
-fn compileConstantExpr(self: *const Self, expr: *const Expr) IRStatus!IRValue {
+fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRStatus!IRValue {
     const data = expr.data.*;
     switch (data) {
         ExprKind.Literal => {
@@ -80,7 +80,7 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr) IRStatus!IRValue {
             @panic("Internal: Variable not found");
         },
         ExprKind.Binary => {
-            return try self.compileConstantBinary(&data.Binary);
+            return try self.compileConstantBinary(&data.Binary, ty);
         },
         else => @panic("Unsupported expression type"),
     }
@@ -92,16 +92,15 @@ pub fn generate(self: *const Self) IRStatus!void {
         const name = glbl.getName().lexeme;
         const ty = glbl.getType();
 
-        const initializer = try self.compileConstantExpr(glbl.getValue());
-
-        var fmt_buf: [4096]u8 = undefined;
-        var fixed_buf_allocator = std.heap.FixedBufferAllocator.init(fmt_buf[0..]);
-        var buf = std.ArrayList(u8).init(fixed_buf_allocator.allocator());
-        defer buf.deinit();
-        const buf_writer = buf.writer();
-
-        try initializer.fmt(buf_writer);
-        std.debug.print("{s}\n", .{buf.items});
+        var initializer = try self.compileConstantExpr(glbl.getValue(), ty);
+        switch (initializer.Constant) {
+            Constant.Floating => |value| {
+                if (ty == ValueType.Int) {
+                    initializer = IRValue.init_constant(Constant.Int(@as(i64, @intFromFloat(value))));
+                }
+            },
+            else => {},
+        }
 
         const variable = Variable.init(initializer, ty);
         try self.module.globals.insert(name, variable);

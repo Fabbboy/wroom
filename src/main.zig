@@ -85,6 +85,7 @@ pub fn main() !void {
     try generator.generate();
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
+    std.debug.print("Zig: {}\n", .{@as(i64, @intFromFloat(2 * 5 + 2 * 3 / 2))});
 }
 
 test {
