@@ -192,10 +192,10 @@ pub fn parseAssignStmt(self: *Self) ParseStatus!AssignStatement {
         }
     }
 
-    _ = try self.next(&[_]TokenKind{TokenKind.Assign});
+    const assign = try self.next(&[_]TokenKind{TokenKind.Assign});
     const value = try self.parseExpr();
 
-    return AssignStatement.init(ident, ty, value);
+    return AssignStatement.init(ident, ty, value, assign.data.?.Assign);
 }
 
 fn parseBlock(self: *Self) ParseStatus!Block {
@@ -220,7 +220,7 @@ fn parseBlock(self: *Self) ParseStatus!Block {
 }
 
 pub fn parseStatement(self: *Self) ParseStatus!Stmt {
-    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.EOF };
+    const tl_expected = [_]TokenKind{TokenKind.Let};
     const tok = try self.next(&tl_expected);
 
     switch (tok.kind) {

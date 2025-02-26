@@ -68,13 +68,31 @@ pub const ValueType = enum {
     }
 };
 
+pub const OperatorType = enum {
+    Assign,
+    Plus,
+    Minus,
+    Star,
+    Slash,
+
+    pub fn fmt(self: OperatorType) []const u8 {
+        return switch (self) {
+            OperatorType.Assign => "Assign",
+            OperatorType.Plus => "Plus",
+            OperatorType.Minus => "Minus",
+            OperatorType.Star => "Star",
+            OperatorType.Slash => "Slash",
+        };
+    }
+};
+
 pub const TokenData = union(TokenKind) {
     EOF: void,
     Invalid: void,
     Ident: void,
     Int: void,
     Float: void,
-    Assign: void,
+    Assign: OperatorType,
     Plus: void,
     Minus: void,
     Star: void,
@@ -140,4 +158,12 @@ pub const keywords = std.StaticStringMap(KeywordValue).initComptime(.{
     .{ "int", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.Int } } },
     .{ "float", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.Float } } },
     .{ "func", .{ .kind = TokenKind.Func, .data = null } },
+});
+
+pub const operators = std.StaticStringMap(OperatorType).initComptime(.{
+    .{ "+", OperatorType.Plus },
+    .{ "-", OperatorType.Minus },
+    .{ "*", OperatorType.Star },
+    .{ "/", OperatorType.Slash },
+    .{ "=", OperatorType.Assign },
 });

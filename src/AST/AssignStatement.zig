@@ -3,6 +3,8 @@ const mem = std.mem;
 
 const Token = @import("../Parser/Token.zig");
 const ValueType = Token.ValueType;
+const OperatorType = Token.OperatorType;
+
 const ExprNs = @import("Expr.zig");
 const Expr = ExprNs.Expr;
 const ExprKind = ExprNs.ExprKind;
@@ -14,20 +16,22 @@ const Self = @This();
 ident: Token,
 type: ValueType,
 value: Expr,
+assign_type: OperatorType,
 
-pub fn init(ident: Token, ty: ValueType, value: Expr) Self {
+pub fn init(ident: Token, ty: ValueType, value: Expr, assign_type: OperatorType) Self {
     return Self{
         .ident = ident,
         .type = ty,
         .value = value,
+        .assign_type = assign_type,
     };
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
-    try fbuf.print("AssignStatement{{ ident: {}, type: {}, value: ", .{ self.ident, self.type });
-
+    try fbuf.writeAll("AssignStatement{ ident: ");
+    try self.ident.fmt(fbuf);
+    try fbuf.print(", type: {s}, assign: {s},  value: ", .{ self.type.fmt(), self.assign_type.fmt() });
     try self.value.fmt(fbuf);
-
     try fbuf.writeAll(" }");
 }
 
