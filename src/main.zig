@@ -20,7 +20,9 @@ pub fn main() !void {
         }
     }
 
-    var buf = std.ArrayList(u8).init(gpa.allocator());
+    var fmt_buf: [4096]u8 = undefined;
+    var fixed_buf_allocator = std.heap.FixedBufferAllocator.init(fmt_buf[0..]);
+    var buf = std.ArrayList(u8).init(fixed_buf_allocator.allocator());
     defer buf.deinit();
     const buf_writer = buf.writer();
 

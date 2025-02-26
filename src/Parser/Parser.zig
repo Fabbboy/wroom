@@ -203,7 +203,11 @@ pub fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
         const param = try self.next(&[_]TokenKind{TokenKind.Ident});
         _ = try self.next(&[_]TokenKind{TokenKind.Colon});
         const ptype = try self.next(&[_]TokenKind{TokenKind.Type});
-        params.append(ParameterExpr.init(param, ptype.pos, ptype.data.?.Type)) catch {
+
+        var pos = param.pos;
+        pos.end = ptype.pos.end;
+
+        params.append(ParameterExpr.init(param, pos, ptype.data.?.Type)) catch {
             return error.NotGood;
         };
         if (self.peek(&[_]TokenKind{TokenKind.Comma})) {
