@@ -14,3 +14,13 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 - [X] Return statement
 - [X] Assign to already declared variable
 - [X] Illegal assignment on undeclared variable 
+- [ ] Fix constant expr on division => 
+```
+2 * 5 + 2 * 3 / 2 = 12
+
+truncation happens too early
+actual result: 13
+```
+
+### DO NOT 
+- Binary expressions in global scope with different types. IT WILL TRIGGER THE INCORRECT MATH GODS
