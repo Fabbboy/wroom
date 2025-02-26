@@ -97,18 +97,35 @@ fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
 }
 
 fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
+    if (!variable.new_var) {
+        const found: ?ValueType = self.currentScope.find(variable.ident.lexeme);
+        if (found == null) {
+            try self.errs.append(SemaError.init_symbol_undefined(variable.ident.lexeme, variable.pos()));
+            return error.NotGood;
+        }
+
+        const val_type = try self.infer_expr(&variable.value);
+        if (found != val_type) {
+            try self.errs.append(SemaError.init_type_mismatch(found.?, val_type, variable.pos()));
+            return error.NotGood;
+        }
+        variable.setType(found.?);
+
+        return;
+    }
+
     if (self.currentScope.find(variable.ident.lexeme)) |f| {
         _ = f;
         try self.errs.append(SemaError.init_symbol_already_declared(variable.ident.lexeme, variable.pos()));
         return error.NotGood;
     }
 
-    try self.currentScope.push(variable.ident.lexeme, variable.getType());
-
     const val_type = try self.infer_expr(&variable.value);
     if (variable.type == ValueType.Untyped) {
         variable.setType(val_type);
     }
+
+    try self.currentScope.push(variable.ident.lexeme, variable.getType());
 
     if (variable.type != val_type) {
         try self.errs.append(SemaError.init_type_mismatch(variable.getType(), val_type, variable.pos()));

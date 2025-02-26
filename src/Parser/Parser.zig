@@ -195,7 +195,7 @@ pub fn parseAssignStmt(self: *Self) ParseStatus!AssignStatement {
     const assign = try self.next(&[_]TokenKind{TokenKind.Assign});
     const value = try self.parseExpr();
 
-    return AssignStatement.init(ident, ty, value, assign.data.?.Assign);
+    return AssignStatement.init(ident, ty, value, assign.data.?.Assign, true);
 }
 
 fn parseBlock(self: *Self) ParseStatus!Block {
@@ -220,7 +220,7 @@ fn parseBlock(self: *Self) ParseStatus!Block {
 }
 
 pub fn parseStatement(self: *Self) ParseStatus!Stmt {
-    const tl_expected = [_]TokenKind{TokenKind.Let};
+    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.Ident };
     const tok = try self.next(&tl_expected);
 
     switch (tok.kind) {
@@ -230,6 +230,29 @@ pub fn parseStatement(self: *Self) ParseStatus!Stmt {
                 return error.NotGood;
             };
             return Stmt.init_assign(stmt);
+        },
+        TokenKind.Ident => {
+            if (self.peek(&[_]TokenKind{TokenKind.Assign})) {
+                const assign = self.next(&[_]TokenKind{TokenKind.Assign}) catch {
+                    self.sync(&tl_expected);
+                    return error.NotGood;
+                };
+
+                const value = self.parseExpr() catch {
+                    self.sync(&tl_expected);
+                    return error.NotGood;
+                };
+
+                return Stmt.init_assign(AssignStatement.init(
+                    tok,
+                    ValueType.Untyped,
+                    value,
+                    assign.data.?.Assign,
+                    false,
+                ));
+            } else {
+                @panic("Not implemented");
+            }
         },
         else => unreachable,
     }

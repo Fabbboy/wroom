@@ -17,13 +17,15 @@ ident: Token,
 type: ValueType,
 value: Expr,
 assign_type: OperatorType,
+new_var: bool,
 
-pub fn init(ident: Token, ty: ValueType, value: Expr, assign_type: OperatorType) Self {
+pub fn init(ident: Token, ty: ValueType, value: Expr, assign_type: OperatorType, new_var: bool) Self {
     return Self{
         .ident = ident,
         .type = ty,
         .value = value,
         .assign_type = assign_type,
+        .new_var = new_var,
     };
 }
 
