@@ -18,5 +18,9 @@ pub fn SymTable(comptime T: type) type {
         pub fn deinit(self: *Self) void {
             self.table.deinit();
         }
+
+        pub fn insert(self: *Self, key: []const u8, value: T) !void {
+            try self.table.put(key, value);
+        }
     };
 }

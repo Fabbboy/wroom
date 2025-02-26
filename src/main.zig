@@ -80,7 +80,7 @@ pub fn main() !void {
     }
 
     var module = IRModule.init(gpa.allocator());
-    module.deinit();
+    defer module.deinit();
     const generator = IRGen.init(ast, &module);
     try generator.generate();
 

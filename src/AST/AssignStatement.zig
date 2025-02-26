@@ -45,6 +45,10 @@ pub fn getType(self: *const Self) ValueType {
     return self.type;
 }
 
+pub fn getName(self: *const Self) *const Token {
+    return &self.ident;
+}
+
 pub fn deinit(self: *const Self) void {
     self.value.deinit();
 }
