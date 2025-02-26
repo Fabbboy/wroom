@@ -9,8 +9,8 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 - [X] Create Statment tagged union
 - [X] Parse parameters
 - [X] Add void type
-- [ ] Add checking for void type
-- [ ] Variable shadowing
+- [X] Add checking for void type
+- [~] Variable shadowing => Implicitly works didn't specifically implement it
 - [X] Return statement
 - [X] Assign to already declared variable
 - [X] Illegal assignment on undeclared variable 
