@@ -7,6 +7,8 @@ const Lexer = @import("Parser/Lexer.zig");
 const Parser = @import("Parser/Parser.zig");
 const Sema = @import("Sema/Sema.zig");
 
+const IRModule = @import("IR/Module.zig");
+
 pub fn main() !void {
     const source = "func main(argc: int, argv: float) int {\nlet hell = 123\nhell += 123\nreturn argc + 1\n}";
     var gpa = std.heap.GeneralPurposeAllocator(.{
@@ -73,6 +75,9 @@ pub fn main() !void {
         const range = source[func.start()..func.body.?.stop()];
         std.debug.print("Source: {s}\n", .{range});
     }
+
+    var module = IRModule.init(gpa.allocator());
+    module.deinit();
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
 }
