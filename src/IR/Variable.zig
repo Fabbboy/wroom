@@ -13,3 +13,8 @@ pub fn init(initializer: IRValue, val_type: ValueType) Self {
         .val_type = val_type,
     };
 }
+
+pub fn fmt(self: *const Self, fbuf: anytype) !void {
+    try fbuf.print("{s} = ", .{self.val_type.fmt()});
+    try self.initializer.fmt(fbuf);
+}

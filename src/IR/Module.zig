@@ -19,3 +19,13 @@ pub fn init(allocator: mem.Allocator) Self {
 pub fn deinit(self: *Self) void {
     self.globals.deinit();
 }
+
+pub fn getGlobals(self: *const Self) *const SymTable(Variable) {
+    return &self.globals;
+}
+
+pub fn fmt(self: *const Self, fbuf: anytype) !void {
+    try fbuf.writeAll("Module{ globals: ");
+    try self.globals.fmt(fbuf);
+    try fbuf.writeAll(" }");
+}
