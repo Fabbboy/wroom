@@ -33,5 +33,8 @@ pub fn deinit(self: *Self) void {
         global.deinit();
     }
     self.globals.deinit();
+    for (self.functions.items) |func| {
+        func.deinit();
+    }
     self.functions.deinit();
 }

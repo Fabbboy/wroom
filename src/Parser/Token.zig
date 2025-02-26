@@ -24,6 +24,7 @@ pub const TokenKind = enum {
     Func,
     LParen,
     RParen,
+    Comma,
 
     pub fn fmt(self: TokenKind) []const u8 {
         return switch (self) {
@@ -44,6 +45,7 @@ pub const TokenKind = enum {
             TokenKind.Func => "Func",
             TokenKind.LParen => "LParen",
             TokenKind.RParen => "RParen",
+            TokenKind.Comma => "Comma",
         };
     }
 };
@@ -80,6 +82,7 @@ pub const TokenData = union(TokenKind) {
     Func: void,
     LParen: void,
     RParen: void,
+    Comma: void,
 };
 
 kind: TokenKind,

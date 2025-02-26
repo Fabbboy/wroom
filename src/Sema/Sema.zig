@@ -67,6 +67,7 @@ fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
             try self.errs.append(SemaError.init_symbol_undefined(fvar.name.lexeme, fvar.pos()));
             return error.NotGood;
         },
+        else => unreachable,
     };
 }
 

@@ -18,6 +18,8 @@ const ExprKind = ExprNs.ExprKind;
 const BinaryExpr = @import("../AST/BinaryExpr.zig");
 const OperatorType = BinaryExpr.OperatorType;
 
+const ParameterExpr = @import("../AST/ParameterExpr.zig");
+
 const FunctionDecl = @import("../AST/FunctionDecl.zig");
 
 const Error = @import("Error.zig");
@@ -196,13 +198,26 @@ pub fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
     const name = try self.next(&[_]TokenKind{TokenKind.Ident});
     _ = try self.next(&[_]TokenKind{TokenKind.LParen});
     //handle params
+    var params = std.ArrayList(ParameterExpr).init(self.allocator);
+    while (self.peek(&[_]TokenKind{TokenKind.Ident})) {
+        const param = try self.next(&[_]TokenKind{TokenKind.Ident});
+        _ = try self.next(&[_]TokenKind{TokenKind.Colon});
+        const ptype = try self.next(&[_]TokenKind{TokenKind.Type});
+        params.append(ParameterExpr.init(param, ptype.pos, ptype.data.?.Type)) catch {
+            return error.NotGood;
+        };
+        if (self.peek(&[_]TokenKind{TokenKind.Comma})) {
+            _ = try self.next(&[_]TokenKind{TokenKind.Comma});
+        }
+    }
+
     _ = try self.next(&[_]TokenKind{TokenKind.RParen});
     const ftype = try self.next(&[_]TokenKind{TokenKind.Type});
     //handle body
 
     var final_pos = name.pos;
     final_pos.end = ftype.pos.end;
-    return FunctionDecl.init(name, ftype.data.?.Type, final_pos);
+    return FunctionDecl.init(name, ftype.data.?.Type, params, final_pos);
 }
 
 pub fn parse(self: *Self) ParseStatus!void {

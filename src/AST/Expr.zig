@@ -8,24 +8,29 @@ const ValueType = Token.ValueType;
 
 const VariableExpr = @import("VariableExpr.zig");
 
+const ParameterExpr = @import("ParameterExpr.zig");
+
 const Position = @import("../Parser/Position.zig");
 
 pub const ExprKind = enum {
     Literal,
     Binary,
     Variable,
+    Parameter,
 };
 
 pub const ExprData = union(ExprKind) {
     Literal: LiteralExpr,
     Binary: BinaryExpr,
     Variable: VariableExpr,
+    Parameter: ParameterExpr,
 
     pub fn deinit(self: *ExprData, allocator: mem.Allocator) void {
         switch (self.*) {
             ExprKind.Binary => self.Binary.deinit(),
             ExprKind.Literal => {},
             ExprKind.Variable => {},
+            ExprKind.Parameter => {},
         }
         allocator.destroy(self);
     }
@@ -53,11 +58,18 @@ pub const Expr = struct {
         return Expr{ .data = var_data, .allocator = allocator };
     }
 
+    pub fn init_parameter(name: Token, allocator: mem.Allocator) !Expr {
+        const param_data = try allocator.create(ExprData);
+        param_data.* = ExprData{ .Parameter = ParameterExpr.init(name) };
+        return Expr{ .data = param_data, .allocator = allocator };
+    }
+
     pub fn fmt(self: *const Expr, fbuf: anytype) !void {
         return switch (self.data.*) {
             ExprKind.Literal => self.data.Literal.fmt(fbuf),
             ExprKind.Binary => self.data.Binary.fmt(fbuf),
             ExprKind.Variable => self.data.Variable.fmt(fbuf),
+            ExprKind.Parameter => self.data.Parameter.fmt(fbuf),
         };
     }
 
@@ -70,6 +82,7 @@ pub const Expr = struct {
             ExprKind.Literal => self.data.Literal.start(),
             ExprKind.Binary => self.data.Binary.start(),
             ExprKind.Variable => self.data.Variable.start(),
+            ExprKind.Parameter => self.data.Parameter.start(),
         };
     }
 
@@ -78,6 +91,7 @@ pub const Expr = struct {
             ExprKind.Literal => self.data.Literal.stop(),
             ExprKind.Binary => self.data.Binary.stop(),
             ExprKind.Variable => self.data.Variable.stop(),
+            ExprKind.Parameter => self.data.Parameter.stop(),
         };
     }
 
@@ -86,6 +100,7 @@ pub const Expr = struct {
             ExprKind.Literal => self.data.Literal.pos(),
             ExprKind.Binary => self.data.Binary.pos(),
             ExprKind.Variable => self.data.Variable.pos(),
+            ExprKind.Parameter => self.data.Parameter.pos(),
         };
     }
 };
