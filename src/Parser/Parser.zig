@@ -114,10 +114,10 @@ fn sync(self: *Self, expected: []const TokenKind) void {
 }
 
 fn parseFactor(self: *Self) ParseStatus!Expr {
-    const tok = try self.next(&[_]TokenKind{ TokenKind.Int, TokenKind.Float, TokenKind.Ident, TokenKind.LParen });
+    const tok = try self.next(&[_]TokenKind{ TokenKind.Int, TokenKind.Float, TokenKind.Ident, TokenKind.LParen, TokenKind.Null });
 
     switch (tok.kind) {
-        TokenKind.Int, TokenKind.Float => return Expr.init_literal(tok, self.allocator),
+        TokenKind.Int, TokenKind.Float, TokenKind.Null => return Expr.init_literal(tok, self.allocator),
         TokenKind.Ident => return Expr.init_variable(tok, self.allocator),
         TokenKind.LParen => {
             const expr = self.parseExpr() catch {
@@ -224,9 +224,12 @@ fn parseBlock(self: *Self) ParseStatus!Block {
         };
     }
 
-    _ = try self.next(&[_]TokenKind{TokenKind.RBrace});
+    const rbrance = try self.next(&[_]TokenKind{TokenKind.RBrace});
 
-    return Block.init(stmts, lbrace.pos);
+    var pos = lbrace.pos;
+    pos.end = rbrance.pos.end;
+
+    return Block.init(stmts, pos);
 }
 
 pub fn parseStatement(self: *Self) ParseStatus!Stmt {

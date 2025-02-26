@@ -12,6 +12,7 @@ pub const TokenKind = enum {
     Ident,
     Int,
     Float,
+    Null,
     Assign,
     Plus,
     Minus,
@@ -36,6 +37,7 @@ pub const TokenKind = enum {
             TokenKind.Ident => "Ident",
             TokenKind.Int => "Int",
             TokenKind.Float => "Float",
+            TokenKind.Null => "Null",
             TokenKind.Assign => "Assign",
             TokenKind.Plus => "Plus",
             TokenKind.Minus => "Minus",
@@ -60,12 +62,14 @@ pub const ValueType = enum {
     Untyped,
     Int,
     Float,
+    Void,
 
     pub fn fmt(self: ValueType) []const u8 {
         return switch (self) {
             ValueType.Untyped => "Untyped",
             ValueType.Int => "Int",
             ValueType.Float => "Float",
+            ValueType.Void => "Void",
         };
     }
 };
@@ -94,6 +98,7 @@ pub const TokenData = union(TokenKind) {
     Ident: void,
     Int: void,
     Float: void,
+    Null: void,
     Assign: OperatorType,
     Plus: void,
     Minus: void,
@@ -160,8 +165,10 @@ pub const keywords = std.StaticStringMap(KeywordValue).initComptime(.{
     .{ "let", .{ .kind = TokenKind.Let, .data = null } },
     .{ "int", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.Int } } },
     .{ "float", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.Float } } },
+    .{ "void", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.Void } } },
     .{ "func", .{ .kind = TokenKind.Func, .data = null } },
     .{ "return", .{ .kind = TokenKind.Return, .data = null } },
+    .{ "null", .{ .kind = TokenKind.Null, .data = null } },
 });
 
 pub const operators = std.StaticStringMap(OperatorType).initComptime(.{

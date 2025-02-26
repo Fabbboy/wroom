@@ -38,10 +38,7 @@ pub fn start(self: *const Self) usize {
 }
 
 pub fn stop(self: *const Self) usize {
-    if (self.stmts.items.len == 0) {
-        return self.pos.start;
-    }
-    return self.stmts.items[self.stmts.items.len - 1].stop();
+    return self.pos.end;
 }
 
 pub fn pos(self: *const Self) Stmt.Position {

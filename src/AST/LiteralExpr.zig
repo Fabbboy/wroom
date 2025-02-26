@@ -16,6 +16,7 @@ pub fn init(val: Token) Self {
     return Self{ .val = val, .value_type = switch (val.kind) {
         TokenKind.Int => ValueType.Int,
         TokenKind.Float => ValueType.Float,
+        TokenKind.Null => ValueType.Void,
         else => ValueType.Untyped,
     }, .position = val.pos };
 }
