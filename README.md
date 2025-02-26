@@ -8,7 +8,7 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 - [X] Add function body
 - [X] Create Statment tagged union
 - [X] Parse parameters
-- [ ] Add void type
+- [X] Add void type
 - [ ] Add checking for void type
 - [ ] Variable shadowing
 - [X] Return statement
