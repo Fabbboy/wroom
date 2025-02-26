@@ -214,7 +214,7 @@ fn parseBlock(self: *Self) ParseStatus!Block {
     return Block.init(stmts);
 }
 
-pub fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
+fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
     const name = try self.next(&[_]TokenKind{TokenKind.Ident});
     _ = try self.next(&[_]TokenKind{TokenKind.LParen});
     var params = std.ArrayList(ParameterExpr).init(self.allocator);
