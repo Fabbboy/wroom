@@ -34,6 +34,25 @@ pub fn init(ast: *Ast, allocator: mem.Allocator) !Self {
     };
 }
 
+fn pushScope(self: *Self) !void {
+    self.currentScope = try Scope.init(self.allocator, self.currentScope);
+}
+
+fn popScope(self: *Self) void {
+    var iter = self.currentScope.symbols.iterator();
+    while (iter.next()) |entry| {
+        const key = entry.key_ptr.*;
+        const value = entry.value_ptr.*;
+        std.debug.print("Popping scope: {s} {s}\n", .{key, value.fmt()});
+    }
+
+    if (self.currentScope.parent) |parent| {
+        const temp = self.currentScope;
+        self.currentScope = parent;
+        temp.deinit();
+    }
+}
+
 pub fn getErrs(self: *const Self) *const std.ArrayList(SemaError) {
     return &self.errs;
 }
@@ -101,6 +120,7 @@ fn analyze_function(self: *Self, func: *FunctionDecl) SemaStatus!void {
     }
 
     try self.currentScope.pushFunc(func);
+    try self.pushScope();
 
     for (func.params.items) |*param| {
         if (self.currentScope.find(param.ident.lexeme)) |f| {
@@ -111,6 +131,8 @@ fn analyze_function(self: *Self, func: *FunctionDecl) SemaStatus!void {
 
         try self.currentScope.push(param.ident.lexeme, param.getType());
     }
+
+    self.popScope();
 }
 
 pub fn analyze(self: *Self) SemaStatus!void {
@@ -134,6 +156,12 @@ pub fn analyze(self: *Self) SemaStatus!void {
 }
 
 pub fn deinit(self: *Self) void {
+    while (self.currentScope.parent) |parent| {
+        const temp = self.currentScope;
+        self.currentScope = parent;
+        temp.deinit();
+        std.debug.print("Found un-popped scope\n", .{});
+    }
     self.currentScope.deinit();
     self.errs.deinit();
 }

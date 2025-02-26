@@ -56,10 +56,6 @@ pub fn pushFunc(self: *Self, func: *FunctionDecl) !void {
 }
 
 pub fn deinit(self: *Self) void {
-    if (self.parent) |parent| {
-        parent.deinit();
-        self.parent = null;
-    }
     self.symbols.deinit();
     self.functions.deinit();
     self.allocator.destroy(self);
