@@ -6,12 +6,8 @@ const Expr = ExprNs.Expr;
 
 const Position = @import("../Parser/Position.zig");
 
-pub const OperatorType = enum {
-    Add,
-    Sub,
-    Mul,
-    Div,
-};
+const Token = @import("../Parser/Token.zig");
+const OperatorType = Token.OperatorType;
 
 const Self = @This();
 

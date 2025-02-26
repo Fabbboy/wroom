@@ -10,6 +10,7 @@ const BinaryExpr = @import("../AST/BinaryExpr.zig");
 const Ast = @import("../Parser/Ast.zig");
 const Token = @import("../Parser/Token.zig");
 const ValueType = Token.ValueType;
+const OperatorType = Token.OperatorType;
 
 const Module = @import("Module.zig");
 
@@ -17,6 +18,12 @@ const Variable = @import("Variable.zig");
 const IRValue = @import("Value.zig").IRValue;
 const IRStatus = @import("Error.zig").IRStatus;
 const Constant = @import("Constant.zig").Constant;
+
+const ConstExprNs = @import("ConstExpr.zig");
+const ConstExprAdd = ConstExprNs.ConstExprAdd;
+const ConstExprSub = ConstExprNs.ConstExprSub;
+const ConstExprMul = ConstExprNs.ConstExprMul;
+const ConstExprDiv = ConstExprNs.ConstExprDiv;
 
 const Self = @This();
 
@@ -35,9 +42,16 @@ fn compileConstantBinary(self: *const Self, binary: *const BinaryExpr) IRStatus!
     const rhs = try self.compileConstantExpr(binary.getRHS());
     const op = binary.op;
 
-    _ = lhs;
-    _ = rhs;
-    _ = op;
+    const clhs = lhs.constant;
+    const crhs = rhs.constant;
+
+    switch (op) {
+        OperatorType.Plus => return IRValue.init_constant(ConstExprAdd(clhs, crhs)),
+        OperatorType.Minus => return IRValue.init_constant(ConstExprSub(clhs, crhs)),
+        OperatorType.Star => return IRValue.init_constant(ConstExprMul(clhs, crhs)),
+        OperatorType.Slash => return IRValue.init_constant(ConstExprDiv(clhs, crhs)),
+        else => @panic("Unsupported operator"),
+    }
 
     @panic("Not implemented");
 }
@@ -50,11 +64,11 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr) IRStatus!IRValue {
             switch (literal.value_type) {
                 ValueType.Float => {
                     const value = try fmt.parseFloat(f64, literal.val.lexeme);
-                    return IRValue.init_constant(Constant{ .Float = value });
+                    return IRValue.init_constant(Constant{ .Floating = value });
                 },
                 ValueType.Int => {
                     const value = try fmt.parseInt(i64, literal.val.lexeme, 10);
-                    return IRValue.init_constant(Constant{ .Int = value });
+                    return IRValue.init_constant(Constant{ .Integer = value });
                 },
                 else => @panic("Unsupported literal type"),
             }

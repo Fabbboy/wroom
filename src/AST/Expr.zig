@@ -5,6 +5,7 @@ const LiteralExpr = @import("LiteralExpr.zig");
 const BinaryExpr = @import("BinaryExpr.zig");
 const Token = @import("../Parser/Token.zig");
 const ValueType = Token.ValueType;
+const OperatorType = Token.OperatorType;
 
 const VariableExpr = @import("VariableExpr.zig");
 
@@ -46,7 +47,7 @@ pub const Expr = struct {
         return Expr{ .data = lit_data, .allocator = allocator };
     }
 
-    pub fn init_binary(lhs: Expr, rhs: Expr, op: BinaryExpr.OperatorType, allocator: mem.Allocator) !Expr {
+    pub fn init_binary(lhs: Expr, rhs: Expr, op: OperatorType, allocator: mem.Allocator) !Expr {
         const bin_data = try allocator.create(ExprData);
         bin_data.* = ExprData{ .Binary = BinaryExpr.init(lhs, rhs, op) };
         return Expr{ .data = bin_data, .allocator = allocator };

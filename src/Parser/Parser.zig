@@ -4,6 +4,7 @@ const mem = std.mem;
 const Token = @import("Token.zig");
 const TokenKind = Token.TokenKind;
 const ValueType = Token.ValueType;
+const OperatorType = Token.OperatorType;
 
 const Position = @import("Position.zig");
 
@@ -16,7 +17,6 @@ const Expr = ExprNs.Expr;
 const ExprKind = ExprNs.ExprKind;
 
 const BinaryExpr = @import("../AST/BinaryExpr.zig");
-const OperatorType = BinaryExpr.OperatorType;
 
 const ParameterExpr = @import("../AST/ParameterExpr.zig");
 
@@ -132,8 +132,8 @@ fn parseTerm(self: *Self) ParseStatus!Expr {
             return err;
         };
         const fin_op = switch (op.kind) {
-            TokenKind.Star => OperatorType.Mul,
-            TokenKind.Slash => OperatorType.Div,
+            TokenKind.Star => OperatorType.Star,
+            TokenKind.Slash => OperatorType.Slash,
             else => unreachable,
         };
 
@@ -157,8 +157,8 @@ fn parseExpr(self: *Self) ParseStatus!Expr {
             return err;
         };
         const fin_op = switch (op.kind) {
-            TokenKind.Plus => OperatorType.Add,
-            TokenKind.Minus => OperatorType.Sub,
+            TokenKind.Plus => OperatorType.Plus,
+            TokenKind.Minus => OperatorType.Minus,
             else => unreachable,
         };
 
