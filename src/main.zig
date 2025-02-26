@@ -8,7 +8,7 @@ const Parser = @import("Parser/Parser.zig");
 const Sema = @import("Sema/Sema.zig");
 
 pub fn main() !void {
-    const source = "func main(argc: int, argv: float) int {\nlet hell = 123\nhell += 123}";
+    const source = "func main(argc: int, argv: float) int {\nlet hell = 123\nhell += 123 return argc + 1\n}";
     var gpa = std.heap.GeneralPurposeAllocator(.{
         .verbose_log = true,
         .enable_memory_limit = true,

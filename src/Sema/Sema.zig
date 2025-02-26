@@ -161,20 +161,20 @@ fn analyze_function(self: *Self, func: *const FunctionDecl) SemaStatus!void {
     }
 
     if (func.body) |body| {
-        self.analyze_block(&body, false) catch {
+        self.analyze_block(&body, false, func.name.lexeme) catch {
             return error.NotGood;
         };
     }
 }
 
-fn analyze_block(self: *Self, block: *const Block, needs_scope: bool) SemaStatus!void {
+fn analyze_block(self: *Self, block: *const Block, needs_scope: bool, name: []const u8) SemaStatus!void {
     var hasErr = false;
     if (needs_scope) {
         try self.pushScope();
     }
 
     for (block.stmts.items) |*stmt| {
-        self.analyze_statement(stmt) catch {
+        self.analyze_statement(stmt, name) catch {
             hasErr = true;
             continue;
         };
@@ -189,9 +189,21 @@ fn analyze_block(self: *Self, block: *const Block, needs_scope: bool) SemaStatus
     }
 }
 
-fn analyze_statement(self: *Self, stmt: *Stmt) SemaStatus!void {
+fn analyze_statement(self: *Self, stmt: *Stmt, name: []const u8) SemaStatus!void {
     return switch (stmt.*) {
         Stmt.AssignStatement => self.analyze_variable(&stmt.AssignStatement),
+        Stmt.ReturnStatement => {
+            const ret = stmt.ReturnStatement;
+            const val_type = try self.infer_expr(&ret.value);
+
+            const func = self.currentScope.findFunc(name);
+            if (func) |f| {
+                if (f.ret_type != val_type) {
+                    try self.errs.append(SemaError.init_type_mismatch(f.ret_type, val_type, ret.pos()));
+                    return error.NotGood;
+                }
+            }
+        },
     };
 }
 

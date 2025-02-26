@@ -21,6 +21,7 @@ const OperatorType = BinaryExpr.OperatorType;
 const ParameterExpr = @import("../AST/ParameterExpr.zig");
 
 const FunctionDecl = @import("../AST/FunctionDecl.zig");
+const ReturnStatement = @import("../AST/ReturnStatement.zig");
 
 const Stmt = @import("../AST/Stmt.zig").Stmt;
 
@@ -220,7 +221,7 @@ fn parseBlock(self: *Self) ParseStatus!Block {
 }
 
 pub fn parseStatement(self: *Self) ParseStatus!Stmt {
-    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.Ident };
+    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.Ident, TokenKind.Return };
     const tok = try self.next(&tl_expected);
 
     switch (tok.kind) {
@@ -253,6 +254,14 @@ pub fn parseStatement(self: *Self) ParseStatus!Stmt {
             } else {
                 @panic("Not implemented");
             }
+        },
+        TokenKind.Return => {
+            const value = self.parseExpr() catch {
+                self.sync(&tl_expected);
+                return error.NotGood;
+            };
+
+            return Stmt.init_return(ReturnStatement.init(value));
         },
         else => unreachable,
     }
