@@ -6,7 +6,7 @@ pub const Stmt = union(enum) {
     AssignStatement: AssignStatement,
 
     pub fn init_assign(assign: AssignStatement) Stmt {
-        return Stmt.AssignStatement(assign);
+        return .{ .AssignStatement = assign };
     }
 
     pub fn deinit(self: *const Stmt) void {

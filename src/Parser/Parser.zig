@@ -203,7 +203,12 @@ fn parseBlock(self: *Self) ParseStatus!Block {
 
     var stmts = std.ArrayList(Stmt).init(self.allocator);
     while (!self.peek(&[_]TokenKind{TokenKind.RBrace})) {
-        _ = self.next(&[_]TokenKind{}) catch {
+        const stmt = self.parseStatement() catch {
+            stmts.deinit();
+            return error.NotGood;
+        };
+
+        stmts.append(stmt) catch {
             stmts.deinit();
             return error.NotGood;
         };
@@ -212,6 +217,22 @@ fn parseBlock(self: *Self) ParseStatus!Block {
     _ = try self.next(&[_]TokenKind{TokenKind.RBrace});
 
     return Block.init(stmts);
+}
+
+pub fn parseStatement(self: *Self) ParseStatus!Stmt {
+    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.EOF };
+    const tok = try self.next(&tl_expected);
+
+    switch (tok.kind) {
+        TokenKind.Let => {
+            const stmt = self.parseAssignStmt() catch {
+                self.sync(&tl_expected);
+                return error.NotGood;
+            };
+            return Stmt.init_assign(stmt);
+        },
+        else => unreachable,
+    }
 }
 
 fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
@@ -273,7 +294,7 @@ fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
 pub fn parse(self: *Self) ParseStatus!void {
     var hasErr = false;
 
-    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.EOF, TokenKind.Func };
+    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.Func, TokenKind.EOF };
     while (true) {
         const tok = self.next(&tl_expected) catch {
             hasErr = true;
