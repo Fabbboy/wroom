@@ -7,13 +7,11 @@ const Self = @This();
 
 stmts: std.ArrayList(Stmt),
 
-pub fn init(allocator: mem.Allocator) Self {
-    return Self{
-        .stmts = std.ArrayList(Stmt).init(allocator),
-    };
+pub fn init(stmts: std.ArrayList(Stmt)) Self {
+    return Self{ .stmts = stmts };
 }
 
-pub fn fmt (self: *const Self, fbuf: anytype) !void {
+pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try fbuf.writeAll("Block{ stmts: [");
     for (self.stmts.items) |stmt| {
         try stmt.fmt(fbuf);

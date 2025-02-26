@@ -22,6 +22,8 @@ const ParameterExpr = @import("../AST/ParameterExpr.zig");
 
 const FunctionDecl = @import("../AST/FunctionDecl.zig");
 
+const Stmt = @import("../AST/Stmt.zig").Stmt;
+
 const Block = @import("../AST/Block.zig");
 
 const Error = @import("Error.zig");
@@ -196,6 +198,22 @@ pub fn parseAssignStmt(self: *Self) ParseStatus!AssignStatement {
     return AssignStatement.init(ident, ty, value);
 }
 
+fn parseBlock(self: *Self) ParseStatus!Block {
+    _ = try self.next(&[_]TokenKind{TokenKind.LBrace});
+
+    var stmts = std.ArrayList(Stmt).init(self.allocator);
+    while (!self.peek(&[_]TokenKind{TokenKind.RBrace})) {
+        _ = self.next(&[_]TokenKind{}) catch {
+            stmts.deinit();
+            return error.NotGood;
+        };
+    }
+
+    _ = try self.next(&[_]TokenKind{TokenKind.RBrace});
+
+    return Block.init(stmts);
+}
+
 pub fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
     const name = try self.next(&[_]TokenKind{TokenKind.Ident});
     _ = try self.next(&[_]TokenKind{TokenKind.LParen});
@@ -241,9 +259,15 @@ pub fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
     var final_pos = name.pos;
     final_pos.end = ftype.pos.end;
 
-    const block: ?Block = null;
+    var body: ?Block = null;
+    if (self.peek(&[_]TokenKind{TokenKind.LBrace})) {
+        body = self.parseBlock() catch {
+            params.deinit();
+            return error.NotGood;
+        };
+    }
 
-    return FunctionDecl.init(name, ftype.data.?.Type, params, block, final_pos);
+    return FunctionDecl.init(name, ftype.data.?.Type, params, body, final_pos);
 }
 
 pub fn parse(self: *Self) ParseStatus!void {
