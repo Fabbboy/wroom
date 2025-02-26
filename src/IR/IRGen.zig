@@ -5,6 +5,8 @@ const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
 const ExprKind = ExprNs.ExprKind;
 
+const BinaryExpr = @import("../AST/BinaryExpr.zig");
+
 const Ast = @import("../Parser/Ast.zig");
 const Token = @import("../Parser/Token.zig");
 const ValueType = Token.ValueType;
@@ -26,6 +28,18 @@ pub fn init(ast: *const Ast, module: *Module) Self {
         .ast = ast,
         .module = module,
     };
+}
+
+fn compileConstantBinary(self: *const Self, binary: *const BinaryExpr) IRStatus!IRValue {
+    const lhs = try self.compileConstantExpr(binary.getLHS());
+    const rhs = try self.compileConstantExpr(binary.getRHS());
+    const op = binary.op;
+
+    _ = lhs;
+    _ = rhs;
+    _ = op;
+
+    @panic("Not implemented");
 }
 
 fn compileConstantExpr(self: *const Self, expr: *const Expr) IRStatus!IRValue {
@@ -52,6 +66,9 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr) IRStatus!IRValue {
                 return v.initializer;
             }
             @panic("Internal: Variable not found");
+        },
+        ExprKind.Binary => {
+            return try self.compileConstantBinary(&data.Binary);
         },
         else => @panic("Unsupported expression type"),
     }

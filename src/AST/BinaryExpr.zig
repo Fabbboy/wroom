@@ -41,6 +41,14 @@ pub fn deinit(self: *const Self) void {
     self.lhs.deinit();
 }
 
+pub fn getRHS(self: *const Self) *const Expr {
+    return &self.rhs;
+}
+
+pub fn getLHS(self: *const Self) *const Expr {
+    return &self.lhs;
+}
+
 pub fn start(self: *const Self) usize {
     return self.lhs.start();
 }
