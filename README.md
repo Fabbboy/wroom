@@ -10,3 +10,5 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 - Add void type
 - Add checking for void type
 - Variable shadowing
+- Return statement
+- Assign to already declared variable
