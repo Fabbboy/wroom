@@ -8,6 +8,7 @@ const Parser = @import("Parser/Parser.zig");
 const Sema = @import("Sema/Sema.zig");
 
 const IRModule = @import("IR/Module.zig");
+const IRGen = @import("IR/IRGen.zig");
 
 pub fn main() !void {
     const source = "func main(argc: int, argv: float) int {\nlet hell = 123\nhell += 123\nreturn argc + 1\n}";
@@ -78,6 +79,8 @@ pub fn main() !void {
 
     var module = IRModule.init(gpa.allocator());
     module.deinit();
+    const generator = IRGen.init(ast, &module);
+    try generator.generate();
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
 }
