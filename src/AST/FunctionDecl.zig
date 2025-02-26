@@ -23,14 +23,14 @@ pub fn init(name: Token, ret_type: ValueType, params: std.ArrayList(ParameterExp
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
-    try fbuf.writeAll("FunctionDecl{{ name: ");
+    try fbuf.writeAll("FunctionDecl{ name: ");
     try self.name.fmt(fbuf);
     try fbuf.print(", ret_type: {s}, params: [", .{self.ret_type.fmt()});
     for (self.params.items) |param| {
         try param.fmt(fbuf);
         try fbuf.writeAll(", ");
     }
-    try fbuf.writeAll("] }}");
+    try fbuf.writeAll("] }");
 }
 
 pub fn start(self: *const Self) usize {

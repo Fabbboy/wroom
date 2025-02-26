@@ -16,9 +16,9 @@ pub fn init(name: Token) Self {
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
-    try fbuf.writeAll("VariableExpr{{ name: ");
+    try fbuf.writeAll("VariableExpr{ name: ");
     try self.name.fmt(fbuf);
-    try fbuf.writeAll(" }}");
+    try fbuf.writeAll(" }");
 }
 
 pub fn start(self: *const Self) usize {

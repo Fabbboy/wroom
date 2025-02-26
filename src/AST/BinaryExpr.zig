@@ -28,11 +28,12 @@ pub fn init(lhs: Expr, rhs: Expr, op: OperatorType) Self {
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) error{OutOfMemory}!void {
-    try fbuf.writeAll("BinaryExpr{{ lhs: ");
+    try fbuf.writeAll("BinaryExpr{ lhs: ");
     try self.lhs.fmt(fbuf);
     try fbuf.writeAll(", rhs: ");
     try self.rhs.fmt(fbuf);
-    try fbuf.print(", op: {} }}", .{self.op});
+    try fbuf.print(", op: {} ", .{self.op});
+    try fbuf.writeAll(" }");
 }
 
 pub fn deinit(self: *const Self) void {

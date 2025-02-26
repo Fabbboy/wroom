@@ -19,5 +19,7 @@ pub fn init(line: usize, column: usize, start: usize, end: usize) Self {
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
-    try fbuf.print("Pos{{ line: {}, column: {}, start: {}, end: {} }}", .{ self.line, self.column, self.start, self.end });
+    try fbuf.writeAll("Pos{ line: ");
+    try fbuf.print("{}, column: {}, start: {}, end: {} ", .{ self.line, self.column, self.start, self.end });
+    try fbuf.writeAll(" }");
 }

@@ -21,9 +21,10 @@ pub fn init(val: Token) Self {
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
-    try fbuf.writeAll("LiteralExpr{{ val: ");
+    try fbuf.writeAll("LiteralExpr{ val: ");
     try self.val.fmt(fbuf);
-    try fbuf.print(", value_type: {} }}", .{self.value_type});
+    try fbuf.print(", value_type: {s} ", .{self.value_type.fmt()});
+    try fbuf.writeAll(" }");
 }
 
 pub fn start(self: *const Self) usize {

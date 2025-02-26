@@ -18,11 +18,11 @@ pub fn init(ident: Token, _pos: Position, ty: ValueType) Self {
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
-    try fbuf.writeAll("ParameterExpr{{ ident: ");
+    try fbuf.writeAll("ParameterExpr{ ident: ");
     try self.ident.fmt(fbuf);
     try fbuf.writeAll(", type: ");
     try fbuf.print("{s}", .{self.type.fmt()});
-    try fbuf.writeAll(" }}");
+    try fbuf.writeAll(" }");
 }
 
 pub fn start(self: *const Self) usize {

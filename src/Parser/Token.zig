@@ -118,9 +118,10 @@ pub fn empty() Self {
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
-    try fbuf.print("Token{{ kind: {s}, lexeme: '{s}', pos: ", .{ self.kind.fmt(), self.lexeme });
+    try fbuf.writeAll("Token{ kind: ");
+    try fbuf.print("{s}, lexeme: '{s}', pos: ", .{ self.kind.fmt(), self.lexeme });
     try self.pos.fmt(fbuf);
-    try fbuf.writeAll(" }}");
+    try fbuf.writeAll(" }");
 }
 
 pub const KeywordValue = struct {
