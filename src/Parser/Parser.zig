@@ -22,6 +22,8 @@ const ParameterExpr = @import("../AST/ParameterExpr.zig");
 
 const FunctionDecl = @import("../AST/FunctionDecl.zig");
 
+const Block = @import("../AST/Block.zig");
+
 const Error = @import("Error.zig");
 const ParseError = Error.ParseError;
 const ParseStatus = Error.ParseStatus;
@@ -236,19 +238,12 @@ pub fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
         return error.NotGood;
     };
 
-    _ = self.next(&[_]TokenKind{TokenKind.LBrace}) catch {
-        params.deinit();
-        return error.NotGood;
-    };
-
-    _ = self.next(&[_]TokenKind{TokenKind.RBrace}) catch {
-        params.deinit();
-        return error.NotGood;
-    };
-
     var final_pos = name.pos;
     final_pos.end = ftype.pos.end;
-    return FunctionDecl.init(name, ftype.data.?.Type, params, final_pos);
+
+    const block: ?Block = null;
+
+    return FunctionDecl.init(name, ftype.data.?.Type, params, block, final_pos);
 }
 
 pub fn parse(self: *Self) ParseStatus!void {
