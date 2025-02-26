@@ -142,6 +142,8 @@ fn lex(self: *Self) Token {
         '(' => return self.getToken(TokenKind.LParen),
         ')' => return self.getToken(TokenKind.RParen),
         ',' => return self.getToken(TokenKind.Comma),
+        '{' => return self.getToken(TokenKind.LBrace),
+        '}' => return self.getToken(TokenKind.RBrace),
         else => return self.getToken(TokenKind.Invalid),
     }
 }

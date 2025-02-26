@@ -197,27 +197,54 @@ pub fn parseAssignStmt(self: *Self) ParseStatus!AssignStatement {
 pub fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
     const name = try self.next(&[_]TokenKind{TokenKind.Ident});
     _ = try self.next(&[_]TokenKind{TokenKind.LParen});
-    //handle params
     var params = std.ArrayList(ParameterExpr).init(self.allocator);
     while (self.peek(&[_]TokenKind{TokenKind.Ident})) {
-        const param = try self.next(&[_]TokenKind{TokenKind.Ident});
-        _ = try self.next(&[_]TokenKind{TokenKind.Colon});
-        const ptype = try self.next(&[_]TokenKind{TokenKind.Type});
+        const param = self.next(&[_]TokenKind{TokenKind.Ident}) catch {
+            params.deinit();
+            return error.NotGood;
+        };
+        _ = self.next(&[_]TokenKind{TokenKind.Colon}) catch {
+            params.deinit();
+            return error.NotGood;
+        };
+        const ptype = self.next(&[_]TokenKind{TokenKind.Type}) catch {
+            params.deinit();
+            return error.NotGood;
+        };
 
         var pos = param.pos;
         pos.end = ptype.pos.end;
 
         params.append(ParameterExpr.init(param, pos, ptype.data.?.Type)) catch {
+            params.deinit();
             return error.NotGood;
         };
         if (self.peek(&[_]TokenKind{TokenKind.Comma})) {
-            _ = try self.next(&[_]TokenKind{TokenKind.Comma});
+            _ = self.next(&[_]TokenKind{TokenKind.Comma}) catch {
+                params.deinit();
+                return error.NotGood;
+            };
         }
     }
 
-    _ = try self.next(&[_]TokenKind{TokenKind.RParen});
-    const ftype = try self.next(&[_]TokenKind{TokenKind.Type});
-    //handle body
+    _ = self.next(&[_]TokenKind{TokenKind.RParen}) catch {
+        params.deinit();
+        return error.NotGood;
+    };
+    const ftype = self.next(&[_]TokenKind{TokenKind.Type}) catch {
+        params.deinit();
+        return error.NotGood;
+    };
+
+    _ = self.next(&[_]TokenKind{TokenKind.LBrace}) catch {
+        params.deinit();
+        return error.NotGood;
+    };
+
+    _ = self.next(&[_]TokenKind{TokenKind.RBrace}) catch {
+        params.deinit();
+        return error.NotGood;
+    };
 
     var final_pos = name.pos;
     final_pos.end = ftype.pos.end;
