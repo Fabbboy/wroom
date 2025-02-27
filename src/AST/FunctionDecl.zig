@@ -45,6 +45,18 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
     }
 }
 
+pub fn getName(self: *const Self) *const Token {
+    return &self.name;
+}
+
+pub fn getParams(self: *const Self) *const []ParameterExpr {
+    return &self.params.items;
+}
+
+pub fn getReturnType(self: *const Self) ValueType {
+    return self.ret_type;
+}
+
 pub fn start(self: *const Self) usize {
     return self.position.start;
 }

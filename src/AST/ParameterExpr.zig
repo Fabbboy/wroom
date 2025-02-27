@@ -29,6 +29,10 @@ pub fn getType(self: *const Self) ValueType {
     return self.type;
 }
 
+pub fn getName(self: *const Self) *const Token {
+    return &self.ident;
+}
+
 pub fn start(self: *const Self) usize {
     return self.position.start;
 }

@@ -1,5 +1,6 @@
 const std = @import("std");
 const fmt = std.fmt;
+const mem = std.mem;
 
 const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
@@ -19,6 +20,9 @@ const IRValue = @import("Value.zig").IRValue;
 const IRStatus = @import("Error.zig").IRStatus;
 const Constant = @import("Constant.zig").Constant;
 
+const Function = @import("Function.zig");
+const FuncParam = Function.FuncParam;
+
 const ConstExprNs = @import("ConstExpr.zig");
 const ConstExprAdd = ConstExprNs.ConstExprAdd;
 const ConstExprSub = ConstExprNs.ConstExprSub;
@@ -29,11 +33,13 @@ const Self = @This();
 
 ast: *const Ast,
 module: *Module,
+allocator: mem.Allocator,
 
-pub fn init(ast: *const Ast, module: *Module) Self {
+pub fn init(ast: *const Ast, module: *Module, allocator: mem.Allocator) Self {
     return Self{
         .ast = ast,
         .module = module,
+        .allocator = allocator,
     };
 }
 
@@ -68,21 +74,18 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRSt
                     const value = try fmt.parseInt(i64, literal.val.lexeme, 10);
                     return IRValue.init_constant(Constant{ .Integer = value });
                 },
-                else => @panic("Unsupported literal type"),
+                else => unreachable,
             }
         },
         ExprKind.Variable => {
             const name = data.Variable.name.lexeme;
             const variable = self.module.globals.get(name);
-            if (variable) |v| {
-                return v.initializer;
-            }
-            @panic("Internal: Variable not found");
+            return variable.?.initializer;
         },
         ExprKind.Binary => {
             return try self.compileConstantBinary(&data.Binary, ty);
         },
-        else => @panic("Unsupported expression type"),
+        else => unreachable,
     }
 }
 
@@ -104,5 +107,22 @@ pub fn generate(self: *const Self) IRStatus!void {
 
         const variable = Variable.init(initializer, ty);
         try self.module.globals.insert(name, variable);
+    }
+
+    const functions = self.ast.getFunctions();
+    for (functions.*) |func| {
+        const name = func.getName().lexeme;
+        const ret_ty = func.getReturnType();
+
+        const params = func.getParams();
+        var func_params = std.ArrayList(FuncParam).init(self.allocator);
+        for (params.*) |param| {
+            const param_name = param.getName().lexeme;
+            const ty = param.getType();
+            try func_params.append(FuncParam.init(param_name, ty));
+        }
+
+        const function = Function.init(func_params, ret_ty);
+        try self.module.functions.insert(name, function);
     }
 }

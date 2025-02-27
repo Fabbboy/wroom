@@ -66,10 +66,10 @@ pub const ValueType = enum {
 
     pub fn fmt(self: ValueType) []const u8 {
         return switch (self) {
-            ValueType.Untyped => "Untyped",
-            ValueType.Int => "Int",
-            ValueType.Float => "Float",
-            ValueType.Void => "Void",
+            ValueType.Untyped => "untyped",
+            ValueType.Int => "int",
+            ValueType.Float => "float",
+            ValueType.Void => "void",
         };
     }
 };

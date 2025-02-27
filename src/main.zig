@@ -11,7 +11,7 @@ const IRModule = @import("IR/Module.zig");
 const IRGen = @import("IR/IRGen.zig");
 
 pub fn main() !void {
-    const source = "let test = 123 let test2 = test / 2.0 let test3 = test / 2";
+    const source = "let test = 123 let test2 = test / 2.0 let test3 = test / 2 func main(argc: int) int {return 0}";
     var gpa = std.heap.GeneralPurposeAllocator(.{
         .verbose_log = true,
         .enable_memory_limit = true,
@@ -81,7 +81,7 @@ pub fn main() !void {
 
     var module = IRModule.init(gpa.allocator());
     defer module.deinit();
-    const generator = IRGen.init(ast, &module);
+    const generator = IRGen.init(ast, &module, gpa.allocator());
     try generator.generate();
 
     std.debug.print("Global:\n", .{});
@@ -93,6 +93,15 @@ pub fn main() !void {
         try value.fmt(buf_writer);
         std.debug.print("{s}\n", .{buf.items});
         buf.clearRetainingCapacity();
+    }
+
+    var functionIter = module.getFunctions().table.iterator();
+    while (functionIter.next()) |function| {
+        const name = function.key_ptr.*;
+        const value = function.value_ptr.*;
+        try value.fmt(buf_writer, name);
+        std.debug.print("{s}\n", .{buf.items});
+        buf.clearRetainingCapacity();   
     }
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
