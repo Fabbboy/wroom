@@ -29,6 +29,8 @@ const Function = @import("Object/Function.zig");
 const FuncParam = Function.FuncParam;
 const FuncBlock = Function.FuncBlock;
 
+const Builder = @import("Builder.zig");
+
 const ConstExprNs = @import("ConstExpr.zig");
 const ConstExprAdd = ConstExprNs.ConstExprAdd;
 const ConstExprSub = ConstExprNs.ConstExprSub;
@@ -40,21 +42,15 @@ const Self = @This();
 ast: *const Ast,
 module: *Module,
 allocator: mem.Allocator,
-id: usize,
+builder: Builder,
 
 pub fn init(ast: *const Ast, module: *Module, allocator: mem.Allocator) Self {
     return Self{
         .ast = ast,
         .module = module,
         .allocator = allocator,
-        .id = 0,
+        .builder = Builder.init(module),
     };
-}
-
-pub fn getNextId(self: *Self) usize {
-    const id = self.id;
-    self.id += 1;
-    return id;
 }
 
 fn compileConstantBinary(self: *const Self, binary: *const BinaryExpr, ty: ValueType) IRStatus!IRValue {
@@ -117,7 +113,10 @@ fn generateGlobal(self: *Self, assign: *const AssignStatement) IRStatus!void {
         else => {},
     }
 
-    const variable = Variable.init(initializer, ty, true, self.getNextId());
+    const variable = Variable.init(
+        initializer,
+        ty,
+    );
     try self.module.globals.insert(name, variable);
 }
 

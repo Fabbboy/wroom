@@ -5,6 +5,7 @@ const SymTable = @import("ADT/SymTable.zig").SymTable;
 const Variable = @import("Object/Variable.zig");
 
 const Function = @import("Object/Function.zig");
+const FuncBlock = Function.FuncBlock;
 
 const Self = @This();
 
