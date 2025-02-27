@@ -1,7 +1,17 @@
 const Module = @import("Module.zig");
 
+const Token = @import("../Parser/Token.zig");
+const ValueType = Token.ValueType;
+
 const Function = @import("Object/Function.zig");
 const FuncBlock = Function.FuncBlock;
+
+const Constant = @import("IRValue/Constant.zig").IRConstant;
+
+const IRStatus = @import("Error.zig").IRStatus;
+const IRValue = @import("Value.zig").IRValue;
+
+const GlobalVariable = @import("Object/GlobalVariable.zig");
 
 const Self = @This();
 
@@ -13,6 +23,33 @@ pub fn init(module: *Module) Self {
         .module = module,
         .active_block = null,
     };
+}
+
+pub fn createGlobal(self: *Self, name: []const u8, val_type: ValueType, initializer: Constant) IRStatus!IRValue {
+    var local_init = initializer;
+    if (local_init.getType() != val_type) {
+        switch (local_init) {
+            Constant.Floating => |value| {
+                if (val_type == ValueType.Int) {
+                    local_init = Constant.Int(@as(i64, @intFromFloat(value)));
+                }
+            },
+            Constant.Integer => |value| {
+                if (val_type == ValueType.Float) {
+                    local_init = Constant.Float(@as(f64, @floatFromInt(value)));
+                }
+            },
+        }
+    }
+
+    const variable = GlobalVariable.init(
+        local_init,
+        val_type,
+    );
+
+    try self.module.globals.insert(name, variable);
+
+    @panic("unreachable");
 }
 
 pub fn setActiveBlock(self: *Self, block: *FuncBlock) void {

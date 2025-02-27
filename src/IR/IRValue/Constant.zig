@@ -1,6 +1,9 @@
 const std = @import("std");
 const zfmt = std.fmt;
 
+const Token = @import("../../Parser/Token.zig");
+const ValueType = Token.ValueType;
+
 const Self = @This();
 
 pub const IRConstant = union(enum) {
@@ -27,6 +30,13 @@ pub const IRConstant = union(enum) {
             .Floating => |value| {
                 try fbuf.print("{}", .{value});
             },
+        }
+    }
+
+    pub fn getType(self: *const IRConstant) ValueType {
+        switch (self.*) {
+            .Integer => return ValueType.Int,
+            .Floating => return ValueType.Float,
         }
     }
 };

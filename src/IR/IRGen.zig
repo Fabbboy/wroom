@@ -96,27 +96,6 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRSt
     }
 }
 
-fn generateGlobal(self: *Self, assign: *const AssignStatement) IRStatus!void {
-    const name = assign.getName().lexeme;
-    const ty = assign.getType();
-
-    var initializer = try self.compileConstantExpr(assign.getValue(), ty);
-    switch (initializer) {
-        Constant.Floating => |value| {
-            if (ty == ValueType.Int) {
-                initializer = Constant.Int(@as(i64, @intFromFloat(value)));
-            }
-        },
-        else => {},
-    }
-
-    const variable = GlobalVariable.init(
-        initializer,
-        ty,
-    );
-    try self.module.globals.insert(name, variable);
-}
-
 fn generateStatement(self: *const Self, func: *Function, stmt: *const Stmt) IRStatus!void {
     _ = self;
     _ = func;
@@ -162,7 +141,11 @@ fn generateFunction(self: *Self, func: *const FunctionDecl) IRStatus!void {
 pub fn generate(self: *Self) IRStatus!void {
     const globals = self.ast.getGlobals();
     for (globals.*) |glbl| {
-        try self.generateGlobal(&glbl);
+        const name = glbl.getName().lexeme;
+        const ty = glbl.getType();
+
+        const initializer = try self.compileConstantExpr(glbl.getValue(), ty);
+        _ = try self.builder.createGlobal(name, ty, initializer);
     }
 
     const functions = self.ast.getFunctions();
