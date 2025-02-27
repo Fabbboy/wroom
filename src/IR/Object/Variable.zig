@@ -9,12 +9,14 @@ const Self = @This();
 initializer: IRValue,
 val_type: ValueType,
 isGlobal: bool,
+ssa_id: usize,
 
-pub fn init(initializer: IRValue, val_type: ValueType, isGlobal: bool) Self {
+pub fn init(initializer: IRValue, val_type: ValueType, isGlobal: bool, ssa_id: usize) Self {
     return Self{
         .initializer = initializer,
         .val_type = val_type,
         .isGlobal = isGlobal,
+        .ssa_id = ssa_id,
     };
 }
 

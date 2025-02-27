@@ -57,7 +57,7 @@ pub fn getNextId(self: *Self) usize {
     return id;
 }
 
-fn compileConstantBinary(self: *Self, binary: *const BinaryExpr, ty: ValueType) IRStatus!IRValue {
+fn compileConstantBinary(self: *const Self, binary: *const BinaryExpr, ty: ValueType) IRStatus!IRValue {
     const lhs = try self.compileConstantExpr(binary.getLHS(), ty);
     const rhs = try self.compileConstantExpr(binary.getRHS(), ty);
     const op = binary.op;
@@ -66,15 +66,15 @@ fn compileConstantBinary(self: *Self, binary: *const BinaryExpr, ty: ValueType) 
     const crhs = rhs.data.Constant;
 
     switch (op) {
-        OperatorType.Plus => return IRValue.init_constant(self.allocator, self.getNextId(), ConstExprAdd(clhs, crhs)),
-        OperatorType.Minus => return IRValue.init_constant(self.allocator, self.getNextId(), ConstExprSub(clhs, crhs)),
-        OperatorType.Star => return IRValue.init_constant(self.allocator, self.getNextId(), ConstExprMul(clhs, crhs)),
-        OperatorType.Slash => return IRValue.init_constant(self.allocator, self.getNextId(), ConstExprDiv(clhs, crhs)),
+        OperatorType.Plus => return IRValue.init_constant(self.allocator, ConstExprAdd(clhs, crhs)),
+        OperatorType.Minus => return IRValue.init_constant(self.allocator, ConstExprSub(clhs, crhs)),
+        OperatorType.Star => return IRValue.init_constant(self.allocator, ConstExprMul(clhs, crhs)),
+        OperatorType.Slash => return IRValue.init_constant(self.allocator, ConstExprDiv(clhs, crhs)),
         else => unreachable,
     }
 }
 
-fn compileConstantExpr(self: *Self, expr: *const Expr, ty: ValueType) IRStatus!IRValue {
+fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRStatus!IRValue {
     const data = expr.data.*;
     switch (data) {
         ExprKind.Literal => {
@@ -82,11 +82,11 @@ fn compileConstantExpr(self: *Self, expr: *const Expr, ty: ValueType) IRStatus!I
             switch (literal.value_type) {
                 ValueType.Float => {
                     const value = try fmt.parseFloat(f64, literal.val.lexeme);
-                    return IRValue.init_constant(self.allocator, self.getNextId(), Constant{ .Floating = value });
+                    return IRValue.init_constant(self.allocator, Constant{ .Floating = value });
                 },
                 ValueType.Int => {
                     const value = try fmt.parseInt(i64, literal.val.lexeme, 10);
-                    return IRValue.init_constant(self.allocator, self.getNextId(), Constant{ .Integer = value });
+                    return IRValue.init_constant(self.allocator, Constant{ .Integer = value });
                 },
                 else => unreachable,
             }
@@ -111,13 +111,13 @@ fn generateGlobal(self: *Self, assign: *const AssignStatement) IRStatus!void {
     switch (initializer.data.Constant) {
         Constant.Floating => |value| {
             if (ty == ValueType.Int) {
-                initializer = try IRValue.init_constant(self.allocator, initializer.id, Constant.Int(@as(i64, @intFromFloat(value))));
+                initializer = try IRValue.init_constant(self.allocator, Constant.Int(@as(i64, @intFromFloat(value))));
             }
         },
         else => {},
     }
 
-    const variable = Variable.init(initializer, ty, true);
+    const variable = Variable.init(initializer, ty, true, self.getNextId());
     try self.module.globals.insert(name, variable);
 }
 
