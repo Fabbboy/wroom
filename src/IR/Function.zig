@@ -53,12 +53,14 @@ const Self = @This();
 ret_type: ValueType,
 params: std.ArrayList(FuncParam),
 blocks: std.ArrayList(FuncBlock),
+allocator: mem.Allocator,
 
-pub fn init(params: std.ArrayList(FuncParam), blocks: std.ArrayList(FuncBlock), ret_type: ValueType) Self {
+pub fn init(allocator: mem.Allocator ,params: std.ArrayList(FuncParam), ret_type: ValueType) Self {
     return Self{
         .ret_type = ret_type,
         .params = params,
-        .blocks = blocks,
+        .blocks = std.ArrayList(FuncBlock).init(allocator),
+        .allocator = allocator,
     };
 }
 

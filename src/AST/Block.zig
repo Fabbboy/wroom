@@ -33,6 +33,10 @@ pub fn deinit(self: *const Self) void {
     self.stmts.deinit();
 }
 
+pub fn getBody(self: *const Self) *const []Stmt {
+    return &self.stmts.items;
+}
+
 pub fn start(self: *const Self) usize {
     return self.pos.start;
 }

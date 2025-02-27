@@ -11,7 +11,7 @@ const IRModule = @import("IR/Module.zig");
 const IRGen = @import("IR/IRGen.zig");
 
 pub fn main() !void {
-    const source = "let test = 123 let test2 = test / 2.0 let test3 = test / 2 func main(argc: int) int {return 0}";
+    const source = "func main(argc: int) int {}";
     var gpa = std.heap.GeneralPurposeAllocator(.{
         .verbose_log = true,
         .enable_memory_limit = true,
@@ -84,7 +84,6 @@ pub fn main() !void {
     const generator = IRGen.init(ast, &module, gpa.allocator());
     try generator.generate();
 
-    std.debug.print("Global:\n", .{});
     var globalIter = module.getGlobals().table.iterator();
     while (globalIter.next()) |global| {
         const name = global.key_ptr.*;

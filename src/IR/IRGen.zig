@@ -22,6 +22,8 @@ const Constant = @import("Constant.zig").Constant;
 
 const AssignStatement = @import("../AST/AssignStatement.zig");
 const FunctionDecl = @import("../AST/FunctionDecl.zig");
+const Block = @import("../AST/Block.zig");
+const Stmt = @import("../AST/Stmt.zig").Stmt;
 
 const Function = @import("Function.zig");
 const FuncParam = Function.FuncParam;
@@ -111,6 +113,22 @@ fn generateGlobal(self: *const Self, assign: *const AssignStatement) IRStatus!vo
     try self.module.globals.insert(name, variable);
 }
 
+fn generateStatement(self: *const Self, func: *Function, stmt: *const Stmt) IRStatus!void {
+    _ = self;
+    _ = func;
+    _ = stmt;
+
+    return;
+}
+
+fn generateBody(self: *const Self, func: *Function, body: *const Block) IRStatus!void {
+    const b = body.getBody();
+    for (b.*) |stmt| {
+        try self.generateStatement(func, &stmt);
+    }
+    return;
+}
+
 fn generateFunction(self: *const Self, func: *const FunctionDecl) IRStatus!void {
     const name = func.getName().lexeme;
     const ret_ty = func.getReturnType();
@@ -123,10 +141,18 @@ fn generateFunction(self: *const Self, func: *const FunctionDecl) IRStatus!void 
         try func_params.append(FuncParam.init(param_name, ty));
     }
 
-    const blocks = std.ArrayList(FuncBlock).init(self.allocator);
+    var function = Function.init(self.allocator, func_params, ret_ty);
+    if (func.body) |b| {
+        self.generateBody(&function, &b) catch {
+            function.deinit();
+            return error.NotGood;
+        };
+    }
 
-    const function = Function.init(func_params, blocks, ret_ty);
-    try self.module.functions.insert(name, function);
+    self.module.functions.insert(name, function) catch {
+        function.deinit();
+        return error.NotGood;
+    };
 }
 
 pub fn generate(self: *const Self) IRStatus!void {
