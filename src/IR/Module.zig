@@ -1,10 +1,10 @@
 const std = @import("std");
 const mem = std.mem;
 
-const SymTable = @import("SymTable.zig").SymTable;
-const Variable = @import("Variable.zig");
+const SymTable = @import("ADT/SymTable.zig").SymTable;
+const Variable = @import("Object/Variable.zig");
 
-const Function = @import("Function.zig");
+const Function = @import("Object/Function.zig");
 
 const Self = @This();
 

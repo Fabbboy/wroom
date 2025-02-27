@@ -15,17 +15,17 @@ const OperatorType = Token.OperatorType;
 
 const Module = @import("Module.zig");
 
-const Variable = @import("Variable.zig");
+const Variable = @import("Object/Variable.zig");
 const IRValue = @import("Value.zig").IRValue;
 const IRStatus = @import("Error.zig").IRStatus;
-const Constant = @import("Constant.zig").Constant;
+const Constant = @import("IRValue/Constant.zig").IRConstant;
 
 const AssignStatement = @import("../AST/AssignStatement.zig");
 const FunctionDecl = @import("../AST/FunctionDecl.zig");
 const Block = @import("../AST/Block.zig");
 const Stmt = @import("../AST/Stmt.zig").Stmt;
 
-const Function = @import("Function.zig");
+const Function = @import("Object/Function.zig");
 const FuncParam = Function.FuncParam;
 const FuncBlock = Function.FuncBlock;
 

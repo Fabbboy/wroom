@@ -1,6 +1,6 @@
-const Token = @import("../Parser/Token.zig");
+const Token = @import("../../Parser/Token.zig");
 const ValueType = Token.ValueType;
-const IRValue = @import("Value.zig").IRValue;
+const IRValue = @import("../Value.zig").IRValue;
 
 const Self = @This();
 

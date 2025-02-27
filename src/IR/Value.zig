@@ -1,9 +1,13 @@
-const Constant = @import("Constant.zig").Constant;
+const std = @import("std");
+
+const IRConstant = @import("IRValue/Constant.zig").IRConstant;
+const IRBinary = @import("IRValue/Binary.zig");
 
 pub const IRValue = union(enum) {
-    Constant: Constant,
+    Constant: IRConstant,
+    Binary: IRBinary,
 
-    pub fn init_constant(value: Constant) IRValue {
+    pub fn init_constant(value: IRConstant) IRValue {
         return IRValue{
             .Constant = value,
         };
@@ -14,7 +18,7 @@ pub const IRValue = union(enum) {
             IRValue.Constant => |value| {
                 try value.fmt(fbuf);
             },
+            else => unreachable,
         }
     }
 };
-  

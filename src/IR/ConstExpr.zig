@@ -1,7 +1,7 @@
 const std = @import("std");
 const math = std.math;
 
-const Constant = @import("Constant.zig").Constant;
+const Constant = @import("IRValue/Constant.zig").IRConstant;
 
 pub fn ConstExprAdd(a: Constant, b: Constant) Constant {
     switch (a) {

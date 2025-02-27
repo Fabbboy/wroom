@@ -3,23 +3,23 @@ const zfmt = std.fmt;
 
 const Self = @This();
 
-pub const Constant = union(enum) {
+pub const IRConstant = union(enum) {
     Integer: i64,
     Floating: f64,
 
-    pub fn Int(value: i64) Constant {
+    pub fn Int(value: i64) IRConstant {
         return .{
             .Integer = value,
         };
     }
 
-    pub fn Float(value: f64) Constant {
+    pub fn Float(value: f64) IRConstant {
         return .{
             .Floating = value,
         };
     }
 
-    pub fn fmt(self: *const Constant, fbuf: anytype) !void {
+    pub fn fmt(self: *const IRConstant, fbuf: anytype) !void {
         switch (self.*) {
             .Integer => |value| {
                 try fbuf.print("{}", .{value});

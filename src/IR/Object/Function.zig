@@ -1,10 +1,10 @@
 const std = @import("std");
 const mem = std.mem;
 
-const Token = @import("../Parser/Token.zig");
+const Token = @import("../../Parser/Token.zig");
 const ValueType = Token.ValueType;
 
-const Instruction = @import("Instruction.zig").Instruction;
+const Instruction = @import("../Instruction.zig").Instruction;
 
 pub const FuncParam = struct {
     name: []const u8,
