@@ -20,8 +20,12 @@ const IRValue = @import("Value.zig").IRValue;
 const IRStatus = @import("Error.zig").IRStatus;
 const Constant = @import("Constant.zig").Constant;
 
+const AssignStatement = @import("../AST/AssignStatement.zig");
+const FunctionDecl = @import("../AST/FunctionDecl.zig");
+
 const Function = @import("Function.zig");
 const FuncParam = Function.FuncParam;
+const FuncBlock = Function.FuncBlock;
 
 const ConstExprNs = @import("ConstExpr.zig");
 const ConstExprAdd = ConstExprNs.ConstExprAdd;
@@ -89,40 +93,50 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRSt
     }
 }
 
+fn generateGlobal(self: *const Self, assign: *const AssignStatement) IRStatus!void {
+    const name = assign.getName().lexeme;
+    const ty = assign.getType();
+
+    var initializer = try self.compileConstantExpr(assign.getValue(), ty);
+    switch (initializer.Constant) {
+        Constant.Floating => |value| {
+            if (ty == ValueType.Int) {
+                initializer = IRValue.init_constant(Constant.Int(@as(i64, @intFromFloat(value))));
+            }
+        },
+        else => {},
+    }
+
+    const variable = Variable.init(initializer, ty);
+    try self.module.globals.insert(name, variable);
+}
+
+fn generateFunction(self: *const Self, func: *const FunctionDecl) IRStatus!void {
+    const name = func.getName().lexeme;
+    const ret_ty = func.getReturnType();
+
+    const params = func.getParams();
+    var func_params = std.ArrayList(FuncParam).init(self.allocator);
+    for (params.*) |param| {
+        const param_name = param.getName().lexeme;
+        const ty = param.getType();
+        try func_params.append(FuncParam.init(param_name, ty));
+    }
+
+    const blocks = std.ArrayList(FuncBlock).init(self.allocator);
+
+    const function = Function.init(func_params, blocks, ret_ty);
+    try self.module.functions.insert(name, function);
+}
+
 pub fn generate(self: *const Self) IRStatus!void {
     const globals = self.ast.getGlobals();
     for (globals.*) |glbl| {
-        const name = glbl.getName().lexeme;
-        const ty = glbl.getType();
-
-        var initializer = try self.compileConstantExpr(glbl.getValue(), ty);
-        switch (initializer.Constant) {
-            Constant.Floating => |value| {
-                if (ty == ValueType.Int) {
-                    initializer = IRValue.init_constant(Constant.Int(@as(i64, @intFromFloat(value))));
-                }
-            },
-            else => {},
-        }
-
-        const variable = Variable.init(initializer, ty);
-        try self.module.globals.insert(name, variable);
+        try self.generateGlobal(&glbl);
     }
 
     const functions = self.ast.getFunctions();
     for (functions.*) |func| {
-        const name = func.getName().lexeme;
-        const ret_ty = func.getReturnType();
-
-        const params = func.getParams();
-        var func_params = std.ArrayList(FuncParam).init(self.allocator);
-        for (params.*) |param| {
-            const param_name = param.getName().lexeme;
-            const ty = param.getType();
-            try func_params.append(FuncParam.init(param_name, ty));
-        }
-
-        const function = Function.init(func_params, ret_ty);
-        try self.module.functions.insert(name, function);
+        try self.generateFunction(&func);
     }
 }
