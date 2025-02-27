@@ -145,7 +145,8 @@ pub fn generate(self: *Self) IRStatus!void {
         const ty = glbl.getType();
 
         const initializer = try self.compileConstantExpr(glbl.getValue(), ty);
-        _ = try self.builder.createGlobal(name, ty, initializer);
+        const value = try self.builder.createGlobal(name, ty, initializer);
+        value.deinit();
     }
 
     const functions = self.ast.getFunctions();

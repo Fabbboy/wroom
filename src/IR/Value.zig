@@ -2,9 +2,11 @@ const std = @import("std");
 const mem = std.mem;
 
 const IRConstant = @import("IRValue/Constant.zig").IRConstant;
+const GlobalVariable = @import("Object/GlobalVariable.zig");
 
 pub const IRValueData = union(enum) {
     Constant: IRConstant,
+    Global: GlobalVariable,
 
     pub fn init_constant(value: IRConstant) IRValueData {
         return IRValueData{
@@ -12,9 +14,18 @@ pub const IRValueData = union(enum) {
         };
     }
 
+    pub fn init_global(value: GlobalVariable) IRValueData {
+        return IRValueData{
+            .Global = value,
+        };
+    }
+
     pub fn fmt(self: *const IRValueData, fbuf: anytype) !void {
         switch (self.*) {
             IRValueData.Constant => |value| {
+                try value.fmt(fbuf);
+            },
+            IRValueData.Global => |value| {
                 try value.fmt(fbuf);
             },
         }
@@ -28,6 +39,15 @@ pub const IRValue = struct {
     pub fn init_constant(allocator: mem.Allocator, value: IRConstant) !IRValue {
         const data = try allocator.create(IRValueData);
         data.* = IRValueData.init_constant(value);
+        return IRValue{
+            .data = data,
+            .allocator = allocator,
+        };
+    }
+
+    pub fn init_global(allocator: mem.Allocator, value: GlobalVariable) !IRValue {
+        const data = try allocator.create(IRValueData);
+        data.* = IRValueData.init_global(value);
         return IRValue{
             .data = data,
             .allocator = allocator,
