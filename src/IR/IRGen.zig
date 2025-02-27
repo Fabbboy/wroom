@@ -54,14 +54,14 @@ fn compileConstantBinary(self: *const Self, binary: *const BinaryExpr, ty: Value
     const rhs = try self.compileConstantExpr(binary.getRHS(), ty);
     const op = binary.op;
 
-    const clhs = lhs.Constant;
-    const crhs = rhs.Constant;
+    const clhs = lhs.data.Constant;
+    const crhs = rhs.data.Constant;
 
     switch (op) {
-        OperatorType.Plus => return IRValue.init_constant(ConstExprAdd(clhs, crhs)),
-        OperatorType.Minus => return IRValue.init_constant(ConstExprSub(clhs, crhs)),
-        OperatorType.Star => return IRValue.init_constant(ConstExprMul(clhs, crhs)),
-        OperatorType.Slash => return IRValue.init_constant(ConstExprDiv(clhs, crhs)),
+        OperatorType.Plus => return IRValue.init_constant(self.allocator, ConstExprAdd(clhs, crhs)),
+        OperatorType.Minus => return IRValue.init_constant(self.allocator, ConstExprSub(clhs, crhs)),
+        OperatorType.Star => return IRValue.init_constant(self.allocator, ConstExprMul(clhs, crhs)),
+        OperatorType.Slash => return IRValue.init_constant(self.allocator, ConstExprDiv(clhs, crhs)),
         else => unreachable,
     }
 }
@@ -74,11 +74,11 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRSt
             switch (literal.value_type) {
                 ValueType.Float => {
                     const value = try fmt.parseFloat(f64, literal.val.lexeme);
-                    return IRValue.init_constant(Constant{ .Floating = value });
+                    return IRValue.init_constant(self.allocator, Constant{ .Floating = value });
                 },
                 ValueType.Int => {
                     const value = try fmt.parseInt(i64, literal.val.lexeme, 10);
-                    return IRValue.init_constant(Constant{ .Integer = value });
+                    return IRValue.init_constant(self.allocator, Constant{ .Integer = value });
                 },
                 else => unreachable,
             }
@@ -100,10 +100,10 @@ fn generateGlobal(self: *const Self, assign: *const AssignStatement) IRStatus!vo
     const ty = assign.getType();
 
     var initializer = try self.compileConstantExpr(assign.getValue(), ty);
-    switch (initializer.Constant) {
+    switch (initializer.data.Constant) {
         Constant.Floating => |value| {
             if (ty == ValueType.Int) {
-                initializer = IRValue.init_constant(Constant.Int(@as(i64, @intFromFloat(value))));
+                initializer = try IRValue.init_constant(self.allocator, Constant.Int(@as(i64, @intFromFloat(value))));
             }
         },
         else => {},
