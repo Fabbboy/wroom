@@ -33,13 +33,15 @@ pub const IRValueData = union(enum) {
 };
 
 pub const IRValue = struct {
+    id: usize,
     data: *IRValueData,
     allocator: mem.Allocator,
 
-    pub fn init_constant(allocator: mem.Allocator, value: IRConstant) !IRValue {
+    pub fn init_constant(allocator: mem.Allocator, id: usize, value: IRConstant) !IRValue {
         const data = try allocator.create(IRValueData);
         data.* = IRValueData.init_constant(value);
         return IRValue{
+            .id = id,
             .data = data,
             .allocator = allocator,
         };
@@ -49,7 +51,7 @@ pub const IRValue = struct {
         try self.data.fmt(fbuf);
     }
 
-    pub fn deinit(self: *IRValue) void {
+    pub fn deinit(self: *const IRValue) void {
         self.allocator.destroy(self.data);
     }
 };

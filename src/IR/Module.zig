@@ -21,9 +21,15 @@ pub fn init(allocator: mem.Allocator) Self {
 }
 
 pub fn deinit(self: *Self) void {
+    var varNext = self.globals.table.iterator();
+    while (varNext.next()) |entry| {
+        const value = entry.value_ptr.*;
+        value.deinit();
+    }
     self.globals.deinit();
-    var next = self.functions.table.iterator();
-    while (next.next()) |entry| {
+
+    var funcNext = self.functions.table.iterator();
+    while (funcNext.next()) |entry| {
         const value = entry.value_ptr.*;
         value.deinit();
     }
