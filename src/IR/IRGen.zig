@@ -15,7 +15,7 @@ const OperatorType = Token.OperatorType;
 
 const Module = @import("Module.zig");
 
-const Variable = @import("Object/Variable.zig");
+const GlobalVariable = @import("Object/GlobalVariable.zig");
 const IRValue = @import("Value.zig").IRValue;
 const IRStatus = @import("Error.zig").IRStatus;
 const Constant = @import("IRValue/Constant.zig").IRConstant;
@@ -53,24 +53,21 @@ pub fn init(ast: *const Ast, module: *Module, allocator: mem.Allocator) Self {
     };
 }
 
-fn compileConstantBinary(self: *const Self, binary: *const BinaryExpr, ty: ValueType) IRStatus!IRValue {
-    const lhs = try self.compileConstantExpr(binary.getLHS(), ty);
-    const rhs = try self.compileConstantExpr(binary.getRHS(), ty);
+fn compileConstantBinary(self: *const Self, binary: *const BinaryExpr, ty: ValueType) IRStatus!Constant {
+    const clhs = try self.compileConstantExpr(binary.getLHS(), ty);
+    const crhs = try self.compileConstantExpr(binary.getRHS(), ty);
     const op = binary.op;
 
-    const clhs = lhs.data.Constant;
-    const crhs = rhs.data.Constant;
-
     switch (op) {
-        OperatorType.Plus => return IRValue.init_constant(self.allocator, ConstExprAdd(clhs, crhs)),
-        OperatorType.Minus => return IRValue.init_constant(self.allocator, ConstExprSub(clhs, crhs)),
-        OperatorType.Star => return IRValue.init_constant(self.allocator, ConstExprMul(clhs, crhs)),
-        OperatorType.Slash => return IRValue.init_constant(self.allocator, ConstExprDiv(clhs, crhs)),
+        OperatorType.Plus => return ConstExprAdd(clhs, crhs),
+        OperatorType.Minus => return ConstExprSub(clhs, crhs),
+        OperatorType.Star => return ConstExprMul(clhs, crhs),
+        OperatorType.Slash => return ConstExprDiv(clhs, crhs),
         else => unreachable,
     }
 }
 
-fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRStatus!IRValue {
+fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRStatus!Constant {
     const data = expr.data.*;
     switch (data) {
         ExprKind.Literal => {
@@ -78,11 +75,11 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRSt
             switch (literal.value_type) {
                 ValueType.Float => {
                     const value = try fmt.parseFloat(f64, literal.val.lexeme);
-                    return IRValue.init_constant(self.allocator, Constant{ .Floating = value });
+                    return Constant.Float(value);
                 },
                 ValueType.Int => {
                     const value = try fmt.parseInt(i64, literal.val.lexeme, 10);
-                    return IRValue.init_constant(self.allocator, Constant{ .Integer = value });
+                    return Constant.Int(value);
                 },
                 else => unreachable,
             }
@@ -104,16 +101,16 @@ fn generateGlobal(self: *Self, assign: *const AssignStatement) IRStatus!void {
     const ty = assign.getType();
 
     var initializer = try self.compileConstantExpr(assign.getValue(), ty);
-    switch (initializer.data.Constant) {
+    switch (initializer) {
         Constant.Floating => |value| {
             if (ty == ValueType.Int) {
-                initializer = try IRValue.init_constant(self.allocator, Constant.Int(@as(i64, @intFromFloat(value))));
+                initializer = Constant.Int(@as(i64, @intFromFloat(value)));
             }
         },
         else => {},
     }
 
-    const variable = Variable.init(
+    const variable = GlobalVariable.init(
         initializer,
         ty,
     );
