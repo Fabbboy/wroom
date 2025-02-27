@@ -18,9 +18,7 @@ pub const FuncParam = struct {
     }
 
     pub fn fmt(self: *const FuncParam, fbuf: anytype) !void {
-        try fbuf.writeAll("FuncParam{ name: ");
-        try fbuf.print("{s}, type: {s}", .{ self.name, self.type.fmt() });
-        try fbuf.writeAll(" }");
+        try fbuf.print("{s} {s}", .{ self.type.fmt(), self.name });
     }
 };
 
@@ -76,7 +74,7 @@ pub fn deinit(self: *const Self) void {
 pub fn fmt(self: *const Self, fbuf: anytype, name: []const u8) !void {
     try fbuf.print("@{s}(", .{name});
     for (self.params.items, 0..) |param, i| {
-        try fbuf.print("{s} {s}", .{ param.type.fmt(), param.name });
+        try param.fmt(fbuf);
         if (i + 1 != self.params.items.len) {
             try fbuf.writeAll(", ");
         }
