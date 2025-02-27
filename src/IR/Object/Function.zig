@@ -98,3 +98,13 @@ pub fn fmt(self: *const Self, fbuf: anytype, name: []const u8) !void {
     }
     try fbuf.writeAll("}\n");
 }
+
+pub fn gen(self: *Self, instrs: *std.ArrayList(Instruction)) void {
+    _ = instrs;
+    for (self.blocks.items) |block| {
+        for (block.instructions.items) |instr| {
+            _ = instr;
+            // try instr.gen(instrs);
+        }
+    }
+}
