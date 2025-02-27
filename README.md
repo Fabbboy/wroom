@@ -41,8 +41,10 @@ IR:
 @main() -> int {
     %i1 = alloca int
     store int $123, ptr %1
+
     %i2 = load int, ptr %1
     %i3 = add int %i2, int $1
+    
     store i32 %i3, ptr %i1
 }
 ```
