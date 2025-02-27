@@ -2,11 +2,9 @@ const std = @import("std");
 const mem = std.mem;
 
 const IRConstant = @import("IRValue/Constant.zig").IRConstant;
-const IRBinary = @import("IRValue/Binary.zig");
 
 pub const IRValueData = union(enum) {
     Constant: IRConstant,
-    Binary: IRBinary,
 
     pub fn init_constant(value: IRConstant) IRValueData {
         return IRValueData{
@@ -14,18 +12,9 @@ pub const IRValueData = union(enum) {
         };
     }
 
-    pub fn init_binary(binary: IRBinary) IRValueData {
-        return IRValueData{
-            .Binary = binary,
-        };
-    }
-
     pub fn fmt(self: *const IRValueData, fbuf: anytype) !void {
         switch (self.*) {
             IRValueData.Constant => |value| {
-                try value.fmt(fbuf);
-            },
-            IRValueData.Binary => |value| {
                 try value.fmt(fbuf);
             },
         }
