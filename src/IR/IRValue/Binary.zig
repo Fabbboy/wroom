@@ -5,8 +5,6 @@ const ValueType = Token.ValueType;
 
 const IRStatus = @import("../Error.zig").IRStatus;
 
-const Instruction = @import("../Instruction.zig").Instruction;
-
 const Self = @This();
 const IRValue = @import("../Value.zig").IRValue;
 
@@ -26,9 +24,4 @@ pub fn fmt(self: *const Self, fbuf: anytype) IRStatus!void {
     try self.lhs.fmt(fbuf);
     try fbuf.print(" {s} ", .{self.op.fmt()});
     try self.rhs.fmt(fbuf);
-}
-
-pub fn gen(self: *const Self, instrs: *std.ArrayList(Instruction)) IRStatus!void {
-    _ = self;
-    _ = instrs;
 }
