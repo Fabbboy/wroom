@@ -54,13 +54,15 @@ ret_type: ValueType,
 params: std.ArrayList(FuncParam),
 blocks: std.ArrayList(FuncBlock),
 allocator: mem.Allocator,
+current_block: ?*const FuncBlock,
 
-pub fn init(allocator: mem.Allocator ,params: std.ArrayList(FuncParam), ret_type: ValueType) Self {
+pub fn init(allocator: mem.Allocator, params: std.ArrayList(FuncParam), ret_type: ValueType) Self {
     return Self{
         .ret_type = ret_type,
         .params = params,
         .blocks = std.ArrayList(FuncBlock).init(allocator),
         .allocator = allocator,
+        .current_block = null,
     };
 }
 
@@ -71,6 +73,14 @@ pub fn deinit(self: *const Self) void {
     }
 
     self.blocks.deinit();
+}
+
+pub fn setInsertBlock(self: *Self, block: *const FuncBlock) void {
+    self.current_block = block;
+}
+
+pub fn getCurrentBlock(self: *Self) *const FuncBlock {
+    return self.current_block;
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype, name: []const u8) !void {
