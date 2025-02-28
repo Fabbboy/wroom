@@ -25,6 +25,7 @@ pub const FuncParam = struct {
 pub const FuncBlock = struct {
     name: []const u8,
     instructions: std.ArrayList(Instruction),
+    parent: *FuncBlock,
 
     pub fn init(name: []const u8, instructions: std.ArrayList(Instruction)) FuncBlock {
         return FuncBlock{
@@ -46,6 +47,10 @@ pub const FuncBlock = struct {
         }
         try fbuf.writeAll("\n");
     }
+
+    pub fn getParent(self: *const FuncBlock) *const FuncBlock {
+        return self.parent;
+    }
 };
 
 const Self = @This();
@@ -54,6 +59,7 @@ ret_type: ValueType,
 params: std.ArrayList(FuncParam),
 blocks: std.ArrayList(FuncBlock),
 allocator: mem.Allocator,
+reg_id: usize,
 
 pub fn init(allocator: mem.Allocator, params: std.ArrayList(FuncParam), ret_type: ValueType) Self {
     return Self{
@@ -61,6 +67,7 @@ pub fn init(allocator: mem.Allocator, params: std.ArrayList(FuncParam), ret_type
         .params = params,
         .blocks = std.ArrayList(FuncBlock).init(allocator),
         .allocator = allocator,
+        .reg_id = 0,
     };
 }
 
@@ -71,6 +78,12 @@ pub fn deinit(self: *const Self) void {
     }
 
     self.blocks.deinit();
+}
+
+pub fn getNextId(self: *Self) usize {
+    const id = self.reg_id;
+    self.reg_id += 1;
+    return id;
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype, name: []const u8) !void {
