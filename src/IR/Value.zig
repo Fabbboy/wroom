@@ -3,10 +3,12 @@ const mem = std.mem;
 
 const IRConstant = @import("IRValue/Constant.zig").IRConstant;
 const GlobalVariable = @import("IRValue/GlobalVariable.zig");
+const Variable = @import("IRValue/Variable.zig");
 
 pub const IRValueData = union(enum) {
     Constant: IRConstant,
     Global: GlobalVariable,
+    Variable: Variable,
 
     pub fn init_constant(value: IRConstant) IRValueData {
         return IRValueData{
@@ -20,12 +22,21 @@ pub const IRValueData = union(enum) {
         };
     }
 
+    pub fn init_variable(value: Variable) IRValueData {
+        return IRValueData{
+            .Variable = value,
+        };
+    }
+
     pub fn fmt(self: *const IRValueData, fbuf: anytype) !void {
         switch (self.*) {
             IRValueData.Constant => |value| {
                 try value.fmt(fbuf);
             },
             IRValueData.Global => |value| {
+                try value.fmt(fbuf);
+            },
+            IRValueData.Variable => |value| {
                 try value.fmt(fbuf);
             },
         }
@@ -48,6 +59,15 @@ pub const IRValue = struct {
     pub fn init_global(allocator: mem.Allocator, value: GlobalVariable) !IRValue {
         const data = try allocator.create(IRValueData);
         data.* = IRValueData.init_global(value);
+        return IRValue{
+            .data = data,
+            .allocator = allocator,
+        };
+    }
+
+    pub fn init_variable(allocator: mem.Allocator, value: Variable) !IRValue {
+        const data = try allocator.create(IRValueData);
+        data.* = IRValueData.init_variable(value);
         return IRValue{
             .data = data,
             .allocator = allocator,
