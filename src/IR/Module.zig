@@ -2,9 +2,9 @@ const std = @import("std");
 const mem = std.mem;
 
 const SymTable = @import("ADT/SymTable.zig").SymTable;
-const GlobalVariable = @import("Object/GlobalVariable.zig");
+const GlobalVariable = @import("IRValue/GlobalVariable.zig");
 
-const Function = @import("Object/Function.zig");
+const Function = @import("IRValue/Function.zig");
 const FuncBlock = Function.FuncBlock;
 
 const Self = @This();

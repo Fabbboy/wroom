@@ -3,7 +3,7 @@ const Module = @import("Module.zig");
 const Token = @import("../Parser/Token.zig");
 const ValueType = Token.ValueType;
 
-const Function = @import("Object/Function.zig");
+const Function = @import("IRValue/Function.zig");
 const FuncBlock = Function.FuncBlock;
 
 const Constant = @import("IRValue/Constant.zig").IRConstant;
@@ -11,7 +11,7 @@ const Constant = @import("IRValue/Constant.zig").IRConstant;
 const IRStatus = @import("Error.zig").IRStatus;
 const IRValue = @import("Value.zig").IRValue;
 
-const GlobalVariable = @import("Object/GlobalVariable.zig");
+const GlobalVariable = @import("IRValue/GlobalVariable.zig");
 
 const Self = @This();
 

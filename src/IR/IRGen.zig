@@ -15,7 +15,7 @@ const OperatorType = Token.OperatorType;
 
 const Module = @import("Module.zig");
 
-const GlobalVariable = @import("Object/GlobalVariable.zig");
+const GlobalVariable = @import("IRValue/GlobalVariable.zig");
 const IRValue = @import("Value.zig").IRValue;
 const IRStatus = @import("Error.zig").IRStatus;
 const Constant = @import("IRValue/Constant.zig").IRConstant;
@@ -25,7 +25,7 @@ const FunctionDecl = @import("../AST/FunctionDecl.zig");
 const Block = @import("../AST/Block.zig");
 const Stmt = @import("../AST/Stmt.zig").Stmt;
 
-const Function = @import("Object/Function.zig");
+const Function = @import("IRValue/Function.zig");
 const FuncParam = Function.FuncParam;
 const FuncBlock = Function.FuncBlock;
 

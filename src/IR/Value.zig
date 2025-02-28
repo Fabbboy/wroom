@@ -2,7 +2,7 @@ const std = @import("std");
 const mem = std.mem;
 
 const IRConstant = @import("IRValue/Constant.zig").IRConstant;
-const GlobalVariable = @import("Object/GlobalVariable.zig");
+const GlobalVariable = @import("IRValue/GlobalVariable.zig");
 
 pub const IRValueData = union(enum) {
     Constant: IRConstant,
