@@ -6,11 +6,13 @@ const Constant = @import("../IRValue/Constant.zig").IRConstant;
 
 const Self = @This();
 
+glob_id: usize,
 initializer: Constant,
 val_type: ValueType,
 
-pub fn init(initializer: Constant, val_type: ValueType) Self {
+pub fn init(glob_id: usize, initializer: Constant, val_type: ValueType) Self {
     return Self{
+        .glob_id = glob_id,
         .initializer = initializer,
         .val_type = val_type,
     };

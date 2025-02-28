@@ -7,17 +7,21 @@ const GlobalVariable = @import("IRValue/GlobalVariable.zig");
 const Function = @import("IRValue/Function.zig");
 const FuncBlock = Function.FuncBlock;
 
+const IRValue = @import("Value.zig").IRValue;
+
 const Self = @This();
 
 allocator: mem.Allocator,
 globals: SymTable(GlobalVariable),
 functions: SymTable(Function),
+globals_id: usize,
 
 pub fn init(allocator: mem.Allocator) Self {
     return Self{
         .allocator = allocator,
         .globals = SymTable(GlobalVariable).init(allocator),
         .functions = SymTable(Function).init(allocator),
+        .globals_id = 0,
     };
 }
 
@@ -30,6 +34,12 @@ pub fn deinit(self: *Self) void {
         value.deinit();
     }
     self.functions.deinit();
+}
+
+pub fn getNextGlobalId(self: *Self) usize {
+    const id = self.globals_id;
+    self.globals_id += 1;
+    return id;
 }
 
 pub fn getGlobals(self: *const Self) *const SymTable(GlobalVariable) {

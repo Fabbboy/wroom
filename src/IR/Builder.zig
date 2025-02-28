@@ -1,3 +1,5 @@
+const std = @import("std");
+
 const Module = @import("Module.zig");
 
 const Token = @import("../Parser/Token.zig");
@@ -5,6 +7,7 @@ const ValueType = Token.ValueType;
 
 const Function = @import("IRValue/Function.zig");
 const FuncBlock = Function.FuncBlock;
+const FuncParam = Function.FuncParam;
 
 const Constant = @import("IRValue/Constant.zig").IRConstant;
 
@@ -25,7 +28,7 @@ pub fn init(module: *Module) Self {
     };
 }
 
-pub fn createGlobal(self: *Self, name: []const u8, val_type: ValueType, initializer: Constant) IRStatus!IRValue {
+pub fn createGlobal(self: *Self, name: []const u8, val_type: ValueType, initializer: Constant) IRStatus!void {
     var local_init = initializer;
     if (local_init.getType() != val_type) {
         switch (local_init) {
@@ -43,13 +46,23 @@ pub fn createGlobal(self: *Self, name: []const u8, val_type: ValueType, initiali
     }
 
     const variable = GlobalVariable.init(
+        self.module.getNextGlobalId(),
         local_init,
         val_type,
     );
 
     try self.module.globals.insert(name, variable);
+    return;
+}
 
-    return try IRValue.init_global(self.module.allocator, variable);
+pub fn createFunction(self: *Self, name: []const u8, arguments: std.ArrayList(FuncParam), ret_type: ValueType) IRStatus!void {
+    const function = Function.init(
+        self.module.allocator,
+        arguments,
+        ret_type,
+    );
+
+    try self.module.functions.insert(name, function);
 }
 
 pub fn setActiveBlock(self: *Self, block: *FuncBlock) void {

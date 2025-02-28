@@ -96,26 +96,7 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRSt
     }
 }
 
-fn generateStatement(self: *const Self, func: *Function, stmt: *const Stmt) IRStatus!void {
-    _ = self;
-    _ = func;
-    _ = stmt;
-
-    return;
-}
-
-fn generateBody(self: *const Self, func: *Function, body: *const Block) IRStatus!void {
-    const b = body.getBody();
-    for (b.*) |stmt| {
-        try self.generateStatement(func, &stmt);
-    }
-    return;
-}
-
 fn generateFunction(self: *Self, func: *const FunctionDecl) IRStatus!void {
-    const name = func.getName().lexeme;
-    const ret_ty = func.getReturnType();
-
     const params = func.getParams();
     var func_params = std.ArrayList(FuncParam).init(self.allocator);
     for (params.*) |param| {
@@ -124,18 +105,9 @@ fn generateFunction(self: *Self, func: *const FunctionDecl) IRStatus!void {
         try func_params.append(FuncParam.init(param_name, ty));
     }
 
-    var function = Function.init(self.allocator, func_params, ret_ty);
-    if (func.body) |b| {
-        self.generateBody(&function, &b) catch {
-            function.deinit();
-            return error.NotGood;
-        };
-    }
-
-    self.module.functions.insert(name, function) catch {
-        function.deinit();
-        return error.NotGood;
-    };
+    const ret_type = func.getReturnType();
+    const name = func.getName().lexeme;
+    try self.builder.createFunction(name, func_params, ret_type);
 }
 
 pub fn generate(self: *Self) IRStatus!void {
@@ -145,8 +117,7 @@ pub fn generate(self: *Self) IRStatus!void {
         const ty = glbl.getType();
 
         const initializer = try self.compileConstantExpr(glbl.getValue(), ty);
-        const value = try self.builder.createGlobal(name, ty, initializer);
-        value.deinit();
+        try self.builder.createGlobal(name, ty, initializer);
     }
 
     const functions = self.ast.getFunctions();
