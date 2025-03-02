@@ -1,4 +1,5 @@
 const std = @import("std");
+const mem = std.mem;
 
 const Module = @import("Module.zig");
 
@@ -16,14 +17,18 @@ const IRValue = @import("Value.zig").IRValue;
 
 const GlobalVariable = @import("IRValue/GlobalVariable.zig");
 
+const Instruction = @import("Instruction.zig").Instruction;
+
 const Self = @This();
 
 module: *Module,
+allocator: mem.Allocator,
 active_block: ?*FuncBlock,
 
-pub fn init(module: *Module) Self {
+pub fn init(allocator: mem.Allocator, module: *Module) Self {
     return Self{
         .module = module,
+        .allocator = allocator,
         .active_block = null,
     };
 }
@@ -65,6 +70,17 @@ pub fn createFunction(self: *Self, name: []const u8, arguments: std.ArrayList(Fu
     try self.module.functions.insert(name, function);
     const res = self.module.functions.get(name);
     return res.?;
+}
+
+pub fn createBlock(self: *Self, name: []const u8, function: *Function) IRStatus!*FuncBlock {
+    const instrs = std.ArrayList(Instruction).init(self.allocator);
+    const block = FuncBlock.init(name, instrs, function);
+    const b = function.addBlock(block) catch |e| {
+        instrs.deinit();
+        block.deinit();
+        return e;
+    };
+    return b;
 }
 
 pub fn setActiveBlock(self: *Self, block: *FuncBlock) void {

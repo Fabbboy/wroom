@@ -6,6 +6,10 @@ const ValueType = Token.ValueType;
 
 const Instruction = @import("../Instruction.zig").Instruction;
 
+const IRStatus = @import("../Error.zig").IRStatus;
+
+const Function = @This();
+
 pub const FuncParam = struct {
     name: []const u8,
     type: ValueType,
@@ -25,12 +29,13 @@ pub const FuncParam = struct {
 pub const FuncBlock = struct {
     name: []const u8,
     instructions: std.ArrayList(Instruction),
-    parent: *FuncBlock,
+    parent: *Function,
 
-    pub fn init(name: []const u8, instructions: std.ArrayList(Instruction)) FuncBlock {
+    pub fn init(name: []const u8, instructions: std.ArrayList(Instruction), parent: *Function) FuncBlock {
         return FuncBlock{
             .name = name,
             .instructions = instructions,
+            .parent = parent,
         };
     }
 
@@ -100,4 +105,9 @@ pub fn fmt(self: *const Self, fbuf: anytype, name: []const u8) !void {
         try block.fmt(fbuf);
     }
     try fbuf.writeAll("}\n");
+}
+
+pub fn addBlock(self: *Self, block: FuncBlock) IRStatus!*FuncBlock {
+    try self.blocks.append(block);
+    return &self.blocks.items[self.blocks.items.len - 1];
 }

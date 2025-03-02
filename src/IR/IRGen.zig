@@ -49,7 +49,7 @@ pub fn init(ast: *const Ast, module: *Module, allocator: mem.Allocator) Self {
         .ast = ast,
         .module = module,
         .allocator = allocator,
-        .builder = Builder.init(module),
+        .builder = Builder.init(allocator, module),
     };
 }
 
@@ -108,7 +108,14 @@ fn generateFunction(self: *Self, func: *const FunctionDecl) IRStatus!void {
     const ret_type = func.getReturnType();
     const name = func.getName().lexeme;
     const created_function = try self.builder.createFunction(name, func_params, ret_type);
-    _ = created_function;
+
+    if (func.body) |block| {
+        const bb = try self.builder.createBlock("entry", created_function);
+        self.builder.setActiveBlock(bb);
+        _ = block;
+    } else {
+        @panic("External functions are not supported yet");
+    }
 }
 
 pub fn generate(self: *Self) IRStatus!void {

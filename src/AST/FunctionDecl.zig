@@ -75,3 +75,7 @@ pub fn deinit(self: *const Self) void {
         block.deinit();
     }
 }
+
+pub fn getBody(self: *const Self) ?*const Block {
+    return self.body;
+}
