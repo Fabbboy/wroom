@@ -111,9 +111,13 @@ fn generateStmt(self: *Self, stmt: *const Stmt) IRStatus!void {
             _ = new_var;
 
             const alloca = try self.builder.createAlloca(ty);
-            const store = try self.builder.createStore(alloca, try IRValue.init_constant(self.allocator, Constant.Int(69420)), ty);
+            const store = try self.builder.createStore(
+                alloca,
+                try IRValue.init_constant(self.allocator, Constant.Int(69420)),
+                ty,
+            );
             defer store.deinit();
-        },  
+        },
         Stmt.ReturnStatement => {},
     }
 }
