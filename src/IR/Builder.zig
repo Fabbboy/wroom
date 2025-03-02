@@ -55,7 +55,7 @@ pub fn createGlobal(self: *Self, name: []const u8, val_type: ValueType, initiali
     return;
 }
 
-pub fn createFunction(self: *Self, name: []const u8, arguments: std.ArrayList(FuncParam), ret_type: ValueType) IRStatus!void {
+pub fn createFunction(self: *Self, name: []const u8, arguments: std.ArrayList(FuncParam), ret_type: ValueType) IRStatus!*Function {
     const function = Function.init(
         self.module.allocator,
         arguments,
@@ -63,6 +63,8 @@ pub fn createFunction(self: *Self, name: []const u8, arguments: std.ArrayList(Fu
     );
 
     try self.module.functions.insert(name, function);
+    const res = self.module.functions.get(name);
+    return res.?;
 }
 
 pub fn setActiveBlock(self: *Self, block: *FuncBlock) void {

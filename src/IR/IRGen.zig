@@ -107,7 +107,8 @@ fn generateFunction(self: *Self, func: *const FunctionDecl) IRStatus!void {
 
     const ret_type = func.getReturnType();
     const name = func.getName().lexeme;
-    try self.builder.createFunction(name, func_params, ret_type);
+    const created_function = try self.builder.createFunction(name, func_params, ret_type);
+    _ = created_function;
 }
 
 pub fn generate(self: *Self) IRStatus!void {
