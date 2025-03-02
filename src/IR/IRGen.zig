@@ -96,6 +96,14 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRSt
     }
 }
 
+fn generateStmt(self: *Self, stmt: *const Stmt) IRStatus!void {
+    _ = self;
+    switch (stmt.*) {
+        Stmt.AssignStatement => {},
+        Stmt.ReturnStatement => {},
+    }
+}
+
 fn generateFunction(self: *Self, func: *const FunctionDecl) IRStatus!void {
     const params = func.getParams();
     var func_params = std.ArrayList(FuncParam).init(self.allocator);
@@ -112,7 +120,10 @@ fn generateFunction(self: *Self, func: *const FunctionDecl) IRStatus!void {
     if (func.body) |block| {
         const bb = try self.builder.createBlock("entry", created_function);
         self.builder.setActiveBlock(bb);
-        _ = block;
+        const body = block.getBody();
+        for (body.*) |stmt| {
+            try self.generateStmt(&stmt);
+        }
     } else {
         @panic("External functions are not supported yet");
     }
