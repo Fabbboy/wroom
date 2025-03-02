@@ -4,6 +4,8 @@ const Token = @import("../../Parser/Token.zig");
 const ValueType = Token.ValueType;
 const IRValue = @import("../Value.zig").IRValue;
 
+const IRStatus = @import("../Error.zig").IRStatus;
+
 const Self = @This();
 
 id: usize,
@@ -18,7 +20,7 @@ pub fn init(id: usize, initializer: IRValue, val_type: ValueType) Self {
     };
 }
 
-pub fn fmt(self: *const Self, fbuf: anytype) !void {
+pub fn fmt(self: *const Self, fbuf: anytype) IRStatus!void {
     try fbuf.print("{s} = ", .{self.val_type.fmt()});
     try self.initializer.fmt(fbuf);
 }

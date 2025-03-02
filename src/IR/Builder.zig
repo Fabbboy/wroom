@@ -11,13 +11,17 @@ const FuncBlock = Function.FuncBlock;
 const FuncParam = Function.FuncParam;
 
 const Constant = @import("IRValue/Constant.zig").IRConstant;
+const Location = @import("IRValue/Location.zig");
 
 const IRStatus = @import("Error.zig").IRStatus;
 const IRValue = @import("Value.zig").IRValue;
 
 const GlobalVariable = @import("IRValue/GlobalVariable.zig");
 
-const Instruction = @import("Instruction.zig").Instruction;
+const InstructionNs = @import("Instruction.zig");
+const Instruction = InstructionNs.Instruction;
+const AllocaInst = InstructionNs.AllocaInst;
+const StoreInst = InstructionNs.StoreInst;
 
 const Self = @This();
 
@@ -81,6 +85,32 @@ pub fn createBlock(self: *Self, name: []const u8, function: *Function) IRStatus!
         return e;
     };
     return b;
+}
+
+pub fn createAlloca(self: *Self, size: ValueType) IRStatus!IRValue {
+    if (self.active_block == null) {
+        return IRStatus.NotGood;
+    }
+
+    const bb = self.active_block.?;
+    const id = bb.parent.getNextId();
+
+    const inst = Instruction.init_alloca(AllocaInst.init(id, size));
+    try bb.instructions.append(inst);
+    return IRValue.init_location(self.allocator, Location.init(id, size));
+}
+
+pub fn createStore(self: *Self, target: IRValue, value: IRValue, ty: ValueType) IRStatus!IRValue {
+    if (self.active_block == null) {
+        return IRStatus.NotGood;
+    }
+
+    const bb = self.active_block.?;
+    const id = bb.parent.getNextId();
+
+    const inst = Instruction.init_store(StoreInst.init(id, target, value, ty));
+    try bb.instructions.append(inst);
+    return IRValue.init_location(self.allocator, Location.init(id, ty));
 }
 
 pub fn setActiveBlock(self: *Self, block: *FuncBlock) void {

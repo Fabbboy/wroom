@@ -40,6 +40,9 @@ pub const FuncBlock = struct {
     }
 
     pub fn deinit(self: *const FuncBlock) void {
+        for (self.instructions.items) |instr| {
+            instr.deinit();
+        }
         self.instructions.deinit();
     }
 

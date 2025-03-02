@@ -97,9 +97,23 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRSt
 }
 
 fn generateStmt(self: *Self, stmt: *const Stmt) IRStatus!void {
-    _ = self;
+    //_ = self;
     switch (stmt.*) {
-        Stmt.AssignStatement => {},
+        Stmt.AssignStatement => {
+            const assign = stmt.*.AssignStatement;
+            const name = assign.getName().lexeme;
+            const ty = assign.getType();
+            const assign_type = assign.assign_type;
+            const new_var = assign.new_var;
+            _ = name;
+            //_ = ty;
+            _ = assign_type;
+            _ = new_var;
+
+            const alloca = try self.builder.createAlloca(ty);
+            const store = try self.builder.createStore(alloca, try IRValue.init_constant(self.allocator, Constant.Int(69420)), ty);
+            defer store.deinit();
+        },  
         Stmt.ReturnStatement => {},
     }
 }
