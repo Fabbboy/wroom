@@ -5,6 +5,7 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 
 ### Next Steps
 
+- [ ] Add function call as Statement
 - [ ] Check function call fits signature
 - [ ] ~~SSA not correctly implemented~~ => optimization required
 - [X] Using function parameters results in segmentation fault
