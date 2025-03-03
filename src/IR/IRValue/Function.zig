@@ -53,7 +53,6 @@ pub const FuncBlock = struct {
             try instr.fmt(fbuf);
             try fbuf.writeAll("\n");
         }
-        try fbuf.writeAll("\n");
     }
 
     pub fn getParent(self: *const FuncBlock) *const FuncBlock {
@@ -107,7 +106,7 @@ pub fn fmt(self: *const Self, fbuf: anytype, name: []const u8) !void {
     for (self.blocks.items) |block| {
         try block.fmt(fbuf);
     }
-    try fbuf.writeAll("}\n");
+    try fbuf.writeAll("}");
 }
 
 pub fn addBlock(self: *Self, block: FuncBlock) IRStatus!*FuncBlock {
