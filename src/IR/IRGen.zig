@@ -182,16 +182,41 @@ fn generateStmt(self: *Self, stmt: *const Stmt) IRStatus!void {
             const assign = stmt.*.AssignStatement;
             const name = assign.getName().lexeme;
             const ty = assign.getType();
-            const new_var = assign.new_var;
 
             const alloca = try self.builder.createAlloca(ty);
             defer alloca.deinit();
             const alloca_loc = alloca.data.Location;
             const loc = try IRValue.init_location(self.allocator, alloca_loc);
 
-            if (new_var) {
-                const val = try self.generateExpression(assign.getValue());
-                try self.builder.createStore(loc, val, ty);
+            switch (assign.assign_type) {
+                OperatorType.Assign => {
+                    const val = try self.generateExpression(assign.getValue());
+                    try self.builder.createStore(loc, val, ty);
+                },
+                OperatorType.Plus => {
+                    const val = try self.generateExpression(assign.getValue());
+                    const load = try self.builder.createLoad(alloca_loc, ty);
+                    const add = try self.builder.createAdd(load, val, ty);
+                    try self.builder.createStore(loc, add, ty);
+                },
+                OperatorType.Minus => {
+                    const val = try self.generateExpression(assign.getValue());
+                    const load = try self.builder.createLoad(alloca_loc, ty);
+                    const sub = try self.builder.createSub(load, val, ty);
+                    try self.builder.createStore(loc, sub, ty);
+                },
+                OperatorType.Star => {
+                    const val = try self.generateExpression(assign.getValue());
+                    const load = try self.builder.createLoad(alloca_loc, ty);
+                    const mul = try self.builder.createMul(load, val, ty);
+                    try self.builder.createStore(loc, mul, ty);
+                },
+                OperatorType.Slash => {
+                    const val = try self.generateExpression(assign.getValue());
+                    const load = try self.builder.createLoad(alloca_loc, ty);
+                    const div = try self.builder.createDiv(load, val, ty);
+                    try self.builder.createStore(loc, div, ty);
+                },
             }
 
             try self.namend.insert(name, loc);
