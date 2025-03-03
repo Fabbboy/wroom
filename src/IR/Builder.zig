@@ -52,12 +52,12 @@ pub fn createGlobal(self: *Self, name: []const u8, val_type: ValueType, initiali
     if (local_init.getType() != val_type) {
         switch (local_init) {
             Constant.Floating => |value| {
-                if (val_type == ValueType.Int) {
+                if (val_type == ValueType.I32) {
                     local_init = Constant.Int(@as(i64, @intFromFloat(value)));
                 }
             },
             Constant.Integer => |value| {
-                if (val_type == ValueType.Float) {
+                if (val_type == ValueType.F32) {
                     local_init = Constant.Float(@as(f64, @floatFromInt(value)));
                 }
             },

@@ -61,16 +61,16 @@ pub const TokenKind = enum {
 pub const ValueType = enum {
     Untyped,
     Ptr,
-    Int,
-    Float,
+    I32,
+    F32,
     Void,
 
     pub fn fmt(self: ValueType) []const u8 {
         return switch (self) {
             ValueType.Untyped => "untyped",
             ValueType.Ptr => "ptr",
-            ValueType.Int => "int",
-            ValueType.Float => "float",
+            ValueType.I32 => "i32",
+            ValueType.F32 => "f32",
             ValueType.Void => "void",
         };
     }
@@ -165,8 +165,8 @@ pub const KeywordValue = struct {
 
 pub const keywords = std.StaticStringMap(KeywordValue).initComptime(.{
     .{ "let", .{ .kind = TokenKind.Let, .data = null } },
-    .{ "int", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.Int } } },
-    .{ "float", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.Float } } },
+    .{ "int", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.I32 } } },
+    .{ "float", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.F32 } } },
     .{ "void", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.Void } } },
     .{ "func", .{ .kind = TokenKind.Func, .data = null } },
     .{ "return", .{ .kind = TokenKind.Return, .data = null } },

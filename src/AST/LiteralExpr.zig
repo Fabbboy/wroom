@@ -14,8 +14,8 @@ position: Position,
 
 pub fn init(val: Token) Self {
     return Self{ .val = val, .value_type = switch (val.kind) {
-        TokenKind.Int => ValueType.Int,
-        TokenKind.Float => ValueType.Float,
+        TokenKind.Int => ValueType.I32,
+        TokenKind.Float => ValueType.F32,
         TokenKind.Null => ValueType.Void,
         else => ValueType.Untyped,
     }, .position = val.pos };

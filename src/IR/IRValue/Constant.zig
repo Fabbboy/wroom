@@ -35,8 +35,8 @@ pub const IRConstant = union(enum) {
 
     pub fn getType(self: *const IRConstant) ValueType {
         switch (self.*) {
-            .Integer => return ValueType.Int,
-            .Floating => return ValueType.Float,
+            .Integer => return ValueType.I32,
+            .Floating => return ValueType.F32,
         }
     }
 };

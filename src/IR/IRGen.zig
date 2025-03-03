@@ -98,11 +98,11 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRSt
         ExprData.Literal => {
             const literal = data.Literal;
             switch (literal.value_type) {
-                ValueType.Float => {
+                ValueType.F32 => {
                     const value = try fmt.parseFloat(f64, literal.val.lexeme);
                     return Constant.Float(value);
                 },
-                ValueType.Int => {
+                ValueType.I32 => {
                     const value = try fmt.parseInt(i64, literal.val.lexeme, 10);
                     return Constant.Int(value);
                 },
@@ -129,11 +129,11 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
             const literal = data.Literal;
             var constant: Constant = undefined;
             switch (literal.value_type) {
-                ValueType.Float => {
+                ValueType.F32 => {
                     const value = try fmt.parseFloat(f64, literal.val.lexeme);
                     constant = Constant.Float(value);
                 },
-                ValueType.Int => {
+                ValueType.I32 => {
                     const value = try fmt.parseInt(i64, literal.val.lexeme, 10);
                     constant = Constant.Int(value);
                 },
@@ -312,7 +312,7 @@ fn generateFunction(self: *Self, func: *const FunctionDecl) IRStatus!void {
             try self.generateStmt(&stmt);
         }
     } else {
-       created_function.isExtern = true;
+        created_function.isExtern = true;
     }
 }
 

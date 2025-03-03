@@ -98,10 +98,10 @@ fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
                 return lhs_type;
             }
 
-            if ((lhs_type == ValueType.Int and rhs_type == ValueType.Float) or
-                (lhs_type == ValueType.Float and rhs_type == ValueType.Int))
+            if ((lhs_type == ValueType.I32 and rhs_type == ValueType.F32) or
+                (lhs_type == ValueType.F32 and rhs_type == ValueType.I32))
             {
-                return ValueType.Float;
+                return ValueType.F32;
             }
 
             if (lhs_type == ValueType.Untyped) return rhs_type;

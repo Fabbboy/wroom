@@ -484,7 +484,7 @@ test "parser - simple assignment" {
     const stmt = parser.ast.globals.items[0];
     try std.testing.expectEqual(TokenKind.Ident, stmt.ident.kind);
     try std.testing.expectEqualStrings("x", stmt.ident.lexeme);
-    try std.testing.expectEqual(ValueType.Int, stmt.type);
+    try std.testing.expectEqual(ValueType.I32, stmt.type);
 
     const expr = stmt.value;
     try std.testing.expectEqual(ExprData.Literal, @as(ExprData, expr.data.*));
@@ -545,8 +545,8 @@ test "parser - multiple declarations" {
     try parser.parse();
     try std.testing.expectEqual(@as(usize, 3), parser.ast.globals.items.len);
 
-    try std.testing.expectEqual(ValueType.Int, parser.ast.globals.items[0].type);
-    try std.testing.expectEqual(ValueType.Float, parser.ast.globals.items[1].type);
+    try std.testing.expectEqual(ValueType.I32, parser.ast.globals.items[0].type);
+    try std.testing.expectEqual(ValueType.F32, parser.ast.globals.items[1].type);
     try std.testing.expectEqual(ValueType.Untyped, parser.ast.globals.items[2].type);
 }
 
@@ -564,11 +564,11 @@ test "parser - function" {
 
     const func = parser.ast.functions.items[0];
     try std.testing.expectEqualStrings("add", func.name.lexeme);
-    try std.testing.expectEqual(ValueType.Int, func.ret_type);
+    try std.testing.expectEqual(ValueType.I32, func.ret_type);
 
     try std.testing.expectEqual(@as(usize, 2), func.params.items.len);
     try std.testing.expectEqualStrings("a", func.params.items[0].ident.lexeme);
-    try std.testing.expectEqual(ValueType.Int, func.params.items[0].type);
+    try std.testing.expectEqual(ValueType.I32, func.params.items[0].type);
     try std.testing.expectEqualStrings("b", func.params.items[1].ident.lexeme);
-    try std.testing.expectEqual(ValueType.Int, func.params.items[1].type);
+    try std.testing.expectEqual(ValueType.I32, func.params.items[1].type);
 }
