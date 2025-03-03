@@ -14,7 +14,7 @@ const Ast = @import("Ast.zig");
 const AssignStatement = @import("../AST/AssignStatement.zig");
 const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
-const ExprKind = ExprNs.ExprKind;
+const ExprData = ExprNs.ExprData;
 
 const BinaryExpr = @import("../AST/BinaryExpr.zig");
 
@@ -487,7 +487,7 @@ test "parser - simple assignment" {
     try std.testing.expectEqual(ValueType.Int, stmt.type);
 
     const expr = stmt.value;
-    try std.testing.expectEqual(ExprKind.Literal, @as(ExprKind, expr.data.*));
+    try std.testing.expectEqual(ExprData.Literal, @as(ExprData, expr.data.*));
     try std.testing.expectEqualStrings("42", expr.data.Literal.val.lexeme);
 }
 
@@ -505,11 +505,11 @@ test "parser - binary expressions" {
     try std.testing.expectEqual(ValueType.Untyped, stmt.type);
 
     const expr = stmt.value;
-    try std.testing.expectEqual(ExprKind.Binary, @as(ExprKind, expr.data.*));
+    try std.testing.expectEqual(ExprData.Binary, @as(ExprData, expr.data.*));
     try std.testing.expectEqual(OperatorType.Add, expr.data.Binary.op);
 
     const mul = expr.data.Binary.lhs;
-    try std.testing.expectEqual(ExprKind.Binary, @as(ExprKind, mul.data.*));
+    try std.testing.expectEqual(ExprData.Binary, @as(ExprData, mul.data.*));
     try std.testing.expectEqual(OperatorType.Mul, mul.data.Binary.op);
 }
 

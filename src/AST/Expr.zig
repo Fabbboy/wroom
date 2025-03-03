@@ -17,15 +17,7 @@ const FunctionCall = @import("FunctionCall.zig");
 
 const Position = @import("../Parser/Position.zig");
 
-pub const ExprKind = enum {
-    Literal,
-    Binary,
-    Variable,
-    Parameter,
-    FunctionCall,
-};
-
-pub const ExprData = union(ExprKind) {
+pub const ExprData = union(enum) {
     Literal: LiteralExpr,
     Binary: BinaryExpr,
     Variable: VariableExpr,
@@ -34,11 +26,11 @@ pub const ExprData = union(ExprKind) {
 
     pub fn deinit(self: *ExprData, allocator: mem.Allocator) void {
         switch (self.*) {
-            ExprKind.Binary => self.Binary.deinit(),
-            ExprKind.Literal => {},
-            ExprKind.Variable => {},
-            ExprKind.Parameter => {},
-            ExprKind.FunctionCall => self.FunctionCall.deinit(),
+            ExprData.Binary => self.Binary.deinit(),
+            ExprData.Literal => {},
+            ExprData.Variable => {},
+            ExprData.Parameter => {},
+            ExprData.FunctionCall => self.FunctionCall.deinit(),
         }
         allocator.destroy(self);
     }
@@ -80,11 +72,11 @@ pub const Expr = struct {
 
     pub fn fmt(self: *const Expr, fbuf: anytype) ParseStatus!void {
         return switch (self.data.*) {
-            ExprKind.Literal => self.data.Literal.fmt(fbuf),
-            ExprKind.Binary => self.data.Binary.fmt(fbuf),
-            ExprKind.Variable => self.data.Variable.fmt(fbuf),
-            ExprKind.Parameter => self.data.Parameter.fmt(fbuf),
-            ExprKind.FunctionCall => self.data.FunctionCall.fmt(fbuf),
+            ExprData.Literal => self.data.Literal.fmt(fbuf),
+            ExprData.Binary => self.data.Binary.fmt(fbuf),
+            ExprData.Variable => self.data.Variable.fmt(fbuf),
+            ExprData.Parameter => self.data.Parameter.fmt(fbuf),
+            ExprData.FunctionCall => self.data.FunctionCall.fmt(fbuf),
         };
     }
 
@@ -94,31 +86,31 @@ pub const Expr = struct {
 
     pub fn start(self: *const Expr) usize {
         return switch (self.data.*) {
-            ExprKind.Literal => self.data.Literal.start(),
-            ExprKind.Binary => self.data.Binary.start(),
-            ExprKind.Variable => self.data.Variable.start(),
-            ExprKind.Parameter => self.data.Parameter.start(),
-            ExprKind.FunctionCall => self.data.FunctionCall.start(),
+            ExprData.Literal => self.data.Literal.start(),
+            ExprData.Binary => self.data.Binary.start(),
+            ExprData.Variable => self.data.Variable.start(),
+            ExprData.Parameter => self.data.Parameter.start(),
+            ExprData.FunctionCall => self.data.FunctionCall.start(),
         };
     }
 
     pub fn stop(self: *const Expr) usize {
         return switch (self.data.*) {
-            ExprKind.Literal => self.data.Literal.stop(),
-            ExprKind.Binary => self.data.Binary.stop(),
-            ExprKind.Variable => self.data.Variable.stop(),
-            ExprKind.Parameter => self.data.Parameter.stop(),
-            ExprKind.FunctionCall => self.data.FunctionCall.stop(),
+            ExprData.Literal => self.data.Literal.stop(),
+            ExprData.Binary => self.data.Binary.stop(),
+            ExprData.Variable => self.data.Variable.stop(),
+            ExprData.Parameter => self.data.Parameter.stop(),
+            ExprData.FunctionCall => self.data.FunctionCall.stop(),
         };
     }
 
     pub fn pos(self: *const Expr) Position {
         return switch (self.data.*) {
-            ExprKind.Literal => self.data.Literal.pos(),
-            ExprKind.Binary => self.data.Binary.pos(),
-            ExprKind.Variable => self.data.Variable.pos(),
-            ExprKind.Parameter => self.data.Parameter.pos(),
-            ExprKind.FunctionCall => self.data.FunctionCall.pos(),
+            ExprData.Literal => self.data.Literal.pos(),
+            ExprData.Binary => self.data.Binary.pos(),
+            ExprData.Variable => self.data.Variable.pos(),
+            ExprData.Parameter => self.data.Parameter.pos(),
+            ExprData.FunctionCall => self.data.FunctionCall.pos(),
         };
     }
 };

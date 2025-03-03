@@ -7,7 +7,7 @@ const OperatorType = Token.OperatorType;
 
 const ExprNs = @import("Expr.zig");
 const Expr = ExprNs.Expr;
-const ExprKind = ExprNs.ExprKind;
+const ExprData = ExprNs.ExprData;
 
 const Position = @import("../Parser/Position.zig");
 

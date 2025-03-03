@@ -8,7 +8,7 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 - [ ] Separate Variable and Function checks from type inference
 - [ ] Check if function returns if not void
 - [X] Complain when function return value is not used
-- [ ] Remove unnecessary external enum for expressions
+- [X] Remove unnecessary external enum for expressions
 - [X] Add function call as Statement
 - [X] Check function call fits signature
 - [ ] ~~SSA not correctly implemented~~ => optimization required

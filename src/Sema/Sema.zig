@@ -12,7 +12,7 @@ const Ast = @import("../Parser/Ast.zig");
 const AssignStatement = @import("../AST/AssignStatement.zig");
 const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
-const ExprKind = ExprNs.ExprKind;
+const ExprData = ExprNs.ExprData;
 
 const FunctionCall = @import("../AST/FunctionCall.zig");
 
@@ -88,8 +88,8 @@ fn analyze_func_call(self: *Self, func: *const FunctionCall) SemaStatus!ValueTyp
 
 fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
     return switch (expr.data.*) {
-        ExprKind.Literal => expr.data.Literal.value_type,
-        ExprKind.Binary => {
+        ExprData.Literal => expr.data.Literal.value_type,
+        ExprData.Binary => {
             const bin = expr.data.Binary;
             const lhs_type = try self.infer_expr(&bin.lhs);
             const rhs_type = try self.infer_expr(&bin.rhs);
@@ -109,7 +109,7 @@ fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
 
             return ValueType.Untyped;
         },
-        ExprKind.Variable => {
+        ExprData.Variable => {
             const fvar = expr.data.Variable;
             if (self.currentScope.find(fvar.name.lexeme)) |f| {
                 return f;
@@ -117,7 +117,7 @@ fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
             try self.errs.append(SemaError.init_symbol_undefined(fvar.name.lexeme, fvar.pos()));
             return error.NotGood;
         },
-        ExprKind.FunctionCall => {
+        ExprData.FunctionCall => {
             return self.analyze_func_call(&expr.data.FunctionCall);
         },
         else => unreachable,

@@ -4,7 +4,7 @@ const mem = std.mem;
 
 const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
-const ExprKind = ExprNs.ExprKind;
+const ExprData = ExprNs.ExprData;
 
 const BinaryExpr = @import("../AST/BinaryExpr.zig");
 
@@ -84,7 +84,7 @@ fn compileConstantBinary(self: *const Self, binary: *const BinaryExpr, ty: Value
 fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRStatus!Constant {
     const data = expr.data.*;
     switch (data) {
-        ExprKind.Literal => {
+        ExprData.Literal => {
             const literal = data.Literal;
             switch (literal.value_type) {
                 ValueType.Float => {
@@ -98,12 +98,12 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRSt
                 else => unreachable,
             }
         },
-        ExprKind.Variable => {
+        ExprData.Variable => {
             const name = data.Variable.name.lexeme;
             const variable = self.module.globals.get(name);
             return variable.?.initializer;
         },
-        ExprKind.Binary => {
+        ExprData.Binary => {
             return try self.compileConstantBinary(&data.Binary, ty);
         },
         else => unreachable,
@@ -114,7 +114,7 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
     const data = expr.data.*;
 
     switch (data) {
-        ExprKind.Literal => {
+        ExprData.Literal => {
             const literal = data.Literal;
             var constant: Constant = undefined;
             switch (literal.value_type) {
@@ -132,7 +132,7 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
             const value = try IRValue.init_constant(self.allocator, constant);
             return value;
         },
-        ExprKind.Variable => {
+        ExprData.Variable => {
             const name = data.Variable.name.lexeme;
             const localLoc = self.namend.get(name);
             if (localLoc) |l| {
@@ -160,7 +160,7 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
 
             unreachable;
         },
-        ExprKind.Binary => {
+        ExprData.Binary => {
             const binary = data.Binary;
             const lhs = try self.generateExpression(binary.getLHS());
             const rhs = try self.generateExpression(binary.getRHS());
@@ -186,7 +186,7 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
                 else => unreachable,
             }
         },
-        ExprKind.FunctionCall => {
+        ExprData.FunctionCall => {
             const fcall = data.FunctionCall;
             const name = fcall.name.lexeme;
             const func = self.module.functions.get(name);
