@@ -26,6 +26,7 @@ const Instruction = InstructionNs.Instruction;
 const AllocaInst = InstructionNs.AllocaInst;
 const StoreInst = InstructionNs.StoreInst;
 const LoadInst = InstructionNs.LoadInst;
+const CallInst = InstructionNs.CallInst;
 
 const AddInst = @import("Instruction/Binary.zig").AddInst;
 const SubInst = @import("Instruction/Binary.zig").SubInst;
@@ -194,6 +195,19 @@ pub fn createReturn(self: *Self, value: IRValue) IRStatus!void {
     const bb = self.active_block.?;
     const inst = Instruction.init_return(value);
     try bb.instructions.append(inst);
+}
+
+pub fn createCall(self: *Self, function: []const u8, args: []IRValue, ty: ValueType) IRStatus!IRValue {
+    if (self.active_block == null) {
+        return IRStatus.NotGood;
+    }
+
+    const bb = self.active_block.?;
+    const id = bb.parent.getNextId();
+
+    const inst = Instruction.init_call(CallInst.init(id, function, args));
+    try bb.instructions.append(inst);
+    return IRValue.init_location(self.allocator, Location.LocVar(LocalLocation.init(id, ty)));
 }
 
 pub fn setActiveBlock(self: *Self, block: *FuncBlock) void {

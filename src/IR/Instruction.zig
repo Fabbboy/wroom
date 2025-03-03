@@ -21,6 +21,7 @@ pub const Instruction = union(enum) {
     Mul: MulInst,
     Div: DivInst,
     Return: IRValue,
+    Call: CallInst,
 
     pub fn init_alloca(alloca: AllocaInst) Instruction {
         return .{ .Alloca = alloca };
@@ -54,6 +55,10 @@ pub const Instruction = union(enum) {
         return .{ .Return = ret };
     }
 
+    pub fn init_call(call: CallInst) Instruction {
+        return .{ .Call = call };
+    }
+
     pub fn fmt(self: *const Self, fbuf: anytype) IRStatus!void {
         return switch (self.*) {
             Instruction.Alloca => |alloca| {
@@ -81,6 +86,9 @@ pub const Instruction = union(enum) {
                 try fbuf.writeAll("return ");
                 try ret.fmt(fbuf);
             },
+            Instruction.Call => |call| {
+                try call.fmt(fbuf);
+            },
         };
     }
 
@@ -106,6 +114,9 @@ pub const Instruction = union(enum) {
             },
             Instruction.Return => |ret| {
                 ret.deinit();
+            },
+            Instruction.Call => |call| {
+                call.deinit();
             },
             else => {},
         };
@@ -174,5 +185,36 @@ pub const LoadInst = struct {
 
     pub fn deinit(self: *const LoadInst) void {
         self.src.deinit();
+    }
+};
+
+pub const CallInst = struct {
+    id: usize,
+    name: []const u8,
+    args: []IRValue,
+
+    pub fn init(id: usize, name: []const u8, args: []IRValue) CallInst {
+        return CallInst{
+            .id = id,
+            .name = name,
+            .args = args,
+        };
+    }
+
+    pub fn fmt(self: *const CallInst, fbuf: anytype) IRStatus!void {
+        try fbuf.print("%{} = call @{s}(", .{ self.id, self.name });
+        for (self.args, 0..) |arg, i| {
+            try arg.fmt(fbuf);
+            if (i + 1 != self.args.len) {
+                try fbuf.writeAll(", ");
+            }
+        }
+        try fbuf.writeAll(")");
+    }
+
+    pub fn deinit(self: *const CallInst) void {
+        for (self.args) |arg| {
+            arg.deinit();
+        }
     }
 };

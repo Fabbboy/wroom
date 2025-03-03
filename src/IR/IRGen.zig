@@ -186,6 +186,24 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
                 else => unreachable,
             }
         },
+        ExprKind.FunctionCall => {
+            const fcall = data.FunctionCall;
+            const name = fcall.name.lexeme;
+            const func = self.module.functions.get(name);
+            if (func) |f| {
+                const args = fcall.arguments;
+                var arg_values = std.ArrayList(IRValue).init(self.allocator);
+                for (args.items) |arg| {
+                    const arg_value = try self.generateExpression(&arg);
+                    try arg_values.append(arg_value);
+                }
+
+                const ret = try self.builder.createCall(name, arg_values.items, f.ret_type);
+                return ret;
+            }
+
+            unreachable;
+        },
         else => unreachable,
     }
 }
