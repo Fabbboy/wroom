@@ -15,7 +15,7 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 - [X] Using function parameters results in segmentation fault
 - [X] Leaving the ending brace of a function results in memory leaks and multiple parser errors
 - [X] X-Assigns result in weird IR and memory leak
-- [ ] Errors for IRGen
+- [X] Errors for IRGen
 - [ ] Create snippets for error
 - [x] Add function body
 - [x] Create Statment tagged union
