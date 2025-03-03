@@ -5,6 +5,8 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 
 ### Next Steps
 
+- [ ] Constants
+- [ ] Different linkages
 - [ ] Separate Variable and Function checks from type inference
 - [ ] Check if function returns if not void
 - [X] Complain when function return value is not used
