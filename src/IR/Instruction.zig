@@ -194,20 +194,28 @@ pub const CallInst = struct {
     id: usize,
     name: []const u8,
     args: std.ArrayList(IRValue),
+    noret: bool,
 
-    pub fn init(id: usize, name: []const u8, args: std.ArrayList(IRValue)) CallInst {
+    pub fn init(id: usize, name: []const u8, args: std.ArrayList(IRValue), noret: bool) CallInst {
         return CallInst{
             .id = id,
             .name = name,
             .args = args,
+            .noret = noret,
         };
     }
 
     pub fn fmt(self: *const CallInst, fbuf: anytype) IRStatus!void {
-        try fbuf.print("%{} = call @{s}(", .{ self.id, self.name });
+        //try fbuf.print("%{} = call ", .{self.id});
+        if (self.noret) {
+            try fbuf.writeAll("call ");
+        } else {
+            try fbuf.print("%{} = call ", .{self.id});
+        }
+        try fbuf.print("@{s}(", .{self.name});
         for (self.args.items, 0..) |arg, i| {
             try arg.fmt(fbuf);
-            if (i + 1 != self.args.items.len) {
+            if ((i + 1) < self.args.items.len) {
                 try fbuf.writeAll(", ");
             }
         }

@@ -5,7 +5,9 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 
 ### Next Steps
 
-- [ ] Add function call as Statement
+- [ ] Complain when function return value is not used
+- [ ] Remove unnecessary external enum for expressions
+- [X] Add function call as Statement
 - [ ] Check function call fits signature
 - [ ] ~~SSA not correctly implemented~~ => optimization required
 - [X] Using function parameters results in segmentation fault

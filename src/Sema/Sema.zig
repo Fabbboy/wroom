@@ -214,6 +214,7 @@ fn analyze_statement(self: *Self, stmt: *Stmt, name: []const u8) SemaStatus!void
                 }
             }
         },
+        Stmt.FunctionCall => {},
     };
 }
 

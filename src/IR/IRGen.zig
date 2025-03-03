@@ -198,8 +198,8 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
                     try arg_values.append(arg_value);
                 }
 
-                const ret = try self.builder.createCall(name, arg_values, f.ret_type);
-                return ret;
+                const ret = try self.builder.createCall(name, arg_values, f.ret_type, false);
+                return ret.?;
             }
 
             unreachable;
@@ -257,6 +257,21 @@ fn generateStmt(self: *Self, stmt: *const Stmt) IRStatus!void {
             const ret = stmt.*.ReturnStatement;
             const value = try self.generateExpression(ret.getValue());
             try self.builder.createReturn(value);
+        },
+        Stmt.FunctionCall => {
+            const fcall = stmt.*.FunctionCall;
+            const name = fcall.getName().lexeme;
+            const func = self.module.functions.get(name);
+            if (func) |f| {
+                const args = fcall.getArgs();
+                var arg_values = std.ArrayList(IRValue).init(self.allocator);
+                for (args.items) |arg| {
+                    const arg_value = try self.generateExpression(&arg);
+                    try arg_values.append(arg_value);
+                }
+
+                _ = try self.builder.createCall(name, arg_values, f.ret_type, true);
+            }
         },
     }
 }

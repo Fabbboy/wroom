@@ -4,6 +4,8 @@ const mem = std.mem;
 const Token = @import("../Parser/Token.zig");
 const ValueType = Token.ValueType;
 
+const IRStatus = @import("Error.zig").IRStatus;
+
 const IRConstant = @import("IRValue/Constant.zig").IRConstant;
 const GlobalVariable = @import("IRValue/GlobalVariable.zig");
 const Location = @import("IRValue/Location.zig").Location;
@@ -31,7 +33,7 @@ pub const IRValueData = union(enum) {
         };
     }
 
-    pub fn fmt(self: *const IRValueData, fbuf: anytype) !void {
+    pub fn fmt(self: *const IRValueData, fbuf: anytype) IRStatus!void {
         switch (self.*) {
             IRValueData.Constant => |value| {
                 try value.fmt(fbuf);
@@ -50,7 +52,7 @@ pub const IRValue = struct {
     data: *IRValueData,
     allocator: mem.Allocator,
 
-    pub fn init_constant(allocator: mem.Allocator, value: IRConstant) !IRValue {
+    pub fn init_constant(allocator: mem.Allocator, value: IRConstant) IRStatus!IRValue {
         const data = try allocator.create(IRValueData);
         data.* = IRValueData.init_constant(value);
         return IRValue{
@@ -59,7 +61,7 @@ pub const IRValue = struct {
         };
     }
 
-    pub fn init_global(allocator: mem.Allocator, value: GlobalVariable) !IRValue {
+    pub fn init_global(allocator: mem.Allocator, value: GlobalVariable) IRStatus!IRValue {
         const data = try allocator.create(IRValueData);
         data.* = IRValueData.init_global(value);
         return IRValue{
@@ -68,7 +70,7 @@ pub const IRValue = struct {
         };
     }
 
-    pub fn init_location(allocator: mem.Allocator, value: Location) !IRValue {
+    pub fn init_location(allocator: mem.Allocator, value: Location) IRStatus!IRValue {
         const data = try allocator.create(IRValueData);
         data.* = IRValueData.init_location(value);
         return IRValue{

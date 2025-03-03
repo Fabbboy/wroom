@@ -22,6 +22,7 @@ const ParameterExpr = @import("../AST/ParameterExpr.zig");
 
 const FunctionDecl = @import("../AST/FunctionDecl.zig");
 const ReturnStatement = @import("../AST/ReturnStatement.zig");
+const FunctionCall = @import("../AST/FunctionCall.zig");
 
 const Stmt = @import("../AST/Stmt.zig").Stmt;
 
@@ -310,7 +311,34 @@ pub fn parseStatement(self: *Self) ParseStatus!Stmt {
                     false,
                 ));
             } else if (self.peek(&[_]TokenKind{TokenKind.LParen})) {
-                unreachable;
+                _ = try self.next(&[_]TokenKind{TokenKind.LParen});
+
+                var args = std.ArrayList(Expr).init(self.allocator);
+                while (!self.peek(&[_]TokenKind{TokenKind.RParen})) {
+                    const arg = self.parseExpr() catch {
+                        for (args.items) |a| {
+                            a.deinit();
+                        }
+                        args.deinit();
+                        return error.NotGood;
+                    };
+
+                    args.append(arg) catch {
+                        for (args.items) |a| {
+                            a.deinit();
+                        }
+                        args.deinit();
+                        return error.NotGood;
+                    };
+
+                    if (self.peek(&[_]TokenKind{TokenKind.Comma})) {
+                        _ = try self.next(&[_]TokenKind{TokenKind.Comma});
+                    }
+                }
+
+                _ = try self.next(&[_]TokenKind{TokenKind.RParen});
+
+                return Stmt.init_function_call(FunctionCall.init(tok, args, tok.pos));
             } else unreachable;
         },
         TokenKind.Return => {

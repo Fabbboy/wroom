@@ -197,17 +197,24 @@ pub fn createReturn(self: *Self, value: IRValue) IRStatus!void {
     try bb.instructions.append(inst);
 }
 
-pub fn createCall(self: *Self, function: []const u8, args: std.ArrayList(IRValue), ty: ValueType) IRStatus!IRValue {
+pub fn createCall(self: *Self, function: []const u8, args: std.ArrayList(IRValue), ty: ValueType, noret: bool) IRStatus!?IRValue {
     if (self.active_block == null) {
         return IRStatus.NotGood;
+    }
+
+    if (noret) {
+        const bb = self.active_block.?;
+        const inst = Instruction.init_call(CallInst.init(0, function, args, noret));
+        try bb.instructions.append(inst);
+        return null;
     }
 
     const bb = self.active_block.?;
     const id = bb.parent.getNextId();
 
-    const inst = Instruction.init_call(CallInst.init(id, function, args));
+    const inst = Instruction.init_call(CallInst.init(id, function, args, noret));
     try bb.instructions.append(inst);
-    return IRValue.init_location(self.allocator, Location.LocVar(LocalLocation.init(id, ty)));
+    return (try IRValue.init_location(self.allocator, Location.LocVar(LocalLocation.init(id, ty))));
 }
 
 pub fn setActiveBlock(self: *Self, block: *FuncBlock) void {

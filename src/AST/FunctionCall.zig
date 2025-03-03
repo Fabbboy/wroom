@@ -50,3 +50,11 @@ pub fn stop(self: *const Self) usize {
 pub fn pos(self: *const Self) Position {
     return self.position;
 }
+
+pub fn getArgs(self: *const Self) *const std.ArrayList(Expr) {
+    return &self.arguments;
+}
+
+pub fn getName(self: *const Self) *const Token {
+    return &self.name;
+}
