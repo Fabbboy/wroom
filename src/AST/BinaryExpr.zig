@@ -9,6 +9,8 @@ const Position = @import("../Parser/Position.zig");
 const Token = @import("../Parser/Token.zig");
 const OperatorType = Token.OperatorType;
 
+const ParseStatus = @import("../Parser/Error.zig").ParseStatus;
+
 const Self = @This();
 
 lhs: Expr,
@@ -23,7 +25,7 @@ pub fn init(lhs: Expr, rhs: Expr, op: OperatorType) Self {
     };
 }
 
-pub fn fmt(self: *const Self, fbuf: anytype) error{OutOfMemory}!void {
+pub fn fmt(self: *const Self, fbuf: anytype) ParseStatus!void {
     try fbuf.writeAll("BinaryExpr{ lhs: ");
     try self.lhs.fmt(fbuf);
     try fbuf.writeAll(", rhs: ");

@@ -11,7 +11,7 @@ const IRModule = @import("IR/Module.zig");
 const IRGen = @import("IR/IRGen.zig");
 
 pub fn main() !void {
-    const source = "let glbl = 123 func main(argc: int) int {let locl = argc locl += 20 return locl}";
+    const source = "func add(a: int) int { return 2 * a } func main() int { let r = add(123) return r}";
     var gpa = std.heap.GeneralPurposeAllocator(.{
         .verbose_log = true,
         .enable_memory_limit = true,

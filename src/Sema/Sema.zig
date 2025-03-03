@@ -92,6 +92,14 @@ fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
             try self.errs.append(SemaError.init_symbol_undefined(fvar.name.lexeme, fvar.pos()));
             return error.NotGood;
         },
+        ExprKind.FunctionCall => {
+            const fcall = expr.data.FunctionCall;
+            if (self.currentScope.findFunc(fcall.name.lexeme)) |f| {
+                return f.ret_type;
+            }
+            try self.errs.append(SemaError.init_symbol_undefined(fcall.name.lexeme, fcall.pos()));
+            return error.NotGood;
+        },
         else => unreachable,
     };
 }

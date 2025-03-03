@@ -118,7 +118,40 @@ fn parseFactor(self: *Self) ParseStatus!Expr {
 
     switch (tok.kind) {
         TokenKind.Int, TokenKind.Float, TokenKind.Null => return Expr.init_literal(tok, self.allocator),
-        TokenKind.Ident => return Expr.init_variable(tok, self.allocator),
+        TokenKind.Ident => {
+            if (self.peek(&[_]TokenKind{TokenKind.LParen})) {
+                _ = try self.next(&[_]TokenKind{TokenKind.LParen});
+
+                var args = std.ArrayList(Expr).init(self.allocator);
+                while (!self.peek(&[_]TokenKind{TokenKind.RParen})) {
+                    const arg = self.parseExpr() catch {
+                        for (args.items) |a| {
+                            a.deinit();
+                        }
+                        args.deinit();
+                        return error.NotGood;
+                    };
+
+                    args.append(arg) catch {
+                        for (args.items) |a| {
+                            a.deinit();
+                        }
+                        args.deinit();
+                        return error.NotGood;
+                    };
+
+                    if (self.peek(&[_]TokenKind{TokenKind.Comma})) {
+                        _ = try self.next(&[_]TokenKind{TokenKind.Comma});
+                    }
+                }
+
+                _ = try self.next(&[_]TokenKind{TokenKind.RParen});
+
+                return Expr.init_function_call(tok, args, tok.pos, self.allocator);
+            }
+
+            return Expr.init_variable(tok, self.allocator);
+        },
         TokenKind.LParen => {
             const expr = self.parseExpr() catch {
                 return error.NotGood;
@@ -276,9 +309,9 @@ pub fn parseStatement(self: *Self) ParseStatus!Stmt {
                     assign.data.?.Assign,
                     false,
                 ));
-            } else {
-                @panic("Not implemented");
-            }
+            } else if (self.peek(&[_]TokenKind{TokenKind.LParen})) {
+                unreachable;
+            } else unreachable;
         },
         TokenKind.Return => {
             const value = self.parseExpr() catch {
@@ -288,6 +321,7 @@ pub fn parseStatement(self: *Self) ParseStatus!Stmt {
 
             return Stmt.init_return(ReturnStatement.init(value, tok.pos));
         },
+
         else => unreachable,
     }
 }
