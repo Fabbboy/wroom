@@ -11,13 +11,15 @@ const IRValue = @import("Value.zig").IRValue;
 
 const Self = @This();
 
+name: []const u8,
 allocator: mem.Allocator,
 globals: SymTable(GlobalVariable),
 functions: SymTable(Function),
 globals_id: usize,
 
-pub fn init(allocator: mem.Allocator) Self {
+pub fn init(allocator: mem.Allocator, name: []const u8) Self {
     return Self{
+        .name = name,
         .allocator = allocator,
         .globals = SymTable(GlobalVariable).init(allocator),
         .functions = SymTable(Function).init(allocator),
@@ -51,7 +53,19 @@ pub fn getFunctions(self: *const Self) *const SymTable(Function) {
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
-    try fbuf.writeAll("Module{ globals: ");
-    try self.globals.fmt(fbuf);
-    try fbuf.writeAll(" }");
+    try fbuf.print("module: {s}\n", .{self.name});
+    var glblsIter = self.globals.table.iterator();
+    while (glblsIter.next()) |entry| {
+        const value = entry.value_ptr;
+        try value.fmt(fbuf);
+    }
+
+    var funcsIter = self.functions.table.iterator();
+    while (funcsIter.next()) |entry| {
+        const name = entry.key_ptr;
+        const value = entry.value_ptr;
+        try value.fmt(fbuf, name.*);
+    }
+
+    try fbuf.writeAll("\n");
 }

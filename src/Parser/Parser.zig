@@ -463,8 +463,8 @@ pub fn getAst(self: *Self) *Ast {
     return &self.ast;
 }
 
-pub fn getErrs(self: *const Self) *const std.ArrayList(ParseError) {
-    return &self.errs;
+pub fn getErrs(self: *const Self) *const []ParseError {
+    return &self.errs.items;
 }
 
 pub fn deinit(self: *Self) void {
