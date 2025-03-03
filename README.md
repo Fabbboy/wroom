@@ -42,7 +42,7 @@ actual result: 13
 - ~~Binary expressions in global scope with different types. IT WILL TRIGGER THE INCORRECT MATH GODS~~ Fixed somewhat but I wouldn't trust my self with this.
 
 ### SSA
-
+#### Simple expressions
 Wroom:
 
 ```
@@ -55,7 +55,7 @@ func main(argc: int) int {
 
 IR:
 
-```
+```llvm
 @glbl int = #123
 @main(int argc) -> int {
 entry:
@@ -67,5 +67,38 @@ entry:
         store int %0, %4
         %5 = load int, %0
         return %5
+}
+```
+
+#### Function calls
+Wroom:
+
+```
+func multiply(a: int) int {
+    return 2 * a 
+} 
+
+func main() int { 
+    let wtf = multiply(69420)
+    return wtf
+}
+```
+
+IR:
+
+```llvm
+@multiply(a int) -> int {
+entry:
+        %0 = load int, @a
+        %1 = mul int #2, %0
+        return %1
+}
+@main() -> int {
+entry:
+        %0 = alloca int
+        %1 = call @multiply(#69420)
+        store int %0, %1
+        %2 = load int, %0
+        return %2
 }
 ```
