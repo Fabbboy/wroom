@@ -214,17 +214,30 @@ fn parseBlock(self: *Self) ParseStatus!Block {
     var stmts = std.ArrayList(Stmt).init(self.allocator);
     while (!self.peek(&[_]TokenKind{TokenKind.RBrace})) {
         const stmt = self.parseStatement() catch {
+            for (stmts.items) |s| {
+                s.deinit();
+            }
             stmts.deinit();
             return error.NotGood;
         };
 
         stmts.append(stmt) catch {
+            for (stmts.items) |s| {
+                s.deinit();
+            }
             stmts.deinit();
             return error.NotGood;
         };
     }
 
-    const rbrance = try self.next(&[_]TokenKind{TokenKind.RBrace});
+    const rbrance = self.next(&[_]TokenKind{TokenKind.RBrace}) catch {
+        for (stmts.items) |stmt| {
+            stmt.deinit();
+        }
+
+        stmts.deinit();
+        return error.NotGood;
+    };
 
     var pos = lbrace.pos;
     pos.end = rbrance.pos.end;

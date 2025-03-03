@@ -7,7 +7,7 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 
 - [ ] ~~SSA not correctly implemented~~ => optimization required
 - [ ] Using function parameters results in segmentation fault
-- [ ] Leaving the ending brace of a function results in memory leaks and multiple parser errors
+- [X] Leaving the ending brace of a function results in memory leaks and multiple parser errors
 - [X] X-Assigns result in weird IR and memory leak
 - [ ] Errors for IRGen
 - [ ] Create snippets for error
