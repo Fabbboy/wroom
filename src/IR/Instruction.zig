@@ -10,6 +10,7 @@ pub const Instruction = union(enum) {
 
     Alloca: AllocaInst,
     Store: StoreInst,
+    Load: LoadInst,
 
     pub fn init_alloca(alloca: AllocaInst) Instruction {
         return .{ .Alloca = alloca };
@@ -17,6 +18,10 @@ pub const Instruction = union(enum) {
 
     pub fn init_store(store: StoreInst) Instruction {
         return .{ .Store = store };
+    }
+
+    pub fn init_load(load: LoadInst) Instruction {
+        return .{ .Load = load };
     }
 
     pub fn fmt(self: *const Self, fbuf: anytype) IRStatus!void {
@@ -27,6 +32,9 @@ pub const Instruction = union(enum) {
             Instruction.Store => |store| {
                 try store.fmt(fbuf);
             },
+            Instruction.Load => |load| {
+                try load.fmt(fbuf);
+            },
         };
     }
 
@@ -34,6 +42,9 @@ pub const Instruction = union(enum) {
         return switch (self.*) {
             Instruction.Store => |store| {
                 store.deinit();
+            },
+            Instruction.Load => |load| {
+                load.deinit();
             },
             else => {},
         };
@@ -79,5 +90,28 @@ pub const StoreInst = struct {
     pub fn deinit(self: *const StoreInst) void {
         self.target.deinit();
         self.value.deinit();
+    }
+};
+
+pub const LoadInst = struct {
+    id: usize,
+    src: IRValue,
+    ty: ValueType,
+
+    pub fn init(id: usize, src: IRValue, ty: ValueType) LoadInst {
+        return LoadInst{
+            .id = id,
+            .src = src,
+            .ty = ty,
+        };
+    }
+
+    pub fn fmt(self: *const LoadInst, fbuf: anytype) IRStatus!void {
+        try fbuf.print("%{} = load {s}, ", .{ self.id, self.ty.fmt() });
+        try self.src.fmt(fbuf);
+    }
+
+    pub fn deinit(self: *const LoadInst) void {
+        self.src.deinit();
     }
 };
