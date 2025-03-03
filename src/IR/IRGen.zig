@@ -102,10 +102,38 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRSt
     }
 }
 
-fn generateExpression(self: *Self, target: IRValue, expr: *const Expr) IRStatus!IRValue {
-    _ = expr;
-    _ = self;
-    _ = target;
+fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
+    const data = expr.data.*;
+
+    switch (data) {
+        ExprKind.Literal => {
+            const literal = data.Literal;
+            var constant: Constant = undefined;
+            switch (literal.value_type) {
+                ValueType.Float => {
+                    const value = try fmt.parseFloat(f64, literal.val.lexeme);
+                    constant = Constant.Float(value);
+                },
+                ValueType.Int => {
+                    const value = try fmt.parseInt(i64, literal.val.lexeme, 10);
+                    constant = Constant.Int(value);
+                },
+                else => unreachable,
+            }
+
+            const value = try IRValue.init_constant(self.allocator, constant);
+            return value;
+        },
+        ExprKind.Variable => {
+            const name = data.Variable.name.lexeme;
+            const loc = self.namend.get(name);
+            if (loc) |l| {
+                return l.*;
+            }
+        },
+        else => unreachable,
+    }
+
     return undefined;
 }
 
@@ -118,12 +146,13 @@ fn generateStmt(self: *Self, stmt: *const Stmt) IRStatus!void {
             const new_var = assign.new_var;
 
             const alloca = try self.builder.createAlloca(ty);
+            defer alloca.deinit();
             const alloca_loc = alloca.data.Location;
             const loc = try IRValue.init_location(self.allocator, alloca_loc);
 
             if (new_var) {
-                const val = try self.generateExpression(loc, assign.getValue());
-                try self.builder.createStore(alloca, val, ty);
+                const val = try self.generateExpression(assign.getValue());
+                try self.builder.createStore(loc, val, ValueType.Void);
             }
 
             try self.namend.insert(name, loc);
@@ -174,10 +203,5 @@ pub fn generate(self: *Self) IRStatus!void {
 }
 
 pub fn deinit(self: *Self) void {
-    var iters = self.namend.table.iterator();
-    while (iters.next()) |item| {
-        item.value_ptr.deinit();
-    }
-
     self.namend.deinit();
 }

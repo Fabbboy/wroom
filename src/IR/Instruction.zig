@@ -70,10 +70,10 @@ pub const StoreInst = struct {
     }
 
     pub fn fmt(self: *const StoreInst, fbuf: anytype) IRStatus!void {
-        try fbuf.print("store {s} ", .{self.ty.fmt()});
-        try self.value.fmt(fbuf);
-        try fbuf.writeAll(", ");
+        try fbuf.print("store {s}, ", .{self.ty.fmt()});
         try self.target.fmt(fbuf);
+        try fbuf.writeAll(", ");
+        try self.value.fmt(fbuf);
     }
 
     pub fn deinit(self: *const StoreInst) void {

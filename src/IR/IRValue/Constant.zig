@@ -25,10 +25,10 @@ pub const IRConstant = union(enum) {
     pub fn fmt(self: *const IRConstant, fbuf: anytype) !void {
         switch (self.*) {
             .Integer => |value| {
-                try fbuf.print("{}", .{value});
+                try fbuf.print("#{}", .{value});
             },
             .Floating => |value| {
-                try fbuf.print("{}", .{value});
+                try fbuf.print("#{}", .{value});
             },
         }
     }
