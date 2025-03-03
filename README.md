@@ -5,6 +5,7 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 
 ### Next Steps
 
+- [ ] Leaving the ending brace of a function results in memory leaks and multiple parser errors
 - [ ] X-Assigns result in weird IR and memory leak
 - [ ] Errors for IRGen
 - [ ] Create snippets for error
