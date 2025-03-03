@@ -44,6 +44,9 @@ pub fn start(self: *const Self) usize {
 }
 
 pub fn stop(self: *const Self) usize {
+    if (self.arguments.items.len == 0) {
+        return self.position.start;
+    }
     return self.arguments.items[self.arguments.items.len - 1].stop();
 }
 

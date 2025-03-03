@@ -132,7 +132,7 @@ pub const CannotAssignToVoid = struct {
     }
 
     pub fn fmt(self: *const CannotAssignToVoid, fbuf: anytype) !void {
-        try fbuf.print("{}:{} Cannot assign to void", .{ self.pos.line, self.pos.column });
+        try fbuf.print("{}:{} Cannot assign to/from void", .{ self.pos.line, self.pos.column });
     }
 };
 

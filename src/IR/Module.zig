@@ -58,6 +58,7 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
     while (glblsIter.next()) |entry| {
         const value = entry.value_ptr;
         try value.fmt(fbuf);
+        try fbuf.writeAll("\n");
     }
 
     var funcsIter = self.functions.table.iterator();
@@ -65,6 +66,7 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
         const name = entry.key_ptr;
         const value = entry.value_ptr;
         try value.fmt(fbuf, name.*);
+        try fbuf.writeAll("\n");
     }
 
     try fbuf.writeAll("\n");
