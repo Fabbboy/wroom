@@ -85,6 +85,13 @@ pub fn main() !void {
     defer generator.deinit();
     try generator.generate();
 
+    const errs = generator.getErrs();
+    for (errs.*) |err| {
+        try err.fmt(buf_writer);
+        std.debug.print("{s}\n", .{buf.items});
+        buf.clearRetainingCapacity();
+    }
+
     var globalIter = module.getGlobals().table.iterator();
     while (globalIter.next()) |global| {
         const name = global.key_ptr.*;

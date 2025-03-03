@@ -19,7 +19,12 @@ const GlobalVariable = @import("IRValue/GlobalVariable.zig");
 const IRValueNs = @import("Value.zig");
 const IRValue = IRValueNs.IRValue;
 const IRValueData = IRValueNs.IRValueData;
-const IRStatus = @import("Error.zig").IRStatus;
+
+const IRErrorNS = @import("Error.zig");
+const IRStatus = IRErrorNS.IRStatus;
+const IRError = IRErrorNS.IRError;
+const SymbolNotFound = IRErrorNS.SymbolNotFound;
+
 const Constant = @import("IRValue/Constant.zig").IRConstant;
 
 const AssignStatement = @import("../AST/AssignStatement.zig");
@@ -55,6 +60,7 @@ allocator: mem.Allocator,
 builder: Builder,
 namend: SymTable(IRValue),
 active_fn: ?*Function,
+errors: std.ArrayList(IRError),
 
 pub fn init(ast: *const Ast, module: *Module, allocator: mem.Allocator) Self {
     return Self{
@@ -64,7 +70,12 @@ pub fn init(ast: *const Ast, module: *Module, allocator: mem.Allocator) Self {
         .builder = Builder.init(allocator, module),
         .namend = SymTable(IRValue).init(allocator),
         .active_fn = null,
+        .errors = std.ArrayList(IRError).init(allocator),
     };
+}
+
+pub fn getErrs(self: *Self) *const []IRError {
+    return &self.errors.items;
 }
 
 fn compileConstantBinary(self: *const Self, binary: *const BinaryExpr, ty: ValueType) IRStatus!Constant {
@@ -158,7 +169,8 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
                 return globalLoad;
             }
 
-            unreachable;
+            try self.errors.append(IRError.init_function_not_found(SymbolNotFound.init(name)));
+            return error.NotGood;
         },
         ExprData.Binary => {
             const binary = data.Binary;
@@ -202,7 +214,8 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
                 return ret.?;
             }
 
-            unreachable;
+            try self.errors.append(IRError.init_function_not_found(SymbolNotFound.init(name)));
+            return error.NotGood;
         },
         else => unreachable,
     }
@@ -321,4 +334,5 @@ pub fn generate(self: *Self) IRStatus!void {
 
 pub fn deinit(self: *Self) void {
     self.namend.deinit();
+    self.errors.deinit();
 }
