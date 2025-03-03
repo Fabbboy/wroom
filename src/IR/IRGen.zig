@@ -45,6 +45,7 @@ const LocationNs = @import("IRValue/Location.zig");
 const Location = LocationNs.Location;
 const LocalLocation = LocationNs.LocalLocation;
 const GlobalLocation = LocationNs.GlobalLocation;
+const ParamLocation = LocationNs.ParamLocation;
 
 const Self = @This();
 
@@ -53,6 +54,7 @@ module: *Module,
 allocator: mem.Allocator,
 builder: Builder,
 namend: SymTable(IRValue),
+active_fn: ?*Function,
 
 pub fn init(ast: *const Ast, module: *Module, allocator: mem.Allocator) Self {
     return Self{
@@ -61,6 +63,7 @@ pub fn init(ast: *const Ast, module: *Module, allocator: mem.Allocator) Self {
         .allocator = allocator,
         .builder = Builder.init(allocator, module),
         .namend = SymTable(IRValue).init(allocator),
+        .active_fn = null,
     };
 }
 
@@ -137,12 +140,25 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
                 return localLoad;
             }
 
+            if (self.active_fn) |a| {
+                const params = a.params;
+                for (params.items) |param| {
+                    if (std.mem.eql(u8, param.name, name)) {
+                        const paramLoc = Location.LocParam(ParamLocation.init(param.name, param.type));
+                        const paramLoad = try self.builder.createLoad(paramLoc, param.type);
+                        return paramLoad;
+                    }
+                }
+            }
+
             const global = self.module.globals.get(name);
             if (global) |g| {
                 const globalLoc = Location.LocGlobal(GlobalLocation.init(name, g.val_type));
                 const globalLoad = try self.builder.createLoad(globalLoc, g.val_type);
                 return globalLoad;
             }
+
+            unreachable;
         },
         ExprKind.Binary => {
             const binary = data.Binary;
@@ -172,8 +188,6 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
         },
         else => unreachable,
     }
-
-    return undefined;
 }
 
 fn generateStmt(self: *Self, stmt: *const Stmt) IRStatus!void {
@@ -241,6 +255,8 @@ fn generateFunction(self: *Self, func: *const FunctionDecl) IRStatus!void {
     const ret_type = func.getReturnType();
     const name = func.getName().lexeme;
     const created_function = try self.builder.createFunction(name, func_params, ret_type);
+
+    self.active_fn = created_function;
 
     if (func.body) |block| {
         const bb = try self.builder.createBlock("entry", created_function);

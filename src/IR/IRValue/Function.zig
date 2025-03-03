@@ -22,7 +22,10 @@ pub const FuncParam = struct {
     }
 
     pub fn fmt(self: *const FuncParam, fbuf: anytype) !void {
-        try fbuf.print("{s} {s}", .{ self.type.fmt(), self.name });
+        try fbuf.print("{s} {s}", .{
+            self.name,
+            self.type.fmt(),
+        });
     }
 };
 

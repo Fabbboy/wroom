@@ -6,6 +6,7 @@ const Self = @This();
 pub const Location = union(enum) {
     Local: LocalLocation,
     Global: GlobalLocation,
+    Param: ParamLocation,
 
     pub fn LocVar(loc: LocalLocation) Location {
         return .{
@@ -19,12 +20,21 @@ pub const Location = union(enum) {
         };
     }
 
+    pub fn LocParam(loc: ParamLocation) Location {
+        return .{
+            .Param = loc,
+        };
+    }
+
     pub fn fmt(self: *const Location, fbuf: anytype) !void {
         switch (self.*) {
             Location.Local => |loc| {
                 try loc.fmt(fbuf);
             },
             Location.Global => |loc| {
+                try loc.fmt(fbuf);
+            },
+            Location.Param => |loc| {
                 try loc.fmt(fbuf);
             },
         }
@@ -36,6 +46,9 @@ pub const Location = union(enum) {
                 return loc.valtype;
             },
             Location.Global => |loc| {
+                return loc.valtype;
+            },
+            Location.Param => |loc| {
                 return loc.valtype;
             },
         }
@@ -70,6 +83,22 @@ pub const GlobalLocation = struct {
     }
 
     pub fn fmt(self: *const GlobalLocation, fbuf: anytype) !void {
+        try fbuf.print("@{s}", .{self.name});
+    }
+};
+
+pub const ParamLocation = struct {
+    name: []const u8,
+    valtype: ValueType,
+
+    pub fn init(name: []const u8, valtype: ValueType) ParamLocation {
+        return ParamLocation{
+            .name = name,
+            .valtype = valtype,
+        };
+    }
+
+    pub fn fmt(self: *const ParamLocation, fbuf: anytype) !void {
         try fbuf.print("@{s}", .{self.name});
     }
 };
