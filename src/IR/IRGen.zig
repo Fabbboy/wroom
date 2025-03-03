@@ -312,7 +312,7 @@ fn generateFunction(self: *Self, func: *const FunctionDecl) IRStatus!void {
             try self.generateStmt(&stmt);
         }
     } else {
-        @panic("External functions are not supported yet");
+       created_function.isExtern = true;
     }
 }
 

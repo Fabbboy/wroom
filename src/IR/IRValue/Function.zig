@@ -70,6 +70,7 @@ params: std.ArrayList(FuncParam),
 blocks: std.ArrayList(FuncBlock),
 allocator: mem.Allocator,
 reg_id: usize,
+isExtern: bool,
 
 pub fn init(allocator: mem.Allocator, params: std.ArrayList(FuncParam), ret_type: ValueType) Self {
     return Self{
@@ -78,6 +79,7 @@ pub fn init(allocator: mem.Allocator, params: std.ArrayList(FuncParam), ret_type
         .blocks = std.ArrayList(FuncBlock).init(allocator),
         .allocator = allocator,
         .reg_id = 0,
+        .isExtern = false,
     };
 }
 
@@ -97,6 +99,9 @@ pub fn getNextId(self: *Self) usize {
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype, name: []const u8) !void {
+    if (self.isExtern) {
+        try fbuf.writeAll("extern ");
+    }
     try fbuf.print("@{s}(", .{name});
     for (self.params.items, 0..) |param, i| {
         try param.fmt(fbuf);
@@ -105,11 +110,15 @@ pub fn fmt(self: *const Self, fbuf: anytype, name: []const u8) !void {
         }
     }
 
-    try fbuf.print(") -> {s} {{\n", .{self.ret_type.fmt()});
-    for (self.blocks.items) |block| {
-        try block.fmt(fbuf);
+    try fbuf.print(") -> {s}", .{self.ret_type.fmt()});
+
+    if (!self.isExtern) {
+        try fbuf.writeAll(" {\n");
+        for (self.blocks.items) |block| {
+            try block.fmt(fbuf);
+        }
+        try fbuf.writeAll("}");
     }
-    try fbuf.writeAll("}");
 }
 
 pub fn addBlock(self: *Self, block: FuncBlock) IRStatus!*FuncBlock {
