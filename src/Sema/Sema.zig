@@ -114,8 +114,7 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
         return;
     }
 
-    if (self.currentScope.find(variable.ident.lexeme)) |f| {
-        _ = f;
+    if (self.currentScope.find(variable.ident.lexeme)) |_| {
         try self.errs.append(SemaError.init_symbol_already_declared(variable.ident.lexeme, variable.pos()));
         return error.NotGood;
     }
@@ -127,7 +126,7 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
     }
 
     const val_type = try self.infer_expr(&variable.value);
-    if(variable.type == ValueType.Void) {
+    if (variable.type == ValueType.Void) {
         try self.errs.append(SemaError.init_cannot_assign_to_void(variable.pos()));
         return error.NotGood;
     }
@@ -145,8 +144,7 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
 }
 
 fn analyze_function(self: *Self, func: *const FunctionDecl) SemaStatus!void {
-    if (self.currentScope.findFunc(func.name.lexeme)) |f| {
-        _ = f;
+    if (self.currentScope.findFunc(func.name.lexeme)) |_| {
         try self.errs.append(SemaError.init_symbol_already_declared(func.name.lexeme, func.pos()));
         return error.NotGood;
     }
@@ -156,8 +154,7 @@ fn analyze_function(self: *Self, func: *const FunctionDecl) SemaStatus!void {
     defer self.popScope();
 
     for (func.params.items) |*param| {
-        if (self.currentScope.find(param.ident.lexeme)) |f| {
-            _ = f;
+        if (self.currentScope.find(param.ident.lexeme)) |_| {
             try self.errs.append(SemaError.init_symbol_already_declared(param.ident.lexeme, param.pos()));
             return error.NotGood;
         }

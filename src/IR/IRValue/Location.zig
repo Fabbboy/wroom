@@ -3,45 +3,30 @@ const ValueType = Token.ValueType;
 
 const Self = @This();
 
-pub const LocationStorage = union(enum) {
+pub const Location = union(enum) {
     Local: usize,
     Global: []const u8,
 
-    pub fn LocVar(id: usize) LocationStorage {
+    pub fn LocVar(id: usize) Location {
         return .{
             .Local = id,
         };
     }
 
-    pub fn LocGlobal(name: []const u8) LocationStorage {
+    pub fn LocGlobal(name: []const u8) Location {
         return .{
             .Global = name,
         };
     }
 
-    pub fn fmt(self: *const LocationStorage, fbuf: anytype) !void {
+    pub fn fmt(self: *const Location, fbuf: anytype) !void {
         return switch (self.*) {
-            LocationStorage.Local => |local| {
+            Location.Local => |local| {
                 try fbuf.print("%{}", .{local});
             },
-            LocationStorage.Global => |global| {
+            Location.Global => |global| {
                 try fbuf.print("@{s}", .{global});
             },
         };
     }
 };
-
-target: LocationStorage,
-ty: ValueType,
-
-pub fn init(target: LocationStorage, ty: ValueType) Self {
-    return Self{
-        .target = target,
-        .ty = ty,
-    };
-}
-
-pub fn fmt(self: *const Self, fbuf: anytype) !void {
-    //try fbuf.print("{s} ", .{self.ty.fmt()});
-    try self.target.fmt(fbuf);
-}

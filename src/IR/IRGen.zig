@@ -39,8 +39,8 @@ const ConstExprDiv = ConstExprNs.ConstExprDiv;
 
 const SymTable = @import("ADT/SymTable.zig").SymTable;
 
-const Location = @import("IRValue/Location.zig");
-const LocationStorage = Location.LocationStorage;
+const Location = @import("IRValue/Location.zig").Location;
+const LocationStorage = Location.Location;
 
 const Self = @This();
 
@@ -134,8 +134,8 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
             }
 
             const global = self.module.globals.get(name);
-            if (global) |g| {
-                const globalLoc = Location.init(LocationStorage.LocGlobal(name), g.val_type);
+            if (global) |_| {
+                const globalLoc = Location.LocGlobal(name);
                 const globalLoad = try self.builder.createLoad(globalLoc, ValueType.Ptr);
                 return globalLoad;
             }

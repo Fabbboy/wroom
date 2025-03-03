@@ -11,8 +11,8 @@ const FuncBlock = Function.FuncBlock;
 const FuncParam = Function.FuncParam;
 
 const Constant = @import("IRValue/Constant.zig").IRConstant;
-const Location = @import("IRValue/Location.zig");
-const LocationStorage = Location.LocationStorage;
+const Location = @import("IRValue/Location.zig").Location;
+const LocationStorage = Location.Location;
 
 const IRStatus = @import("Error.zig").IRStatus;
 const IRValue = @import("Value.zig").IRValue;
@@ -99,7 +99,7 @@ pub fn createAlloca(self: *Self, size: ValueType) IRStatus!IRValue {
 
     const inst = Instruction.init_alloca(AllocaInst.init(id, size));
     try bb.instructions.append(inst);
-    return IRValue.init_location(self.allocator, Location.init(LocationStorage.LocVar(id), size));
+    return IRValue.init_location(self.allocator, Location.LocVar(id));
 }
 
 pub fn createStore(self: *Self, assignee: IRValue, value: IRValue, ty: ValueType) IRStatus!void {
@@ -124,7 +124,7 @@ pub fn createLoad(self: *Self, location: Location, ty: ValueType) IRStatus!IRVal
     const locVal = try IRValue.init_location(self.allocator, location);
     const inst = Instruction.init_load(LoadInst.init(id, locVal, ty));
     try bb.instructions.append(inst);
-    return IRValue.init_location(self.allocator, Location.init(LocationStorage.LocVar(id), ty));
+    return IRValue.init_location(self.allocator, Location.LocVar(id));
 }
 
 pub fn setActiveBlock(self: *Self, block: *FuncBlock) void {
