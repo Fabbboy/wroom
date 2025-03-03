@@ -14,6 +14,8 @@ const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
 const ExprKind = ExprNs.ExprKind;
 
+const FunctionCall = @import("../AST/FunctionCall.zig");
+
 const FunctionDecl = @import("../AST/FunctionDecl.zig");
 
 const Block = @import("../AST/Block.zig");
@@ -61,6 +63,29 @@ pub fn getErrs(self: *const Self) *const []SemaError {
     return &self.errs.items;
 }
 
+fn analyze_func_call(self: *Self, func: *const FunctionCall) SemaStatus!ValueType {
+    if (self.currentScope.findFunc(func.name.lexeme)) |f| {
+        if (f.params.items.len != func.arguments.items.len) {
+            try self.errs.append(SemaError.init_argument_count_mismatch(f.params.items.len, func.arguments.items.len, func.pos()));
+            return error.NotGood;
+        }
+
+        for (f.params.items, 0..) |*param, i| {
+            const arg = func.arguments.items[i];
+            const arg_type = try self.infer_expr(&arg);
+            if (param.type != arg_type) {
+                try self.errs.append(SemaError.init_type_mismatch(param.type, arg_type, arg.pos()));
+                return error.NotGood;
+            }
+        }
+
+        return f.ret_type;
+    }
+
+    try self.errs.append(SemaError.init_symbol_undefined(func.name.lexeme, func.pos()));
+    return error.NotGood;
+}
+
 fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
     return switch (expr.data.*) {
         ExprKind.Literal => expr.data.Literal.value_type,
@@ -93,12 +118,7 @@ fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
             return error.NotGood;
         },
         ExprKind.FunctionCall => {
-            const fcall = expr.data.FunctionCall;
-            if (self.currentScope.findFunc(fcall.name.lexeme)) |f| {
-                return f.ret_type;
-            }
-            try self.errs.append(SemaError.init_symbol_undefined(fcall.name.lexeme, fcall.pos()));
-            return error.NotGood;
+            return self.analyze_func_call(&expr.data.FunctionCall);
         },
         else => unreachable,
     };

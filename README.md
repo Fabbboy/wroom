@@ -5,11 +5,12 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 
 ### Next Steps
 
+- [ ] Separate Variable and Function checks from type inference
 - [ ] Check if function returns if not void
 - [ ] Complain when function return value is not used
 - [ ] Remove unnecessary external enum for expressions
 - [X] Add function call as Statement
-- [ ] Check function call fits signature
+- [X] Check function call fits signature
 - [ ] ~~SSA not correctly implemented~~ => optimization required
 - [X] Using function parameters results in segmentation fault
 - [X] Leaving the ending brace of a function results in memory leaks and multiple parser errors

@@ -14,6 +14,7 @@ pub const SemaError = union(enum) {
     SymbolUndefined: SymbolUndefined,
     IllegalAssignment: IllegalAssignment,
     CannotAssignToVoid: CannotAssignToVoid,
+    ArgumentCountMismatch: ArgumentCountMismatch,
 
     pub fn init_symbol_already_declared(name: []const u8, pos: Position) SemaError {
         return SemaError{ .SymbolAlreadyDeclared = SymbolAlreadyDeclared.init(name, pos) };
@@ -35,6 +36,10 @@ pub const SemaError = union(enum) {
         return SemaError{ .CannotAssignToVoid = CannotAssignToVoid.init(pos) };
     }
 
+    pub fn init_argument_count_mismatch(expected: usize, got: usize, pos: Position) SemaError {
+        return SemaError{ .ArgumentCountMismatch = ArgumentCountMismatch.init(expected, got, pos) };
+    }
+
     pub fn fmt(self: *const SemaError, fbuf: anytype) !void {
         switch (self.*) {
             SemaError.SymbolAlreadyDeclared => try self.SymbolAlreadyDeclared.fmt(fbuf),
@@ -42,6 +47,7 @@ pub const SemaError = union(enum) {
             SemaError.SymbolUndefined => try self.SymbolUndefined.fmt(fbuf),
             SemaError.IllegalAssignment => try self.IllegalAssignment.fmt(fbuf),
             SemaError.CannotAssignToVoid => try self.CannotAssignToVoid.fmt(fbuf),
+            SemaError.ArgumentCountMismatch => try self.ArgumentCountMismatch.fmt(fbuf),
         }
     }
 };
@@ -60,7 +66,7 @@ pub const TypeMismatch = struct {
     }
 
     pub fn fmt(self: *const TypeMismatch, fbuf: anytype) !void {
-        try fbuf.print("{}:{} Type mismatch: expected '{}', got '{}'", .{ self.pos.line, self.pos.column, self.lhs, self.rhs });
+        try fbuf.print("{}:{} Type mismatch: expected '{s}', got '{s}'", .{ self.pos.line, self.pos.column, self.lhs.fmt(), self.rhs.fmt() });
     }
 };
 
@@ -121,5 +127,23 @@ pub const CannotAssignToVoid = struct {
 
     pub fn fmt(self: *const CannotAssignToVoid, fbuf: anytype) !void {
         try fbuf.print("{}:{} Cannot assign to void", .{ self.pos.line, self.pos.column });
+    }
+};
+
+pub const ArgumentCountMismatch = struct {
+    expected: usize,
+    got: usize,
+    pos: Position,
+
+    pub fn init(expected: usize, got: usize, pos: Position) ArgumentCountMismatch {
+        return ArgumentCountMismatch{
+            .expected = expected,
+            .got = got,
+            .pos = pos,
+        };
+    }
+
+    pub fn fmt(self: *const ArgumentCountMismatch, fbuf: anytype) !void {
+        try fbuf.print("{}:{} Argument count mismatch: expected {}, got {}", .{ self.pos.line, self.pos.column, self.expected, self.got });
     }
 };
