@@ -35,3 +35,7 @@ pub fn stop(self: *const Self) usize {
 pub fn pos(self: *const Self) Position {
     return self.position;
 }
+
+pub fn getValue(self: *const Self) *const Expr {
+    return &self.value;
+}

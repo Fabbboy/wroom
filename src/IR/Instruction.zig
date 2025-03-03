@@ -20,6 +20,7 @@ pub const Instruction = union(enum) {
     Sub: SubInst,
     Mul: MulInst,
     Div: DivInst,
+    Return: IRValue,
 
     pub fn init_alloca(alloca: AllocaInst) Instruction {
         return .{ .Alloca = alloca };
@@ -49,6 +50,10 @@ pub const Instruction = union(enum) {
         return .{ .Div = div };
     }
 
+    pub fn init_return(ret: IRValue) Instruction {
+        return .{ .Return = ret };
+    }
+
     pub fn fmt(self: *const Self, fbuf: anytype) IRStatus!void {
         return switch (self.*) {
             Instruction.Alloca => |alloca| {
@@ -72,6 +77,10 @@ pub const Instruction = union(enum) {
             Instruction.Div => |div| {
                 try div.fmt(fbuf);
             },
+            Instruction.Return => |ret| {
+                try fbuf.writeAll("return ");
+                try ret.fmt(fbuf);
+            },
         };
     }
 
@@ -94,6 +103,9 @@ pub const Instruction = union(enum) {
             },
             Instruction.Div => |div| {
                 div.deinit();
+            },
+            Instruction.Return => |ret| {
+                ret.deinit();
             },
             else => {},
         };

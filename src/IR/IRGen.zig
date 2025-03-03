@@ -133,7 +133,7 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
             const name = data.Variable.name.lexeme;
             const localLoc = self.namend.get(name);
             if (localLoc) |l| {
-                const localLoad = try self.builder.createLoad(l.data.Location, ValueType.Ptr);
+                const localLoad = try self.builder.createLoad(l.data.Location, l.getType());
                 return localLoad;
             }
 
@@ -196,7 +196,11 @@ fn generateStmt(self: *Self, stmt: *const Stmt) IRStatus!void {
 
             try self.namend.insert(name, loc);
         },
-        Stmt.ReturnStatement => {},
+        Stmt.ReturnStatement => {
+            const ret = stmt.*.ReturnStatement;
+            const value = try self.generateExpression(ret.getValue());
+            try self.builder.createReturn(value);
+        },
     }
 }
 

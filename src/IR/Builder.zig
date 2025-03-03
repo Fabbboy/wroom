@@ -186,6 +186,16 @@ pub fn createDiv(self: *Self, lhs: IRValue, rhs: IRValue, ty: ValueType) IRStatu
     return IRValue.init_location(self.allocator, Location.LocVar(LocalLocation.init(id, ty)));
 }
 
+pub fn createReturn(self: *Self, value: IRValue) IRStatus!void {
+    if (self.active_block == null) {
+        return IRStatus.NotGood;
+    }
+
+    const bb = self.active_block.?;
+    const inst = Instruction.init_return(value);
+    try bb.instructions.append(inst);
+}
+
 pub fn setActiveBlock(self: *Self, block: *FuncBlock) void {
     self.active_block = block;
 }
