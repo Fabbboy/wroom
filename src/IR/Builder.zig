@@ -197,7 +197,7 @@ pub fn createReturn(self: *Self, value: IRValue) IRStatus!void {
     try bb.instructions.append(inst);
 }
 
-pub fn createCall(self: *Self, function: []const u8, args: []IRValue, ty: ValueType) IRStatus!IRValue {
+pub fn createCall(self: *Self, function: []const u8, args: std.ArrayList(IRValue), ty: ValueType) IRStatus!IRValue {
     if (self.active_block == null) {
         return IRStatus.NotGood;
     }

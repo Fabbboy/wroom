@@ -38,7 +38,7 @@ pub const ExprData = union(ExprKind) {
             ExprKind.Literal => {},
             ExprKind.Variable => {},
             ExprKind.Parameter => {},
-            ExprKind.FunctionCall => {},
+            ExprKind.FunctionCall => self.FunctionCall.deinit(),
         }
         allocator.destroy(self);
     }

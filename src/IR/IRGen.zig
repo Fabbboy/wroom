@@ -198,7 +198,7 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
                     try arg_values.append(arg_value);
                 }
 
-                const ret = try self.builder.createCall(name, arg_values.items, f.ret_type);
+                const ret = try self.builder.createCall(name, arg_values, f.ret_type);
                 return ret;
             }
 

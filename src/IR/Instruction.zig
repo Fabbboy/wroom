@@ -1,3 +1,5 @@
+const std = @import("std");
+
 const Token = @import("../Parser/Token.zig");
 const ValueType = Token.ValueType;
 
@@ -191,9 +193,9 @@ pub const LoadInst = struct {
 pub const CallInst = struct {
     id: usize,
     name: []const u8,
-    args: []IRValue,
+    args: std.ArrayList(IRValue),
 
-    pub fn init(id: usize, name: []const u8, args: []IRValue) CallInst {
+    pub fn init(id: usize, name: []const u8, args: std.ArrayList(IRValue)) CallInst {
         return CallInst{
             .id = id,
             .name = name,
@@ -203,9 +205,9 @@ pub const CallInst = struct {
 
     pub fn fmt(self: *const CallInst, fbuf: anytype) IRStatus!void {
         try fbuf.print("%{} = call @{s}(", .{ self.id, self.name });
-        for (self.args, 0..) |arg, i| {
+        for (self.args.items, 0..) |arg, i| {
             try arg.fmt(fbuf);
-            if (i + 1 != self.args.len) {
+            if (i + 1 != self.args.items.len) {
                 try fbuf.writeAll(", ");
             }
         }
@@ -213,8 +215,10 @@ pub const CallInst = struct {
     }
 
     pub fn deinit(self: *const CallInst) void {
-        for (self.args) |arg| {
+        for (self.args.items) |arg| {
             arg.deinit();
         }
+
+        self.args.deinit();
     }
 };
