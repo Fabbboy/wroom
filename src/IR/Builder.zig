@@ -100,17 +100,15 @@ pub fn createAlloca(self: *Self, size: ValueType) IRStatus!IRValue {
     return IRValue.init_location(self.allocator, Location.init(id, size));
 }
 
-pub fn createStore(self: *Self, target: IRValue, value: IRValue, ty: ValueType) IRStatus!IRValue {
+pub fn createStore(self: *Self, target: IRValue, value: IRValue, ty: ValueType) IRStatus!void {
     if (self.active_block == null) {
         return IRStatus.NotGood;
     }
 
     const bb = self.active_block.?;
-    const id = bb.parent.getNextId();
 
-    const inst = Instruction.init_store(StoreInst.init(id, target, value, ty));
+    const inst = Instruction.init_store(StoreInst.init(target, value, ty));
     try bb.instructions.append(inst);
-    return IRValue.init_location(self.allocator, Location.init(id, ty));
 }
 
 pub fn setActiveBlock(self: *Self, block: *FuncBlock) void {

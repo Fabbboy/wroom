@@ -82,6 +82,7 @@ pub fn main() !void {
     var module = IRModule.init(gpa.allocator());
     defer module.deinit();
     var generator = IRGen.init(ast, &module, gpa.allocator());
+    defer generator.deinit();
     try generator.generate();
 
     var globalIter = module.getGlobals().table.iterator();
@@ -100,7 +101,7 @@ pub fn main() !void {
         const value = function.value_ptr.*;
         try value.fmt(buf_writer, name);
         std.debug.print("{s}\n", .{buf.items});
-        buf.clearRetainingCapacity();   
+        buf.clearRetainingCapacity();
     }
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});

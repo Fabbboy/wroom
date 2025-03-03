@@ -37,12 +37,17 @@ const ConstExprSub = ConstExprNs.ConstExprSub;
 const ConstExprMul = ConstExprNs.ConstExprMul;
 const ConstExprDiv = ConstExprNs.ConstExprDiv;
 
+const SymTable = @import("ADT/SymTable.zig").SymTable;
+
+const Location = @import("IRValue/Location.zig");
+
 const Self = @This();
 
 ast: *const Ast,
 module: *Module,
 allocator: mem.Allocator,
 builder: Builder,
+namend: SymTable(IRValue),
 
 pub fn init(ast: *const Ast, module: *Module, allocator: mem.Allocator) Self {
     return Self{
@@ -50,6 +55,7 @@ pub fn init(ast: *const Ast, module: *Module, allocator: mem.Allocator) Self {
         .module = module,
         .allocator = allocator,
         .builder = Builder.init(allocator, module),
+        .namend = SymTable(IRValue).init(allocator),
     };
 }
 
@@ -96,27 +102,31 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr, ty: ValueType) IRSt
     }
 }
 
+fn generateExpression(self: *Self, target: IRValue, expr: *const Expr) IRStatus!IRValue {
+    _ = expr;
+    _ = self;
+    _ = target;
+    return undefined;
+}
+
 fn generateStmt(self: *Self, stmt: *const Stmt) IRStatus!void {
-    //_ = self;
     switch (stmt.*) {
         Stmt.AssignStatement => {
             const assign = stmt.*.AssignStatement;
             const name = assign.getName().lexeme;
             const ty = assign.getType();
-            const assign_type = assign.assign_type;
             const new_var = assign.new_var;
-            _ = name;
-            //_ = ty;
-            _ = assign_type;
-            _ = new_var;
 
             const alloca = try self.builder.createAlloca(ty);
-            const store = try self.builder.createStore(
-                alloca,
-                try IRValue.init_constant(self.allocator, Constant.Int(69420)),
-                ty,
-            );
-            defer store.deinit();
+            const alloca_loc = alloca.data.Location;
+            const loc = try IRValue.init_location(self.allocator, alloca_loc);
+
+            if (new_var) {
+                const val = try self.generateExpression(loc, assign.getValue());
+                try self.builder.createStore(alloca, val, ty);
+            }
+
+            try self.namend.insert(name, loc);
         },
         Stmt.ReturnStatement => {},
     }
@@ -161,4 +171,13 @@ pub fn generate(self: *Self) IRStatus!void {
     for (functions.*) |func| {
         try self.generateFunction(&func);
     }
+}
+
+pub fn deinit(self: *Self) void {
+    var iters = self.namend.table.iterator();
+    while (iters.next()) |item| {
+        item.value_ptr.deinit();
+    }
+
+    self.namend.deinit();
 }

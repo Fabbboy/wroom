@@ -57,14 +57,12 @@ pub const AllocaInst = struct {
 };
 
 pub const StoreInst = struct {
-    id: usize,
     target: IRValue,
     value: IRValue,
     ty: ValueType,
 
-    pub fn init(id: usize, target: IRValue, value: IRValue, ty: ValueType) StoreInst {
+    pub fn init(target: IRValue, value: IRValue, ty: ValueType) StoreInst {
         return StoreInst{
-            .id = id,
             .target = target,
             .value = value,
             .ty = ty,
@@ -72,7 +70,7 @@ pub const StoreInst = struct {
     }
 
     pub fn fmt(self: *const StoreInst, fbuf: anytype) IRStatus!void {
-        try fbuf.print("%{} = store {s} ", .{ self.id, self.ty.fmt() });
+        try fbuf.print("store {s} ", .{self.ty.fmt()});
         try self.value.fmt(fbuf);
         try fbuf.writeAll(", ");
         try self.target.fmt(fbuf);
