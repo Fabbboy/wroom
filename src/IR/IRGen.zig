@@ -129,13 +129,14 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
             const name = data.Variable.name.lexeme;
             const localLoc = self.namend.get(name);
             if (localLoc) |l| {
-                return l.copy();
+                const localLoad = try self.builder.createLoad(l.data.Location, ValueType.Ptr);
+                return localLoad;
             }
 
             const global = self.module.globals.get(name);
             if (global) |g| {
-                const globalLoc = Location.init(LocationStorage.LocGlobal(name), ValueType.Void);
-                const globalLoad = try self.builder.createLoad(globalLoc, g.val_type);
+                const globalLoc = Location.init(LocationStorage.LocGlobal(name), g.val_type);
+                const globalLoad = try self.builder.createLoad(globalLoc, ValueType.Ptr);
                 return globalLoad;
             }
         },
@@ -160,7 +161,7 @@ fn generateStmt(self: *Self, stmt: *const Stmt) IRStatus!void {
 
             if (new_var) {
                 const val = try self.generateExpression(assign.getValue());
-                try self.builder.createStore(loc, val, ValueType.Void);
+                try self.builder.createStore(loc, val, ty);
             }
 
             try self.namend.insert(name, loc);

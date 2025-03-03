@@ -42,6 +42,6 @@ pub fn init(target: LocationStorage, ty: ValueType) Self {
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
-    try fbuf.print("{s} ", .{self.ty.fmt()});
+    //try fbuf.print("{s} ", .{self.ty.fmt()});
     try self.target.fmt(fbuf);
 }

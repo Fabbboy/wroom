@@ -60,6 +60,7 @@ pub const TokenKind = enum {
 
 pub const ValueType = enum {
     Untyped,
+    Ptr,
     Int,
     Float,
     Void,
@@ -67,6 +68,7 @@ pub const ValueType = enum {
     pub fn fmt(self: ValueType) []const u8 {
         return switch (self) {
             ValueType.Untyped => "untyped",
+            ValueType.Ptr => "ptr",
             ValueType.Int => "int",
             ValueType.Float => "float",
             ValueType.Void => "void",
