@@ -22,7 +22,7 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 - [x] Illegal assignment on undeclared variable
 - [ ] Fix case where position is 0 because body is empty
 - [x] ~~Costexpr doesn't really allow implicit floats anymore~~ => is actually expected behaviour
-- [~] Fix constant expr on division =>
+- [X] Fix constant expr on division =>
 
 ```
 2 * 5 + 2 * 3 / 2 = 12
