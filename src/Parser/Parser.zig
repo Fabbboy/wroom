@@ -339,7 +339,10 @@ pub fn parseStatement(self: *Self) ParseStatus!Stmt {
                 _ = try self.next(&[_]TokenKind{TokenKind.RParen});
 
                 return Stmt.init_function_call(FunctionCall.init(tok, args, tok.pos));
-            } else unreachable;
+            } else {
+                try self.errs.append(ParseError.init_unexpected_token(tok, &tl_expected));
+                return error.NotGood;
+            }
         },
         TokenKind.Return => {
             const value = self.parseExpr() catch {

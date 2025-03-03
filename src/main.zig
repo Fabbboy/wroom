@@ -47,7 +47,7 @@ fn handleErrs(errs: anytype, format_buffer: *std.ArrayList(u8)) !void {
 
     for (errs.*) |err| {
         try err.fmt(buf_writer);
-        std.debug.print("{s}\n", .{fmt_buf});
+        std.debug.print("{s}\n", .{format_buffer.items});
         format_buffer.clearRetainingCapacity();
     }
 }
