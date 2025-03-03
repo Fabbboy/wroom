@@ -56,16 +56,16 @@ func main(argc: int) int {
 IR:
 
 ```llvm
-@glbl int = #123
-@main(int argc) -> int {
+@glbl i32 = #123
+@main(i32 argc) -> i32 {
 entry:
-        %0 = alloca int
-        %1 = mul int #123, #2
-        %2 = load int, @glbl
-        %3 = mul int #1, %2
-        %4 = add int %1, %3
-        store int %0, %4
-        %5 = load int, %0
+        %0 = alloca i32
+        %1 = mul i32 #123, #2
+        %2 = load i32, @glbl
+        %3 = mul i32 #1, %2
+        %4 = add i32 %1, %3
+        store i32 %0, %4
+        %5 = load i32, %0
         return %5
 }
 ```
@@ -87,18 +87,18 @@ func main() int {
 IR:
 
 ```llvm
-@multiply(a int) -> int {
+@multiply(a i32) -> i32 {
 entry:
-        %0 = load int, @a
-        %1 = mul int #2, %0
+        %0 = load i32, @a
+        %1 = mul i32 #2, %0
         return %1
 }
-@main() -> int {
+@main() -> i32 {
 entry:
-        %0 = alloca int
+        %0 = alloca i32
         %1 = call @multiply(#69420)
-        store int %0, %1
-        %2 = load int, %0
+        store i32 %0, %1
+        %2 = load i32, %0
         return %2
 }
 ```
