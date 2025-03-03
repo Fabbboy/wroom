@@ -140,7 +140,7 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
             const global = self.module.globals.get(name);
             if (global) |g| {
                 const globalLoc = Location.LocGlobal(GlobalLocation.init(name, g.val_type));
-                const globalLoad = try self.builder.createLoad(globalLoc, ValueType.Ptr);
+                const globalLoad = try self.builder.createLoad(globalLoc, g.val_type);
                 return globalLoad;
             }
         },
@@ -154,6 +154,18 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
                 OperatorType.Plus => {
                     const add = try self.builder.createAdd(lhs, rhs, lhs.getType());
                     return add;
+                },
+                OperatorType.Minus => {
+                    const sub = try self.builder.createSub(lhs, rhs, lhs.getType());
+                    return sub;
+                },
+                OperatorType.Star => {
+                    const mul = try self.builder.createMul(lhs, rhs, lhs.getType());
+                    return mul;
+                },
+                OperatorType.Slash => {
+                    const div = try self.builder.createDiv(lhs, rhs, lhs.getType());
+                    return div;
                 },
                 else => unreachable,
             }

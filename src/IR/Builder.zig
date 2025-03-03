@@ -147,6 +147,45 @@ pub fn createAdd(self: *Self, lhs: IRValue, rhs: IRValue, ty: ValueType) IRStatu
     return IRValue.init_location(self.allocator, Location.LocVar(LocalLocation.init(id, ty)));
 }
 
+pub fn createSub(self: *Self, lhs: IRValue, rhs: IRValue, ty: ValueType) IRStatus!IRValue {
+    if (self.active_block == null) {
+        return IRStatus.NotGood;
+    }
+
+    const bb = self.active_block.?;
+    const id = bb.parent.getNextId();
+
+    const inst = Instruction.init_sub(SubInst.init(id, lhs, rhs, ty));
+    try bb.instructions.append(inst);
+    return IRValue.init_location(self.allocator, Location.LocVar(LocalLocation.init(id, ty)));
+}
+
+pub fn createMul(self: *Self, lhs: IRValue, rhs: IRValue, ty: ValueType) IRStatus!IRValue {
+    if (self.active_block == null) {
+        return IRStatus.NotGood;
+    }
+
+    const bb = self.active_block.?;
+    const id = bb.parent.getNextId();
+
+    const inst = Instruction.init_mul(MulInst.init(id, lhs, rhs, ty));
+    try bb.instructions.append(inst);
+    return IRValue.init_location(self.allocator, Location.LocVar(LocalLocation.init(id, ty)));
+}
+
+pub fn createDiv(self: *Self, lhs: IRValue, rhs: IRValue, ty: ValueType) IRStatus!IRValue {
+    if (self.active_block == null) {
+        return IRStatus.NotGood;
+    }
+
+    const bb = self.active_block.?;
+    const id = bb.parent.getNextId();
+
+    const inst = Instruction.init_div(DivInst.init(id, lhs, rhs, ty));
+    try bb.instructions.append(inst);
+    return IRValue.init_location(self.allocator, Location.LocVar(LocalLocation.init(id, ty)));
+}
+
 pub fn setActiveBlock(self: *Self, block: *FuncBlock) void {
     self.active_block = block;
 }
