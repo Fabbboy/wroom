@@ -5,6 +5,7 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 
 ### Next Steps
 
+- [ ] Check if function returns if not void
 - [ ] Complain when function return value is not used
 - [ ] Remove unnecessary external enum for expressions
 - [X] Add function call as Statement
