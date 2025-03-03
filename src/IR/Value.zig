@@ -81,4 +81,13 @@ pub const IRValue = struct {
     pub fn deinit(self: *const IRValue) void {
         self.allocator.destroy(self.data);
     }
+
+    pub fn copy(self: *const IRValue) !IRValue {
+        const data = try self.allocator.create(IRValueData);
+        data.* = self.data.*;
+        return IRValue{
+            .data = data,
+            .allocator = self.allocator,
+        };
+    }
 };

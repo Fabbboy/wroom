@@ -128,7 +128,7 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
             const name = data.Variable.name.lexeme;
             const loc = self.namend.get(name);
             if (loc) |l| {
-                return l.*;
+                return l.copy();
             }
         },
         else => unreachable,
