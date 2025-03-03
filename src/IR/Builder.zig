@@ -11,8 +11,10 @@ const FuncBlock = Function.FuncBlock;
 const FuncParam = Function.FuncParam;
 
 const Constant = @import("IRValue/Constant.zig").IRConstant;
-const Location = @import("IRValue/Location.zig").Location;
-const LocationStorage = Location.Location;
+const LocationNs = @import("IRValue/Location.zig");
+const Location = LocationNs.Location;
+const LocalLocation = LocationNs.LocalLocation;
+const GlobalLocation = LocationNs.GlobalLocation;
 
 const IRStatus = @import("Error.zig").IRStatus;
 const IRValue = @import("Value.zig").IRValue;
@@ -24,6 +26,11 @@ const Instruction = InstructionNs.Instruction;
 const AllocaInst = InstructionNs.AllocaInst;
 const StoreInst = InstructionNs.StoreInst;
 const LoadInst = InstructionNs.LoadInst;
+
+const AddInst = @import("Instruction/Binary.zig").AddInst;
+const SubInst = @import("Instruction/Binary.zig").SubInst;
+const MulInst = @import("Instruction/Binary.zig").MulInst;
+const DivInst = @import("Instruction/Binary.zig").DivInst;
 
 const Self = @This();
 
@@ -99,7 +106,7 @@ pub fn createAlloca(self: *Self, size: ValueType) IRStatus!IRValue {
 
     const inst = Instruction.init_alloca(AllocaInst.init(id, size));
     try bb.instructions.append(inst);
-    return IRValue.init_location(self.allocator, Location.LocVar(id));
+    return IRValue.init_location(self.allocator, Location.LocVar(LocalLocation.init(id, size)));
 }
 
 pub fn createStore(self: *Self, assignee: IRValue, value: IRValue, ty: ValueType) IRStatus!void {
@@ -124,7 +131,20 @@ pub fn createLoad(self: *Self, location: Location, ty: ValueType) IRStatus!IRVal
     const locVal = try IRValue.init_location(self.allocator, location);
     const inst = Instruction.init_load(LoadInst.init(id, locVal, ty));
     try bb.instructions.append(inst);
-    return IRValue.init_location(self.allocator, Location.LocVar(id));
+    return IRValue.init_location(self.allocator, Location.LocVar(LocalLocation.init(id, ty)));
+}
+
+pub fn createAdd(self: *Self, lhs: IRValue, rhs: IRValue, ty: ValueType) IRStatus!IRValue {
+    if (self.active_block == null) {
+        return IRStatus.NotGood;
+    }
+
+    const bb = self.active_block.?;
+    const id = bb.parent.getNextId();
+
+    const inst = Instruction.init_add(AddInst.init(id, lhs, rhs, ty));
+    try bb.instructions.append(inst);
+    return IRValue.init_location(self.allocator, Location.LocVar(LocalLocation.init(id, ty)));
 }
 
 pub fn setActiveBlock(self: *Self, block: *FuncBlock) void {

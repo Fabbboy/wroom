@@ -5,12 +5,21 @@ const IRValue = @import("Value.zig").IRValue;
 
 const IRStatus = @import("Error.zig").IRStatus;
 
+const AddInst = @import("Instruction/Binary.zig").AddInst;
+const SubInst = @import("Instruction/Binary.zig").SubInst;
+const MulInst = @import("Instruction/Binary.zig").MulInst;
+const DivInst = @import("Instruction/Binary.zig").DivInst;
+
 pub const Instruction = union(enum) {
     const Self = @This();
 
     Alloca: AllocaInst,
     Store: StoreInst,
     Load: LoadInst,
+    Add: AddInst,
+    Sub: SubInst,
+    Mul: MulInst,
+    Div: DivInst,
 
     pub fn init_alloca(alloca: AllocaInst) Instruction {
         return .{ .Alloca = alloca };
@@ -24,6 +33,22 @@ pub const Instruction = union(enum) {
         return .{ .Load = load };
     }
 
+    pub fn init_add(add: AddInst) Instruction {
+        return .{ .Add = add };
+    }
+
+    pub fn init_sub(sub: SubInst) Instruction {
+        return .{ .Sub = sub };
+    }
+
+    pub fn init_mul(mul: MulInst) Instruction {
+        return .{ .Mul = mul };
+    }
+
+    pub fn init_div(div: DivInst) Instruction {
+        return .{ .Div = div };
+    }
+
     pub fn fmt(self: *const Self, fbuf: anytype) IRStatus!void {
         return switch (self.*) {
             Instruction.Alloca => |alloca| {
@@ -35,6 +60,18 @@ pub const Instruction = union(enum) {
             Instruction.Load => |load| {
                 try load.fmt(fbuf);
             },
+            Instruction.Add => |add| {
+                try add.fmt(fbuf);
+            },
+            Instruction.Sub => |sub| {
+                try sub.fmt(fbuf);
+            },
+            Instruction.Mul => |mul| {
+                try mul.fmt(fbuf);
+            },
+            Instruction.Div => |div| {
+                try div.fmt(fbuf);
+            },
         };
     }
 
@@ -45,6 +82,18 @@ pub const Instruction = union(enum) {
             },
             Instruction.Load => |load| {
                 load.deinit();
+            },
+            Instruction.Add => |add| {
+                add.deinit();
+            },
+            Instruction.Sub => |sub| {
+                sub.deinit();
+            },
+            Instruction.Mul => |mul| {
+                mul.deinit();
+            },
+            Instruction.Div => |div| {
+                div.deinit();
             },
             else => {},
         };

@@ -4,29 +4,72 @@ const ValueType = Token.ValueType;
 const Self = @This();
 
 pub const Location = union(enum) {
-    Local: usize,
-    Global: []const u8,
+    Local: LocalLocation,
+    Global: GlobalLocation,
 
-    pub fn LocVar(id: usize) Location {
+    pub fn LocVar(loc: LocalLocation) Location {
         return .{
-            .Local = id,
+            .Local = loc,
         };
     }
 
-    pub fn LocGlobal(name: []const u8) Location {
+    pub fn LocGlobal(loc: GlobalLocation) Location {
         return .{
-            .Global = name,
+            .Global = loc,
         };
     }
 
     pub fn fmt(self: *const Location, fbuf: anytype) !void {
-        return switch (self.*) {
-            Location.Local => |local| {
-                try fbuf.print("%{}", .{local});
+        switch (self.*) {
+            Location.Local => |loc| {
+                try loc.fmt(fbuf);
             },
-            Location.Global => |global| {
-                try fbuf.print("@{s}", .{global});
+            Location.Global => |loc| {
+                try loc.fmt(fbuf);
             },
+        }
+    }
+
+    pub fn getType(self: *const Location) ValueType {
+        switch (self.*) {
+            Location.Local => |loc| {
+                return loc.valtype;
+            },
+            Location.Global => |loc| {
+                return loc.valtype;
+            },
+        }
+    }
+};
+
+pub const LocalLocation = struct {
+    id: usize,
+    valtype: ValueType,
+
+    pub fn init(id: usize, valtype: ValueType) LocalLocation {
+        return LocalLocation{
+            .id = id,
+            .valtype = valtype,
         };
+    }
+
+    pub fn fmt(self: *const LocalLocation, fbuf: anytype) !void {
+        try fbuf.print("%{}", .{self.id});
+    }
+};
+
+pub const GlobalLocation = struct {
+    name: []const u8,
+    valtype: ValueType,
+
+    pub fn init(name: []const u8, valtype: ValueType) GlobalLocation {
+        return GlobalLocation{
+            .name = name,
+            .valtype = valtype,
+        };
+    }
+
+    pub fn fmt(self: *const GlobalLocation, fbuf: anytype) !void {
+        try fbuf.print("@{s}", .{self.name});
     }
 };

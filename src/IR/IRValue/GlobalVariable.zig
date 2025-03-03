@@ -18,6 +18,10 @@ pub fn init(glob_id: usize, initializer: Constant, val_type: ValueType) Self {
     };
 }
 
+pub fn getType(self: *const Self) ValueType {
+    return self.val_type;
+}
+
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try fbuf.print("{s} = ", .{self.val_type.fmt()});
     try self.initializer.fmt(fbuf);

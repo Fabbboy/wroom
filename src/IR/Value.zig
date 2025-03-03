@@ -1,6 +1,9 @@
 const std = @import("std");
 const mem = std.mem;
 
+const Token = @import("../Parser/Token.zig");
+const ValueType = Token.ValueType;
+
 const IRConstant = @import("IRValue/Constant.zig").IRConstant;
 const GlobalVariable = @import("IRValue/GlobalVariable.zig");
 const Location = @import("IRValue/Location.zig").Location;
@@ -80,6 +83,20 @@ pub const IRValue = struct {
 
     pub fn deinit(self: *const IRValue) void {
         self.allocator.destroy(self.data);
+    }
+
+    pub fn getType(self: *const IRValue) ValueType {
+        switch (self.data.*) {
+            IRValueData.Constant => |value| {
+                return value.getType();
+            },
+            IRValueData.Global => |value| {
+                return value.getType();
+            },
+            IRValueData.Location => |value| {
+                return value.getType();
+            },
+        }
     }
 
     pub fn copy(self: *const IRValue) !IRValue {

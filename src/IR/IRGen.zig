@@ -16,7 +16,9 @@ const OperatorType = Token.OperatorType;
 const Module = @import("Module.zig");
 
 const GlobalVariable = @import("IRValue/GlobalVariable.zig");
-const IRValue = @import("Value.zig").IRValue;
+const IRValueNs = @import("Value.zig");
+const IRValue = IRValueNs.IRValue;
+const IRValueData = IRValueNs.IRValueData;
 const IRStatus = @import("Error.zig").IRStatus;
 const Constant = @import("IRValue/Constant.zig").IRConstant;
 
@@ -39,8 +41,10 @@ const ConstExprDiv = ConstExprNs.ConstExprDiv;
 
 const SymTable = @import("ADT/SymTable.zig").SymTable;
 
-const Location = @import("IRValue/Location.zig").Location;
-const LocationStorage = Location.Location;
+const LocationNs = @import("IRValue/Location.zig");
+const Location = LocationNs.Location;
+const LocalLocation = LocationNs.LocalLocation;
+const GlobalLocation = LocationNs.GlobalLocation;
 
 const Self = @This();
 
@@ -134,10 +138,24 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
             }
 
             const global = self.module.globals.get(name);
-            if (global) |_| {
-                const globalLoc = Location.LocGlobal(name);
+            if (global) |g| {
+                const globalLoc = Location.LocGlobal(GlobalLocation.init(name, g.val_type));
                 const globalLoad = try self.builder.createLoad(globalLoc, ValueType.Ptr);
                 return globalLoad;
+            }
+        },
+        ExprKind.Binary => {
+            const binary = data.Binary;
+            const lhs = try self.generateExpression(binary.getLHS());
+            const rhs = try self.generateExpression(binary.getRHS());
+            const op = binary.op;
+
+            switch (op) {
+                OperatorType.Plus => {
+                    const add = try self.builder.createAdd(lhs, rhs, lhs.getType());
+                    return add;
+                },
+                else => unreachable,
             }
         },
         else => unreachable,
