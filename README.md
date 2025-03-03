@@ -5,6 +5,7 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 
 ### Next Steps
 
+- [ ] Bug: You can create void variables implicitly through a function which returns void
 - [ ] Constants
 - [ ] Different linkages
 - [ ] Separate Variable and Function checks from type inference
