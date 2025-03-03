@@ -15,6 +15,7 @@ pub const SemaError = union(enum) {
     IllegalAssignment: IllegalAssignment,
     CannotAssignToVoid: CannotAssignToVoid,
     ArgumentCountMismatch: ArgumentCountMismatch,
+    UnusedReturnValue: UnusedReturnValue,
 
     pub fn init_symbol_already_declared(name: []const u8, pos: Position) SemaError {
         return SemaError{ .SymbolAlreadyDeclared = SymbolAlreadyDeclared.init(name, pos) };
@@ -40,6 +41,10 @@ pub const SemaError = union(enum) {
         return SemaError{ .ArgumentCountMismatch = ArgumentCountMismatch.init(expected, got, pos) };
     }
 
+    pub fn init_unused_return_value(pos: Position) SemaError {
+        return SemaError{ .UnusedReturnValue = UnusedReturnValue.init(pos) };
+    }
+
     pub fn fmt(self: *const SemaError, fbuf: anytype) !void {
         switch (self.*) {
             SemaError.SymbolAlreadyDeclared => try self.SymbolAlreadyDeclared.fmt(fbuf),
@@ -48,6 +53,7 @@ pub const SemaError = union(enum) {
             SemaError.IllegalAssignment => try self.IllegalAssignment.fmt(fbuf),
             SemaError.CannotAssignToVoid => try self.CannotAssignToVoid.fmt(fbuf),
             SemaError.ArgumentCountMismatch => try self.ArgumentCountMismatch.fmt(fbuf),
+            SemaError.UnusedReturnValue => try self.UnusedReturnValue.fmt(fbuf),
         }
     }
 };
@@ -145,5 +151,19 @@ pub const ArgumentCountMismatch = struct {
 
     pub fn fmt(self: *const ArgumentCountMismatch, fbuf: anytype) !void {
         try fbuf.print("{}:{} Argument count mismatch: expected {}, got {}", .{ self.pos.line, self.pos.column, self.expected, self.got });
+    }
+};
+
+pub const UnusedReturnValue = struct {
+    pos: Position,
+
+    pub fn init(pos: Position) UnusedReturnValue {
+        return UnusedReturnValue{
+            .pos = pos,
+        };
+    }
+
+    pub fn fmt(self: *const UnusedReturnValue, fbuf: anytype) !void {
+        try fbuf.print("{}:{} Unused return value", .{ self.pos.line, self.pos.column });
     }
 };

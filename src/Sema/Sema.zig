@@ -234,7 +234,16 @@ fn analyze_statement(self: *Self, stmt: *Stmt, name: []const u8) SemaStatus!void
                 }
             }
         },
-        Stmt.FunctionCall => {},
+        Stmt.FunctionCall => {
+            _ = try self.analyze_func_call(&stmt.FunctionCall);
+            const f = self.currentScope.findFunc(name);
+            if (f) |func| {
+                if (func.ret_type != ValueType.Void) {
+                    try self.errs.append(SemaError.init_unused_return_value(stmt.FunctionCall.pos()));
+                    return error.NotGood;
+                }
+            }
+        },
     };
 }
 
