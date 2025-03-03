@@ -5,7 +5,7 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 
 ### Next Steps
 
-- [ ] SSA not correctly implemented
+- [ ] ~~SSA not correctly implemented~~ => optimizations required
 - [ ] Using function parameters results in segmentation fault
 - [ ] Leaving the ending brace of a function results in memory leaks and multiple parser errors
 - [X] X-Assigns result in weird IR and memory leak
