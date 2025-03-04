@@ -6,7 +6,8 @@ const Module = @import("../IR/Module.zig");
 const TargetNs = @import("Target.zig");
 const Machine = TargetNs.Machine;
 
-const GetStub = @import("stub.zig").GetStub;
+const GetStub = @import("Stub.zig").GetStub;
+const Codegen = @import("Codegen.zig").Codegen;
 
 const Self = @This();
 
@@ -14,6 +15,7 @@ module: *const Module,
 allocator: mem.Allocator,
 buffer: std.ArrayList(u8),
 machine: Machine,
+codegen: Codegen,
 
 pub fn init(allocator: mem.Allocator, module: *const Module, target: Machine) Self {
     return Self{
@@ -21,6 +23,7 @@ pub fn init(allocator: mem.Allocator, module: *const Module, target: Machine) Se
         .allocator = allocator,
         .buffer = std.ArrayList(u8).init(allocator),
         .machine = target,
+        .codegen = Codegen.init(target),
     };
 }
 
