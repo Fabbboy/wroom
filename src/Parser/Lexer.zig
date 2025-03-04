@@ -10,9 +10,12 @@ const operators = Token.operators;
 
 const Position = @import("Position.zig");
 
+const Source = @import("../ADT/Source.zig");
+
 const Self = @This();
 
-source: []const u8,
+source: *const Source,
+raw_src: []const u8,
 idx: usize,
 line: usize,
 column: usize,
@@ -20,9 +23,10 @@ start: usize,
 currTok: Token,
 nextTok: Token,
 
-pub fn init(source: []const u8) Self {
+pub fn init(source: *const Source) !Self {
     var s = Self{
         .source = source,
+        .raw_src = try source.getContents(),
         .line = 1,
         .column = 1,
         .start = 0,
@@ -40,7 +44,7 @@ fn getPosition(self: *Self) Position {
 }
 
 fn getLexeme(self: *Self) []const u8 {
-    return self.source[self.start..self.idx];
+    return self.raw_src[self.start..self.idx];
 }
 
 fn getToken(self: *Self, kind: TokenKind) Token {
@@ -52,19 +56,19 @@ fn getTokenWithValue(self: *Self, kind: TokenKind, value: TokenData) Token {
 }
 
 fn getChar(self: *Self) u8 {
-    if (self.idx >= self.source.len) {
+    if (self.idx >= self.raw_src.len) {
         return 0;
     }
 
-    return self.source[self.idx];
+    return self.raw_src[self.idx];
 }
 
 fn getPeekChar(self: *Self) u8 {
-    if (self.idx + 1 >= self.source.len) {
+    if (self.idx + 1 >= self.raw_src.len) {
         return 0;
     }
 
-    return self.source[self.idx + 1];
+    return self.raw_src[self.idx + 1];
 }
 
 fn advance(self: *Self) void {
@@ -80,7 +84,7 @@ fn advance(self: *Self) void {
 }
 
 fn lexTrivia(self: *Self) void {
-    while (self.idx < self.source.len and ascii.isWhitespace(self.getChar())) {
+    while (self.idx < self.raw_src.len and ascii.isWhitespace(self.getChar())) {
         self.advance();
     }
 }
@@ -123,7 +127,7 @@ fn lexNumber(self: *Self) Token {
 
 fn lex(self: *Self) Token {
     self.lexTrivia();
-    if (self.idx >= self.source.len) {
+    if (self.idx >= self.raw_src.len) {
         return self.getToken(TokenKind.EOF);
     }
 

@@ -13,6 +13,8 @@ const Sema = @import("Sema/Sema.zig");
 const IRModule = @import("IR/Module.zig");
 const IRGen = @import("IR/IRGen.zig");
 
+const Source = @import("ADT/Source.zig");
+
 var fmt_buf: [4096]u8 = undefined;
 
 var gpa = std.heap.GeneralPurposeAllocator(.{
@@ -24,23 +26,6 @@ var gpa = std.heap.GeneralPurposeAllocator(.{
 const page_allocator = std.heap.page_allocator;
 
 var fixed_buf_allocator = std.heap.FixedBufferAllocator.init(fmt_buf[0..]);
-
-fn readFile(path: []const u8, allocator: mem.Allocator) !?[]u8 {
-    const file_fd = try fs.cwd().openFile(path, .{
-        .mode = .read_only,
-    });
-    defer file_fd.close();
-
-    const file_stat = try file_fd.stat();
-    const file_contents = try allocator.alloc(u8, file_stat.size);
-
-    const read_result = try file_fd.readAll(file_contents);
-    if (read_result != file_stat.size) {
-        return null;
-    }
-
-    return file_contents[0..read_result];
-}
 
 fn handleErrs(errs: anytype, format_buffer: *std.ArrayList(u8)) !void {
     const buf_writer = format_buffer.writer();
@@ -65,9 +50,8 @@ pub fn main() !void {
         return;
     }
 
-    const source_path = args[1];
-    const source = try readFile(source_path, page_allocator) orelse return;
-    defer page_allocator.free(source);
+    var source = try Source.init(page_allocator, args[1]);
+    defer source.deinit();
 
     defer {
         if (gpa.deinit() == .leak) {
@@ -75,7 +59,7 @@ pub fn main() !void {
         }
     }
 
-    var lexer = Lexer.init(source);
+    var lexer = try Lexer.init(&source);
     var parser = Parser.init(&lexer, gpa.allocator());
     defer parser.deinit();
 
