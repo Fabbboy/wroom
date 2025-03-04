@@ -94,8 +94,11 @@ pub fn main() !void {
     std.debug.print("{s}\n", .{format_buffer.items});
     format_buffer.clearRetainingCapacity();
 
-    const compiler = Compiler.init(gpa.allocator(), &module, .X86_64);
+    var compiler = Compiler.init(gpa.allocator(), &module, .X86_64);
     defer compiler.deinit();
+
+    const assembly = try compiler.compile();
+    std.debug.print("{s}\n", .{assembly});
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
 }
