@@ -8,6 +8,8 @@ const Instruction = @import("../Instruction.zig").Instruction;
 
 const IRStatus = @import("../Error.zig").IRStatus;
 
+const Linkage = @import("../../AST/AssignStatement.zig").Linkage;
+
 const Function = @This();
 
 pub const FuncParam = struct {
@@ -70,16 +72,16 @@ params: std.ArrayList(FuncParam),
 blocks: std.ArrayList(FuncBlock),
 allocator: mem.Allocator,
 reg_id: usize,
-isExtern: bool,
+linkage: Linkage,
 
-pub fn init(allocator: mem.Allocator, params: std.ArrayList(FuncParam), ret_type: ValueType) Self {
+pub fn init(allocator: mem.Allocator, params: std.ArrayList(FuncParam), ret_type: ValueType, linkage: Linkage) Self {
     return Self{
         .ret_type = ret_type,
         .params = params,
         .blocks = std.ArrayList(FuncBlock).init(allocator),
         .allocator = allocator,
         .reg_id = 0,
-        .isExtern = false,
+        .linkage = linkage,
     };
 }
 
@@ -99,8 +101,10 @@ pub fn getNextId(self: *Self) usize {
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype, name: []const u8) !void {
-    if (self.isExtern) {
-        try fbuf.writeAll("extern ");
+    switch (self.linkage) {
+        .Public => try fbuf.writeAll("public "),
+        .Internal => try fbuf.writeAll("internal "),
+        .External => try fbuf.writeAll("external "),
     }
     try fbuf.print("@{s}(", .{name});
     for (self.params.items, 0..) |param, i| {
@@ -112,7 +116,7 @@ pub fn fmt(self: *const Self, fbuf: anytype, name: []const u8) !void {
 
     try fbuf.print(") -> {s}", .{self.ret_type.fmt()});
 
-    if (!self.isExtern) {
+    if (self.linkage != .External) {
         try fbuf.writeAll(" {\n");
         for (self.blocks.items) |block| {
             try block.fmt(fbuf);

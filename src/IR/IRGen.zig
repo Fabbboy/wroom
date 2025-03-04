@@ -303,7 +303,7 @@ fn generateFunction(self: *Self, func: *const FunctionDecl) IRStatus!void {
 
     const ret_type = func.getReturnType();
     const name = func.getName().lexeme;
-    const created_function = try self.builder.createFunction(name, func_params, ret_type);
+    const created_function = try self.builder.createFunction(name, func_params, ret_type, func.linkage);
 
     self.active_fn = created_function;
 
@@ -315,7 +315,7 @@ fn generateFunction(self: *Self, func: *const FunctionDecl) IRStatus!void {
             try self.generateStmt(&stmt);
         }
     } else {
-        created_function.isExtern = true;
+        created_function.linkage = .External;
     }
 }
 

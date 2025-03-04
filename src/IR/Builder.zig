@@ -81,11 +81,12 @@ pub fn createGlobal(self: *Self, name: []const u8, val_type: ValueType, initiali
     return;
 }
 
-pub fn createFunction(self: *Self, name: []const u8, arguments: std.ArrayList(FuncParam), ret_type: ValueType) IRStatus!*Function {
+pub fn createFunction(self: *Self, name: []const u8, arguments: std.ArrayList(FuncParam), ret_type: ValueType, linkage: Linkage) IRStatus!*Function {
     const function = Function.init(
         self.module.allocator,
         arguments,
         ret_type,
+        linkage,
     );
 
     try self.module.functions.insert(name, function);

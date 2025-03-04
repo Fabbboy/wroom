@@ -1,7 +1,11 @@
 const other = 69
 pub const hell = 123 + other
 
+pub func adder(a: int, b: int) int {
+    return a + b
+}
+
 func main() int {
     const t = 1
-    return t + hell
+    return adder(t,hell)
 }

@@ -12,13 +12,15 @@ const ExprData = ExprNs.ExprData;
 const Position = @import("../Parser/Position.zig");
 
 pub const Linkage = enum {
-    External,
+    Public,
     Internal,
+    External,
 
     pub fn fmt(self: Linkage) []const u8 {
         switch (self) {
-            .External => return "external",
+            .Public => return "public",
             .Internal => return "internal",
+            .External => return "external",
         }
     }
 };

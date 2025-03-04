@@ -29,6 +29,6 @@ pub fn getType(self: *const Self) ValueType {
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype, name: []const u8) !void {
-    try fbuf.print("{s} {s} @{s} {s} = ", .{ self.linkage.fmt(), self.val_type.fmt(), name, if (self.constant) "const" else "" });
+    try fbuf.print("{s} {s} @{s} = {s} ", .{ self.linkage.fmt(), if (self.constant) "const" else "", name, self.val_type.fmt() });
     try self.initializer.fmt(fbuf);
 }

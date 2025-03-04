@@ -376,7 +376,7 @@ pub fn parseStatement(self: *Self) ParseStatus!Stmt {
     }
 }
 
-fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
+fn parseFunctionDecl(self: *Self, linkage: Linkage) ParseStatus!FunctionDecl {
     const name = try self.next(&[_]TokenKind{TokenKind.Ident});
     _ = try self.next(&[_]TokenKind{TokenKind.LParen});
     var params = std.ArrayList(ParameterExpr).init(self.allocator);
@@ -429,7 +429,7 @@ fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
         };
     }
 
-    return FunctionDecl.init(name, ftype.data.?.Type, params, body, final_pos);
+    return FunctionDecl.init(name, ftype.data.?.Type, params, body, final_pos, linkage);
 }
 
 pub fn parse(self: *Self) ParseStatus!void {
@@ -471,29 +471,51 @@ pub fn parse(self: *Self) ParseStatus!void {
                 };
             },
             TokenKind.Pub => {
-                const var_pre = self.next(&[_]TokenKind{ TokenKind.Const, TokenKind.Let }) catch {
+                const var_pre = self.next(&[_]TokenKind{ TokenKind.Const, TokenKind.Let, TokenKind.Func }) catch {
                     hasErr = true;
                     self.sync(&tl_expected);
                     continue;
                 };
 
-                var constant = false;
-                if (var_pre.kind == TokenKind.Const) {
-                    constant = true;
+                switch (var_pre.kind) {
+                    .Const => {
+                        const stmt = self.parseAssignStmt(true, .Public) catch {
+                            hasErr = true;
+                            self.sync(&tl_expected);
+                            continue;
+                        };
+
+                        self.ast.pushGlobal(stmt) catch {
+                            continue;
+                        };
+                    },
+                    .Let => {
+                        const stmt = self.parseAssignStmt(false, .Public) catch {
+                            hasErr = true;
+                            self.sync(&tl_expected);
+                            continue;
+                        };
+
+                        self.ast.pushGlobal(stmt) catch {
+                            continue;
+                        };
+                    },
+                    .Func => {
+                        const func = self.parseFunctionDecl(.Public) catch {
+                            hasErr = true;
+                            self.sync(&tl_expected);
+                            continue;
+                        };
+
+                        self.ast.pushFunction(func) catch {
+                            continue;
+                        };
+                    },
+                    else => unreachable,
                 }
-
-                const stmt = self.parseAssignStmt(constant, .External) catch {
-                    hasErr = true;
-                    self.sync(&tl_expected);
-                    continue;
-                };
-
-                self.ast.pushGlobal(stmt) catch {
-                    continue;
-                };
             },
             TokenKind.Func => {
-                const func = self.parseFunctionDecl() catch {
+                const func = self.parseFunctionDecl(.Internal) catch {
                     hasErr = true;
                     self.sync(&tl_expected);
                     continue;

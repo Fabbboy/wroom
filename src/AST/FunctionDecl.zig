@@ -8,6 +8,8 @@ const ParameterExpr = @import("ParameterExpr.zig");
 
 const Block = @import("Block.zig");
 
+const Linkage = @import("AssignStatement.zig").Linkage;
+
 const Self = @This();
 
 name: Token,
@@ -15,21 +17,23 @@ position: Position,
 ret_type: ValueType,
 params: std.ArrayList(ParameterExpr),
 body: ?Block,
+linkage: Linkage,
 
-pub fn init(name: Token, ret_type: ValueType, params: std.ArrayList(ParameterExpr), block: ?Block, position: Position) Self {
+pub fn init(name: Token, ret_type: ValueType, params: std.ArrayList(ParameterExpr), block: ?Block, position: Position, linkage: Linkage) Self {
     return Self{
         .name = name,
         .ret_type = ret_type,
         .position = position,
         .params = params,
         .body = block,
+        .linkage = linkage,
     };
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try fbuf.writeAll("FunctionDecl{ name: ");
     try self.name.fmt(fbuf);
-    try fbuf.writeAll(", ret_type: ");
+    try fbuf.print("linkage: {s}, ret_type: ", .{self.linkage.fmt()});
     try fbuf.print("{s}", .{self.ret_type.fmt()});
     try fbuf.writeAll(", params: [");
     for (self.params.items) |param| {
