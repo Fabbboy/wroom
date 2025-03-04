@@ -39,7 +39,7 @@ pub const IRValueData = union(enum) {
                 try value.fmt(fbuf);
             },
             IRValueData.Global => |value| {
-                try value.fmt(fbuf);
+                try value.fmt(fbuf, "");
             },
             IRValueData.Location => |value| {
                 try value.fmt(fbuf);

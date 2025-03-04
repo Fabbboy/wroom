@@ -56,8 +56,10 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try fbuf.print("module: {s}\n", .{self.name});
     var glblsIter = self.globals.table.iterator();
     while (glblsIter.next()) |entry| {
+        const name = entry.key_ptr;
         const value = entry.value_ptr;
-        try value.fmt(fbuf);
+        if(value.constant) continue;
+        try value.fmt(fbuf, name.*);
         try fbuf.writeAll("\n");
     }
 

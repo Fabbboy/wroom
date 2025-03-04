@@ -16,14 +16,16 @@ const Self = @This();
 ident: Token,
 type: ValueType,
 value: Expr,
+constant: bool,
 assign_type: OperatorType,
 new_var: bool,
 
-pub fn init(ident: Token, ty: ValueType, value: Expr, assign_type: OperatorType, new_var: bool) Self {
+pub fn init(ident: Token, ty: ValueType, value: Expr, constant: bool, assign_type: OperatorType, new_var: bool) Self {
     return Self{
         .ident = ident,
         .type = ty,
         .value = value,
+        .constant = constant,
         .assign_type = assign_type,
         .new_var = new_var,
     };
@@ -32,7 +34,7 @@ pub fn init(ident: Token, ty: ValueType, value: Expr, assign_type: OperatorType,
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try fbuf.writeAll("AssignStatement{ ident: ");
     try self.ident.fmt(fbuf);
-    try fbuf.print(", type: {s}, assign: {s},  value: ", .{ self.type.fmt(), self.assign_type.fmt() });
+    try fbuf.print(", type: {s}, assign: {s}, constant: {},  value: ", .{ self.type.fmt(), self.assign_type.fmt(), self.constant });
     try self.value.fmt(fbuf);
     try fbuf.writeAll(" }");
 }

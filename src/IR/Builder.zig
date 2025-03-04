@@ -50,7 +50,7 @@ pub fn init(allocator: mem.Allocator, module: *Module) Self {
     };
 }
 
-pub fn createGlobal(self: *Self, name: []const u8, val_type: ValueType, initializer: Constant) IRStatus!void {
+pub fn createGlobal(self: *Self, name: []const u8, val_type: ValueType, initializer: Constant, is_const: bool) IRStatus!void {
     var local_init = initializer;
     if (local_init.getType() != val_type) {
         switch (local_init) {
@@ -71,6 +71,7 @@ pub fn createGlobal(self: *Self, name: []const u8, val_type: ValueType, initiali
         self.module.getNextGlobalId(),
         local_init,
         val_type,
+        is_const,
     );
 
     try self.module.globals.insert(name, variable);

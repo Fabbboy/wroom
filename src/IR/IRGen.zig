@@ -164,9 +164,12 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
 
             const global = self.module.globals.get(name);
             if (global) |g| {
-                const globalLoc = Location.LocGlobal(GlobalLocation.init(name, g.val_type));
-                const globalLoad = try self.builder.createLoad(globalLoc, g.val_type);
-                return globalLoad;
+                if (g.constant) {
+                    return IRValue.init_constant(self.allocator, g.initializer);
+                } else {
+                    const globalLoc = Location.LocGlobal(GlobalLocation.init(name, g.val_type));
+                    return IRValue.init_location(self.allocator, globalLoc);
+                }
             }
 
             try self.errors.append(IRError.init_function_not_found(SymbolNotFound.init(name)));
@@ -323,7 +326,7 @@ pub fn generate(self: *Self) IRStatus!void {
         const ty = glbl.getType();
 
         const initializer = try self.compileConstantExpr(glbl.getValue(), ty);
-        try self.builder.createGlobal(name, ty, initializer);
+        try self.builder.createGlobal(name, ty, initializer, glbl.constant);
     }
 
     const functions = self.ast.getFunctions();

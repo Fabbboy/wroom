@@ -1,0 +1,7 @@
+const other = 69
+const hell = 123 + other
+
+func main() int {
+    const t = 1
+    return t + hell
+}

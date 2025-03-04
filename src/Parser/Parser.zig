@@ -216,7 +216,7 @@ fn parseExpr(self: *Self) ParseStatus!Expr {
     return lhs;
 }
 
-pub fn parseAssignStmt(self: *Self) ParseStatus!AssignStatement {
+pub fn parseAssignStmt(self: *Self, constant: bool) ParseStatus!AssignStatement {
     const ident = try self.next(&[_]TokenKind{TokenKind.Ident});
 
     var ty = ValueType.Untyped;
@@ -239,7 +239,7 @@ pub fn parseAssignStmt(self: *Self) ParseStatus!AssignStatement {
     const assign = try self.next(&[_]TokenKind{TokenKind.Assign});
     const value = try self.parseExpr();
 
-    return AssignStatement.init(ident, ty, value, assign.data.?.Assign, true);
+    return AssignStatement.init(ident, ty, value, constant, assign.data.?.Assign, true);
 }
 
 fn parseBlock(self: *Self) ParseStatus!Block {
@@ -280,12 +280,19 @@ fn parseBlock(self: *Self) ParseStatus!Block {
 }
 
 pub fn parseStatement(self: *Self) ParseStatus!Stmt {
-    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.Ident, TokenKind.Return };
+    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.Const, TokenKind.Ident, TokenKind.Return };
     const tok = try self.next(&tl_expected);
 
     switch (tok.kind) {
+        TokenKind.Const => {
+            const stmt = self.parseAssignStmt(true) catch {
+                self.sync(&tl_expected);
+                return error.NotGood;
+            };
+            return Stmt.init_assign(stmt);
+        },
         TokenKind.Let => {
-            const stmt = self.parseAssignStmt() catch {
+            const stmt = self.parseAssignStmt(false) catch {
                 self.sync(&tl_expected);
                 return error.NotGood;
             };
@@ -307,6 +314,7 @@ pub fn parseStatement(self: *Self) ParseStatus!Stmt {
                     tok,
                     ValueType.Untyped,
                     value,
+                    false,
                     assign.data.?.Assign,
                     false,
                 ));
@@ -416,7 +424,7 @@ fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
 pub fn parse(self: *Self) ParseStatus!void {
     var hasErr = false;
 
-    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.Func, TokenKind.EOF };
+    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.Const, TokenKind.Func, TokenKind.EOF };
     while (true) {
         const tok = self.next(&tl_expected) catch {
             hasErr = true;
@@ -430,7 +438,18 @@ pub fn parse(self: *Self) ParseStatus!void {
 
         switch (tok.kind) {
             TokenKind.Let => {
-                const stmt = self.parseAssignStmt() catch {
+                const stmt = self.parseAssignStmt(false) catch {
+                    hasErr = true;
+                    self.sync(&tl_expected);
+                    continue;
+                };
+
+                self.ast.pushGlobal(stmt) catch {
+                    continue;
+                };
+            },
+            TokenKind.Const => {
+                const stmt = self.parseAssignStmt(true) catch {
                     hasErr = true;
                     self.sync(&tl_expected);
                     continue;

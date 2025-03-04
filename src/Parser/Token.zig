@@ -19,6 +19,7 @@ pub const TokenKind = enum {
     Star,
     Slash,
     Let,
+    Const,
     Period,
     Colon,
     Type,
@@ -44,6 +45,7 @@ pub const TokenKind = enum {
             TokenKind.Star => "Star",
             TokenKind.Slash => "Slash",
             TokenKind.Let => "Let",
+            TokenKind.Const => "Const",
             TokenKind.Period => "Period",
             TokenKind.Colon => "Colon",
             TokenKind.Type => "Type",
@@ -107,6 +109,7 @@ pub const TokenData = union(TokenKind) {
     Star: void,
     Slash: void,
     Let: void,
+    Const: void,
     Period: void,
     Colon: void,
     Type: ValueType,
@@ -165,6 +168,7 @@ pub const KeywordValue = struct {
 
 pub const keywords = std.StaticStringMap(KeywordValue).initComptime(.{
     .{ "let", .{ .kind = TokenKind.Let, .data = null } },
+    .{ "const", .{ .kind = TokenKind.Const, .data = null } },
     .{ "int", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.I32 } } },
     .{ "float", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.F32 } } },
     .{ "void", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.Void } } },
