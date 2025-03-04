@@ -4,12 +4,12 @@ pub const Section = enum {
     RODATA,
     BSS,
 
-    pub fn fmt(self: Section, fbuf: anytype) void {
+    pub fn fmt(self: Section) []const u8 {
         switch (self) {
-            .TEXT => fbuf.writeAll("text"),
-            .DATA => fbuf.writeAll("data"),
-            .RODATA => fbuf.writeAll("rodata"),
-            .BSS => fbuf.writeAll("bss"),
+            .TEXT => return "text",
+            .DATA => return "data",
+            .RODATA => return "rodata",
+            .BSS => return "bss",
         }
     }
 };

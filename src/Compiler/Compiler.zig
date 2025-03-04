@@ -27,9 +27,24 @@ pub fn init(allocator: mem.Allocator, module: *const Module, target: Machine) Se
     };
 }
 
+fn compileGlobals(self: *Self, writter: anytype) !void {
+    try self.codegen.enterSection(.DATA, writter);
+
+    const globals = self.module.getGlobals();
+    var globalIter = globals.table.iterator();
+
+    while (globalIter.next()) |glbl| {
+        const name = glbl.key_ptr;
+        const global = glbl.value_ptr;
+        try self.codegen.emitVariable(name.*, global, writter);
+    }
+}
+
 pub fn compile(self: *Self) ![]const u8 {
     const writter = self.buffer.writer();
     try writter.print("{s}\n", .{GetStub(self.machine)});
+
+    try self.compileGlobals(writter);
 
     return self.buffer.items;
 }

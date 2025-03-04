@@ -445,6 +445,10 @@ fn parse_tl(self: *Self, linkage: Linkage) ParseStatus!void {
 
     switch (tok.kind) {
         TokenKind.Let, TokenKind.Const => {
+            if (linkage == .External) {
+                unreachable;
+            }
+
             const constant = if (tok.kind == TokenKind.Const) true else false;
             const stmt = self.parseAssignStmt(constant, linkage) catch {
                 self.sync(&tl_expected);
