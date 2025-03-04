@@ -434,49 +434,47 @@ fn parseFunctionDecl(self: *Self, linkage: Linkage) ParseStatus!FunctionDecl {
 
 fn parse_tl(self: *Self, linkage: Linkage) ParseStatus!void {
     const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.Const, TokenKind.Func, TokenKind.EOF };
-    while (true) {
-        const tok = self.next(&tl_expected) catch {
-            self.sync(&tl_expected);
-            continue;
-        };
+    const tok = self.next(&tl_expected) catch {
+        self.sync(&tl_expected);
+        return error.NotGood;
+    };
 
-        if (tok.kind == TokenKind.EOF) {
-            break;
-        }
+    if (tok.kind == TokenKind.EOF) {
+        return;
+    }
 
-        switch (tok.kind) {
-            TokenKind.Let => {
-                const stmt = self.parseAssignStmt(false, linkage) catch {
-                    self.sync(&tl_expected);
-                    continue;
-                };
+    switch (tok.kind) {
+        TokenKind.Let => {
+            const stmt = self.parseAssignStmt(false, linkage) catch {
+                self.sync(&tl_expected);
+                return error.NotGood;
+            };
 
-                self.ast.pushGlobal(stmt) catch {
-                    continue;
-                };
-            },
-            TokenKind.Const => {
-                const stmt = self.parseAssignStmt(true, linkage) catch {
-                    self.sync(&tl_expected);
-                    continue;
-                };
+            self.ast.pushGlobal(stmt) catch {
+                return error.NotGood;
+            };
+        },
+        TokenKind.Const => {
+            const stmt = self.parseAssignStmt(true, linkage) catch {
+                self.sync(&tl_expected);
+                return error.NotGood;
+            };
 
-                self.ast.pushGlobal(stmt) catch {
-                    continue;
-                };
-            },
-            TokenKind.Func => {
-                const func = self.parseFunctionDecl(linkage) catch {
-                    self.sync(&tl_expected);
-                    continue;
-                };
+            self.ast.pushGlobal(stmt) catch {
+                return error.NotGood;
+            };
+        },
+        TokenKind.Func => {
+            const func = self.parseFunctionDecl(linkage) catch {
+                self.sync(&tl_expected);
+                return error.NotGood;
+            };
 
-                self.ast.pushFunction(func) catch {
-                    continue;
-                };
-            },
-            else => unreachable,
-        }
+            self.ast.pushFunction(func) catch {
+                return error.NotGood;
+            };
+        },
+        else => unreachable,
     }
 }
 
