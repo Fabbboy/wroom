@@ -6,6 +6,7 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 ### Next Steps
 
 - [ ] Better error messages please
+- [ ] ~~Create snippets for error~~ => string formating is ****
 - [X] Bug: You can create void variables implicitly through a function which returns void
 - [ ] Constants
 - [ ] Different linkages
@@ -20,7 +21,6 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 - [X] Leaving the ending brace of a function results in memory leaks and multiple parser errors
 - [X] X-Assigns result in weird IR and memory leak
 - [X] Errors for IRGen
-- [ ] Create snippets for error
 - [x] Add function body
 - [x] Create Statment tagged union
 - [x] Parse parameters
