@@ -9,12 +9,17 @@ const ValueType = Token.ValueType;
 const GlobalVariable = @import("../../IR//IRValue/GlobalVariable.zig");
 
 const Function = @import("../../IR/IRValue/Function.zig");
+const FuncBlock = Function.FuncBlock;
 
 const IRValue = @import("../../IR/Value.zig").IRValue;
 const Constant = @import("../../IR/IRValue/Constant.zig").IRConstant;
 
+const Instruction = @import("../../IR/Instruction.zig").Instruction;
+
 const Self = @This();
 machine: Machine,
+func_name: ?[]const u8,
+function: ?*const Function,
 
 fn getType(ty: ValueType) []const u8 {
     switch (ty) {
@@ -39,6 +44,8 @@ fn getSize(ty: ValueType) u32 {
 pub fn init(target: Machine) Self {
     return Self{
         .machine = target,
+        .func_name = null,
+        .function = null,
     };
 }
 
@@ -47,8 +54,52 @@ pub fn enterSection(self: *Self, section: Section, writter: anytype) !void {
     try writter.print(".section .{s}\n", .{section.fmt()});
 }
 
-pub fn emitFunction(self: *Self, name: []const u8, function: *const Function, writter: anytype) !void {
+fn emitPrologue(self: *Self, function: *const Function, writter: anytype) !void {
     _ = self;
+    _ = function;
+    try writter.writeAll("\tpushq %rbp\n");
+    try writter.writeAll("\tmovq %rsp, %rbp\n");
+}
+
+fn emitEpilogue(self: *Self, function: *const Function, writter: anytype) !void {
+    _ = self;
+    _ = function;
+    try writter.writeAll("\tleave\n");
+}
+
+pub fn emitInstruction(self: *Self, instr: *const Instruction, writter: anytype) !void {
+    _ = self;
+    //Alloca: AllocaInst,
+    //Store: StoreInst,
+    //Load: LoadInst,
+    //Add: AddInst,
+    //Sub: SubInst,
+    //Mul: MulInst,
+    //Div: DivInst,
+    //Return: IRValue,
+    //Call: CallInst,
+
+    switch (instr.*) {
+        Instruction.Alloca => |alloca| {
+            const size = alloca.size;
+            try writter.print("\tsubq ${}, %rsp\n", .{getSize(size)});
+        },
+        else => {},
+    }
+}
+
+pub fn emitBlock(self: *Self, block: *const FuncBlock, writter: anytype) !void {
+    try writter.print(".{s}_{s}:\n", .{ self.func_name.?, block.name });
+    for (block.instructions.items) |instr| {
+        try self.emitInstruction(&instr, writter);
+    }
+
+    try writter.writeAll("\n");
+}
+pub fn emitFunction(self: *Self, name: []const u8, function: *const Function, writter: anytype) !void {
+    self.function = function;
+    self.func_name = name;
+
     if (function.linkage == .External) {
         try writter.print(".extern {s}\n", .{name});
         return;
@@ -60,6 +111,15 @@ pub fn emitFunction(self: *Self, name: []const u8, function: *const Function, wr
     try writter.print("\t.type {s}, @function\n", .{name});
     try writter.print("{s}:\n", .{name});
     try writter.writeAll("\t.cfi_startproc\n");
+    try self.emitPrologue(function, writter);
+
+    const blocks = function.getBlocks();
+    for (blocks.*) |block| {
+        try self.emitBlock(&block, writter);
+    }
+
+    try self.emitEpilogue(function, writter);
+    try writter.writeAll("\tret\n");
     try writter.print(".SL{s}_end:\n", .{name});
     try writter.print("\t.size {s}, .SL{s}_end-{s}\n", .{ name, name, name });
     try writter.writeAll("\t.cfi_endproc\n");

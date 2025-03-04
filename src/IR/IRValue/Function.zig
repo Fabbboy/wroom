@@ -129,3 +129,7 @@ pub fn addBlock(self: *Self, block: FuncBlock) IRStatus!*FuncBlock {
     try self.blocks.append(block);
     return &self.blocks.items[self.blocks.items.len - 1];
 }
+
+pub fn getBlocks(self: *const Self) *const []FuncBlock {
+    return &self.blocks.items;
+}
