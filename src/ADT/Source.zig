@@ -9,7 +9,6 @@ stat: ?fs.File.Stat,
 len: usize,
 contents: ?[]u8,
 allocator: mem.Allocator,
-lines: std.ArrayList(usize),
 
 fn readFullFile(self: *Self) !void {
     const file_fd = try fs.cwd().openFile(self.path, .{
@@ -28,23 +27,6 @@ fn readFullFile(self: *Self) !void {
     }
 }
 
-fn readLines(self: *Self) !void {
-    var idx: usize = 0;
-    var last_idx: usize = 0;
-
-    try self.pushNewLine(last_idx);
-
-    while (idx < self.len) {
-        if (self.contents.?[idx] == '\n') {
-            last_idx = idx + 1;
-            if (last_idx < self.len) {
-                try self.pushNewLine(last_idx);
-            }
-        }
-        idx += 1;
-    }
-}
-
 pub fn init(allocator: mem.Allocator, path: []const u8) !Self {
     var self = Self{
         .path = path,
@@ -52,11 +34,9 @@ pub fn init(allocator: mem.Allocator, path: []const u8) !Self {
         .allocator = allocator,
         .contents = null,
         .stat = null,
-        .lines = std.ArrayList(usize).init(allocator),
     };
 
     try self.readFullFile();
-    try self.readLines();
     return self;
 }
 
@@ -64,15 +44,9 @@ pub fn getContents(self: *const Self) ![]u8 {
     return self.contents.?;
 }
 
-pub fn pushNewLine(self: *Self, idx: usize) !void {
-    try self.lines.append(idx);
-}
-
 pub fn deinit(self: *Self) void {
     if (self.contents) |c| {
         self.allocator.free(c);
         self.contents = null;
     }
-
-    self.lines.deinit();
 }
