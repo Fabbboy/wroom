@@ -3,5 +3,6 @@ func adder(a: int, b: int) int {
 }
 
 pub func main() int {
+    voidReturn()
     return adder(1, 2)
 }

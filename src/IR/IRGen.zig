@@ -137,6 +137,9 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
                     const value = try fmt.parseInt(i64, literal.val.lexeme, 10);
                     constant = Constant.Int(value);
                 },
+                ValueType.Void => {
+                    constant = Constant.Void();
+                },
                 else => unreachable,
             }
 
@@ -314,8 +317,6 @@ fn generateFunction(self: *Self, func: *const FunctionDecl) IRStatus!void {
         for (body.*) |stmt| {
             try self.generateStmt(&stmt);
         }
-    } else {
-        created_function.linkage = .External;
     }
 }
 

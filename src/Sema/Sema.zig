@@ -92,6 +92,11 @@ fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
             const lhs_type = try self.infer_expr(&bin.lhs);
             const rhs_type = try self.infer_expr(&bin.rhs);
 
+            if (lhs_type == ValueType.Void or rhs_type == ValueType.Void) {
+                try self.pushError(SemaError.init_cannot_assign_to_void(expr.pos()));
+                return error.NotGood;
+            }
+
             if (lhs_type == rhs_type and lhs_type != ValueType.Untyped) {
                 return lhs_type;
             }
@@ -201,6 +206,11 @@ fn analyze_function(self: *Self, func: *const FunctionDecl) SemaStatus!void {
     }
 
     if (func.body) |body| {
+        if (func.linkage == .External) {
+            try self.pushError(SemaError.init_extern_cannot_have_body(func.pos()));
+            return error.NotGood;
+        }
+
         self.analyze_block(&body, false, func.name.lexeme) catch {
             return error.NotGood;
         };
@@ -245,13 +255,10 @@ fn analyze_statement(self: *Self, stmt: *Stmt, name: []const u8) SemaStatus!void
             }
         },
         Stmt.FunctionCall => {
-            _ = try self.analyze_func_call(&stmt.FunctionCall);
-            const f = self.currentScope.findFunc(name);
-            if (f) |func| {
-                if (func.ret_type != ValueType.Void) {
-                    try self.pushError(SemaError.init_unused_return_value(stmt.FunctionCall.pos()));
-                    return error.NotGood;
-                }
+            const ret = try self.analyze_func_call(&stmt.FunctionCall);
+            if (ret != ValueType.Void) {
+                try self.pushError(SemaError.init_unused_return_value(stmt.FunctionCall.pos()));
+                return error.NotGood;
             }
         },
     };

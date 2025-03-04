@@ -435,7 +435,7 @@ fn parseFunctionDecl(self: *Self, linkage: Linkage) ParseStatus!FunctionDecl {
 pub fn parse(self: *Self) ParseStatus!void {
     var hasErr = false;
 
-    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.Const, TokenKind.Pub, TokenKind.Func, TokenKind.EOF };
+    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.Const, TokenKind.Pub, TokenKind.Extern, TokenKind.Func, TokenKind.EOF };
     while (true) {
         const tok = self.next(&tl_expected) catch {
             hasErr = true;
@@ -502,6 +502,50 @@ pub fn parse(self: *Self) ParseStatus!void {
                     },
                     .Func => {
                         const func = self.parseFunctionDecl(.Public) catch {
+                            hasErr = true;
+                            self.sync(&tl_expected);
+                            continue;
+                        };
+
+                        self.ast.pushFunction(func) catch {
+                            continue;
+                        };
+                    },
+                    else => unreachable,
+                }
+            },
+            TokenKind.Extern => {
+                const var_pre = self.next(&[_]TokenKind{ TokenKind.Const, TokenKind.Let, TokenKind.Func }) catch {
+                    hasErr = true;
+                    self.sync(&tl_expected);
+                    continue;
+                };
+
+                switch (var_pre.kind) {
+                    .Const => {
+                        const stmt = self.parseAssignStmt(true, .External) catch {
+                            hasErr = true;
+                            self.sync(&tl_expected);
+                            continue;
+                        };
+
+                        self.ast.pushGlobal(stmt) catch {
+                            continue;
+                        };
+                    },
+                    .Let => {
+                        const stmt = self.parseAssignStmt(false, .External) catch {
+                            hasErr = true;
+                            self.sync(&tl_expected);
+                            continue;
+                        };
+
+                        self.ast.pushGlobal(stmt) catch {
+                            continue;
+                        };
+                    },
+                    .Func => {
+                        const func = self.parseFunctionDecl(.External) catch {
                             hasErr = true;
                             self.sync(&tl_expected);
                             continue;

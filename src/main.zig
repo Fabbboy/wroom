@@ -18,7 +18,7 @@ const Source = @import("ADT/Source.zig");
 var fmt_buf: [4096]u8 = undefined;
 
 var gpa = std.heap.GeneralPurposeAllocator(.{
-    .verbose_log = true,
+    .verbose_log = false,
     .enable_memory_limit = true,
     .thread_safe = false,
 }){};

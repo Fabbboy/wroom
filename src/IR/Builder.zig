@@ -66,6 +66,7 @@ pub fn createGlobal(self: *Self, name: []const u8, val_type: ValueType, initiali
                     local_init = Constant.Float(@as(f64, @floatFromInt(value)));
                 }
             },
+            else => {},
         }
     }
 

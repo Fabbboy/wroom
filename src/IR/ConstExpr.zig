@@ -8,11 +8,14 @@ pub fn ConstExprAdd(a: Constant, b: Constant) Constant {
         Constant.Integer => |a_val| switch (b) {
             Constant.Integer => |b_val| return Constant.Int(a_val + b_val),
             Constant.Floating => |b_val| return Constant.Float(@as(f64, @floatFromInt(a_val)) + b_val),
+            else => return Constant.Void(),
         },
         Constant.Floating => |a_val| switch (b) {
             Constant.Integer => |b_val| return Constant.Float(a_val + @as(f64, @floatFromInt(b_val))),
             Constant.Floating => |b_val| return Constant.Float(a_val + b_val),
+            else => return Constant.Void(),
         },
+        else => return Constant.Void(),
     }
 }
 
@@ -21,11 +24,14 @@ pub fn ConstExprSub(a: Constant, b: Constant) Constant {
         Constant.Integer => |a_val| switch (b) {
             Constant.Integer => |b_val| return Constant.Int(a_val - b_val),
             Constant.Floating => |b_val| return Constant.Float(@as(f64, @floatFromInt(a_val)) - b_val),
+            else => return Constant.Void(),
         },
         Constant.Floating => |a_val| switch (b) {
             Constant.Integer => |b_val| return Constant.Float(a_val - @as(f64, @floatFromInt(b_val))),
             Constant.Floating => |b_val| return Constant.Float(a_val - b_val),
+            else => return Constant.Void(),
         },
+        else => return Constant.Void(),
     }
 }
 
@@ -34,11 +40,14 @@ pub fn ConstExprMul(a: Constant, b: Constant) Constant {
         Constant.Integer => |a_val| switch (b) {
             Constant.Integer => |b_val| return Constant.Int(a_val * b_val),
             Constant.Floating => |b_val| return Constant.Float(@as(f64, @floatFromInt(a_val)) * b_val),
+            else => return Constant.Void(),
         },
         Constant.Floating => |a_val| switch (b) {
             Constant.Integer => |b_val| return Constant.Float(a_val * @as(f64, @floatFromInt(b_val))),
             Constant.Floating => |b_val| return Constant.Float(a_val * b_val),
+            else => return Constant.Void(),
         },
+        else => return Constant.Void(),
     }
 }
 
@@ -59,6 +68,7 @@ pub fn ConstExprDiv(a: Constant, b: Constant) Constant {
                 if (b_val == 0.0) return Constant.Float(if (a_val >= 0) math.inf(f64) else -math.inf(f64));
                 return Constant.Float(@as(f64, @floatFromInt(a_val)) / b_val);
             },
+            else => return Constant.Void(),
         },
         Constant.Floating => |a_val| switch (b) {
             Constant.Integer => |b_val| {
@@ -71,6 +81,8 @@ pub fn ConstExprDiv(a: Constant, b: Constant) Constant {
                 if (b_val == 0.0) return Constant.Float(if (a_val >= 0) math.inf(f64) else -math.inf(f64));
                 return Constant.Float(a_val / b_val);
             },
+            else => return Constant.Void(),
         },
+        else => return Constant.Void(),
     }
 }

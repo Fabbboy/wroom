@@ -7,6 +7,7 @@ const ValueType = Token.ValueType;
 const Self = @This();
 
 pub const IRConstant = union(enum) {
+    Voider: void,
     Integer: i64,
     Floating: f64,
 
@@ -22,8 +23,13 @@ pub const IRConstant = union(enum) {
         };
     }
 
+    pub fn Void() IRConstant {
+        return .Voider;
+    }
+
     pub fn fmt(self: *const IRConstant, fbuf: anytype) !void {
         switch (self.*) {
+            .Voider => try fbuf.writeAll("void"),
             .Integer => |value| {
                 try fbuf.print("#{}", .{value});
             },
@@ -35,6 +41,7 @@ pub const IRConstant = union(enum) {
 
     pub fn getType(self: *const IRConstant) ValueType {
         switch (self.*) {
+            .Voider => return ValueType.Void,
             .Integer => return ValueType.I32,
             .Floating => return ValueType.F32,
         }

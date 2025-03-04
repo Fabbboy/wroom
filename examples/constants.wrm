@@ -1,5 +1,7 @@
 const other = 69
-pub const hell = 123 + other
+pub const hell = 123 
+
+extern func puts(a: int) void 
 
 func adder(a: int, b: int) int {
     return a + b
@@ -7,5 +9,7 @@ func adder(a: int, b: int) int {
 
 pub func main() int {
     const t = 1
-    return adder(t,hell)
+    const val = adder(t, hell)
+    puts(val)
+    return val
 }

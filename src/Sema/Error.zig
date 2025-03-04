@@ -17,6 +17,7 @@ pub const SemaError = union(enum) {
     ArgumentCountMismatch: ArgumentCountMismatch,
     UnusedReturnValue: UnusedReturnValue,
     MainNeedsPublicInt: MainNeedsPublicInt,
+    ExternCannotHaveBody: ExternCannotHaveBody,
 
     pub fn init_symbol_already_declared(name: []const u8, pos: Position) SemaError {
         return SemaError{ .SymbolAlreadyDeclared = SymbolAlreadyDeclared.init(name, pos) };
@@ -50,6 +51,10 @@ pub const SemaError = union(enum) {
         return SemaError{ .MainNeedsPublicInt = MainNeedsPublicInt.init(pos) };
     }
 
+    pub fn init_extern_cannot_have_body(pos: Position) SemaError {
+        return SemaError{ .ExternCannotHaveBody = ExternCannotHaveBody.init(pos) };
+    }
+
     pub fn fmt(self: *const SemaError, fbuf: anytype) !void {
         switch (self.*) {
             SemaError.SymbolAlreadyDeclared => try self.SymbolAlreadyDeclared.fmt(fbuf),
@@ -60,6 +65,7 @@ pub const SemaError = union(enum) {
             SemaError.ArgumentCountMismatch => try self.ArgumentCountMismatch.fmt(fbuf),
             SemaError.UnusedReturnValue => try self.UnusedReturnValue.fmt(fbuf),
             SemaError.MainNeedsPublicInt => try self.MainNeedsPublicInt.fmt(fbuf),
+            SemaError.ExternCannotHaveBody => try self.ExternCannotHaveBody.fmt(fbuf),
         }
     }
 };
@@ -185,5 +191,19 @@ pub const MainNeedsPublicInt = struct {
 
     pub fn fmt(self: *const MainNeedsPublicInt, fbuf: anytype) !void {
         try fbuf.print("{}:{} Main function must be public and return an int", .{ self.pos.line, self.pos.column });
+    }
+};
+
+pub const ExternCannotHaveBody = struct {
+    pos: Position,
+
+    pub fn init(pos: Position) ExternCannotHaveBody {
+        return ExternCannotHaveBody{
+            .pos = pos,
+        };
+    }
+
+    pub fn fmt(self: *const ExternCannotHaveBody, fbuf: anytype) !void {
+        try fbuf.print("{}:{} Extern function cannot have a body", .{ self.pos.line, self.pos.column });
     }
 };
