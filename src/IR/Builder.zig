@@ -23,15 +23,18 @@ const GlobalVariable = @import("IRValue/GlobalVariable.zig");
 
 const InstructionNs = @import("Instruction.zig");
 const Instruction = InstructionNs.Instruction;
-const AllocaInst = InstructionNs.AllocaInst;
-const StoreInst = InstructionNs.StoreInst;
-const LoadInst = InstructionNs.LoadInst;
 const CallInst = InstructionNs.CallInst;
 
-const AddInst = @import("Instruction/Binary.zig").AddInst;
-const SubInst = @import("Instruction/Binary.zig").SubInst;
-const MulInst = @import("Instruction/Binary.zig").MulInst;
-const DivInst = @import("Instruction/Binary.zig").DivInst;
+const BinaryInst = @import("Instruction/Binary.zig");
+const AddInst = BinaryInst.AddInst;
+const SubInst = BinaryInst.SubInst;
+const MulInst = BinaryInst.MulInst;
+const DivInst = BinaryInst.DivInst;
+
+const MoveInst = @import("Instruction/Move.zig");
+const AllocaInst = MoveInst.AllocaInst;
+const StoreInst = MoveInst.StoreInst;
+const LoadInst = MoveInst.LoadInst;
 
 const Self = @This();
 
