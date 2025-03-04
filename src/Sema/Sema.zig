@@ -40,6 +40,11 @@ pub fn init(ast: *Ast, allocator: mem.Allocator) !Self {
     };
 }
 
+fn pushError(self: *Self, err: SemaError) SemaStatus!void {
+    try self.errs.append(err);
+    return error.NotGood;
+}
+
 fn pushScope(self: *Self) !void {
     self.currentScope = try Scope.init(self.allocator, self.currentScope);
 }
@@ -66,7 +71,7 @@ pub fn getErrs(self: *const Self) *const []SemaError {
 fn analyze_func_call(self: *Self, func: *const FunctionCall) SemaStatus!ValueType {
     if (self.currentScope.findFunc(func.name.lexeme)) |f| {
         if (f.params.items.len != func.arguments.items.len) {
-            try self.errs.append(SemaError.init_argument_count_mismatch(f.params.items.len, func.arguments.items.len, func.pos()));
+            try self.pushError(SemaError.init_argument_count_mismatch(f.params.items.len, func.arguments.items.len, func.pos()));
             return error.NotGood;
         }
 
@@ -74,7 +79,7 @@ fn analyze_func_call(self: *Self, func: *const FunctionCall) SemaStatus!ValueTyp
             const arg = func.arguments.items[i];
             const arg_type = try self.infer_expr(&arg);
             if (param.type != arg_type) {
-                try self.errs.append(SemaError.init_type_mismatch(param.type, arg_type, arg.pos()));
+                try self.pushError(SemaError.init_type_mismatch(param.type, arg_type, arg.pos()));
                 return error.NotGood;
             }
         }
@@ -82,7 +87,7 @@ fn analyze_func_call(self: *Self, func: *const FunctionCall) SemaStatus!ValueTyp
         return f.ret_type;
     }
 
-    try self.errs.append(SemaError.init_symbol_undefined(func.name.lexeme, func.pos()));
+    try self.pushError(SemaError.init_symbol_undefined(func.name.lexeme, func.pos()));
     return error.NotGood;
 }
 
@@ -114,7 +119,7 @@ fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
             if (self.currentScope.find(fvar.name.lexeme)) |f| {
                 return f;
             }
-            try self.errs.append(SemaError.init_symbol_undefined(fvar.name.lexeme, fvar.pos()));
+            try self.pushError(SemaError.init_symbol_undefined(fvar.name.lexeme, fvar.pos()));
             return error.NotGood;
         },
         ExprData.FunctionCall => {
@@ -128,13 +133,13 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
     if (!variable.new_var) {
         const found: ?ValueType = self.currentScope.find(variable.ident.lexeme);
         if (found == null) {
-            try self.errs.append(SemaError.init_symbol_undefined(variable.ident.lexeme, variable.pos()));
+            try self.pushError(SemaError.init_symbol_undefined(variable.ident.lexeme, variable.pos()));
             return error.NotGood;
         }
 
         const val_type = try self.infer_expr(&variable.value);
         if (found != val_type) {
-            try self.errs.append(SemaError.init_type_mismatch(found.?, val_type, variable.pos()));
+            try self.pushError(SemaError.init_type_mismatch(found.?, val_type, variable.pos()));
             return error.NotGood;
         }
         variable.setType(found.?);
@@ -143,24 +148,24 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
     }
 
     if (self.currentScope.find(variable.ident.lexeme)) |_| {
-        try self.errs.append(SemaError.init_symbol_already_declared(variable.ident.lexeme, variable.pos()));
+        try self.pushError(SemaError.init_symbol_already_declared(variable.ident.lexeme, variable.pos()));
         return error.NotGood;
     }
 
     const assign = variable.assign_type;
     if (assign != Token.OperatorType.Assign) {
-        try self.errs.append(SemaError.init_illegal_assignment(variable.pos()));
+        try self.pushError(SemaError.init_illegal_assignment(variable.pos()));
         return error.NotGood;
     }
 
     const val_type = try self.infer_expr(&variable.value);
     if (val_type == ValueType.Void) {
-        try self.errs.append(SemaError.init_cannot_assign_to_void(variable.pos()));
+        try self.pushError(SemaError.init_cannot_assign_to_void(variable.pos()));
         return error.NotGood;
     }
 
     if (variable.type == ValueType.Void) {
-        try self.errs.append(SemaError.init_cannot_assign_to_void(variable.pos()));
+        try self.pushError(SemaError.init_cannot_assign_to_void(variable.pos()));
         return error.NotGood;
     }
 
@@ -171,14 +176,14 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
     try self.currentScope.push(variable.ident.lexeme, variable.getType());
 
     if (variable.type != val_type) {
-        try self.errs.append(SemaError.init_type_mismatch(variable.getType(), val_type, variable.pos()));
+        try self.pushError(SemaError.init_type_mismatch(variable.getType(), val_type, variable.pos()));
         return error.NotGood;
     }
 }
 
 fn analyze_function(self: *Self, func: *const FunctionDecl) SemaStatus!void {
     if (self.currentScope.findFunc(func.name.lexeme)) |_| {
-        try self.errs.append(SemaError.init_symbol_already_declared(func.name.lexeme, func.pos()));
+        try self.pushError(SemaError.init_symbol_already_declared(func.name.lexeme, func.pos()));
         return error.NotGood;
     }
 
@@ -188,7 +193,7 @@ fn analyze_function(self: *Self, func: *const FunctionDecl) SemaStatus!void {
 
     for (func.params.items) |*param| {
         if (self.currentScope.find(param.ident.lexeme)) |_| {
-            try self.errs.append(SemaError.init_symbol_already_declared(param.ident.lexeme, param.pos()));
+            try self.pushError(SemaError.init_symbol_already_declared(param.ident.lexeme, param.pos()));
             return error.NotGood;
         }
 
@@ -234,7 +239,7 @@ fn analyze_statement(self: *Self, stmt: *Stmt, name: []const u8) SemaStatus!void
             const func = self.currentScope.findFunc(name);
             if (func) |f| {
                 if (f.ret_type != val_type) {
-                    try self.errs.append(SemaError.init_type_mismatch(f.ret_type, val_type, ret.pos()));
+                    try self.pushError(SemaError.init_type_mismatch(f.ret_type, val_type, ret.pos()));
                     return error.NotGood;
                 }
             }
@@ -244,7 +249,7 @@ fn analyze_statement(self: *Self, stmt: *Stmt, name: []const u8) SemaStatus!void
             const f = self.currentScope.findFunc(name);
             if (f) |func| {
                 if (func.ret_type != ValueType.Void) {
-                    try self.errs.append(SemaError.init_unused_return_value(stmt.FunctionCall.pos()));
+                    try self.pushError(SemaError.init_unused_return_value(stmt.FunctionCall.pos()));
                     return error.NotGood;
                 }
             }

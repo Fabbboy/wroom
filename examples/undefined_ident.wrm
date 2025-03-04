@@ -1,0 +1,4 @@
+func main() int {
+    let test = test2 + 2
+    return test
+}
