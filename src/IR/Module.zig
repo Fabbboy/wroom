@@ -1,7 +1,7 @@
 const std = @import("std");
 const mem = std.mem;
 
-const SymTable = @import("ADT/SymTable.zig").SymTable;
+const SymTable = @import("../ADT/SymTable.zig").SymTable;
 const GlobalVariable = @import("IRValue/GlobalVariable.zig");
 
 const Function = @import("IRValue/Function.zig");

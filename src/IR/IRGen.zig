@@ -44,7 +44,7 @@ const ConstExprSub = ConstExprNs.ConstExprSub;
 const ConstExprMul = ConstExprNs.ConstExprMul;
 const ConstExprDiv = ConstExprNs.ConstExprDiv;
 
-const SymTable = @import("ADT/SymTable.zig").SymTable;
+const SymTable = @import("../ADT/SymTable.zig").SymTable;
 
 const LocationNs = @import("IRValue/Location.zig");
 const Location = LocationNs.Location;
