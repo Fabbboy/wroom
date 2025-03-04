@@ -5,14 +5,15 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 
 ### Next Steps
 
+- [ ] Add alignment to IR
 - [ ] Split globals and global constants in module
 - [ ] Prevent values and enforce types for extern variables
 - [ ] Remove global from IRValue
 - [ ] Better error messages please
 - [ ] ~~Create snippets for error~~ => string formating is ****
 - [X] Bug: You can create void variables implicitly through a function which returns void
-- [ ] Constants
-- [ ] Different linkages
+- [X] Constants
+- [X] Different linkages
 - [ ] Separate Variable and Function checks from type inference
 - [ ] Check if function returns if not void
 - [X] Complain when function return value is not used

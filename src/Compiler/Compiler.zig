@@ -40,11 +40,25 @@ fn compileGlobals(self: *Self, writter: anytype) !void {
     }
 }
 
+fn compileFunctions(self: *Self, writter: anytype) !void {
+    try self.codegen.enterSection(.TEXT, writter);
+
+    const functions = self.module.getFunctions();
+    var functionIter = functions.table.iterator();
+
+    while (functionIter.next()) |func| {
+        const name = func.key_ptr;
+        const function = func.value_ptr;
+        try self.codegen.emitFunction(name.*, function, writter);
+    }
+}
+
 pub fn compile(self: *Self) ![]const u8 {
     const writter = self.buffer.writer();
     try writter.print("{s}\n", .{GetStub(self.machine)});
 
     try self.compileGlobals(writter);
+    try self.compileFunctions(writter);
 
     return self.buffer.items;
 }
