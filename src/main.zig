@@ -13,11 +13,7 @@ const Sema = @import("Sema/Sema.zig");
 const IRModule = @import("IR/Module.zig");
 const IRGen = @import("IR/IRGen.zig");
 
-const Compiler = @import("Compiler/Compiler.zig");
-
 const Source = @import("ADT/Source.zig");
-
-const Machine = @import("Compiler/Target.zig").Machine;
 
 var fmt_buf: [4096]u8 = undefined;
 
@@ -95,17 +91,6 @@ pub fn main() !void {
     try module.fmt(&buf_writer);
     std.debug.print("{s}\n", .{format_buffer.items});
     format_buffer.clearRetainingCapacity();
-
-    const machine: Machine = .{
-        .target = .X86_64,
-        .os = .Linux,
-        .abi = .SysV,
-    };
-    var compiler = Compiler.init(gpa.allocator(), &module, machine);
-    defer compiler.deinit();
-
-    const assembly = try compiler.compile();
-    std.debug.print("{s}\n", .{assembly});
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
 }
