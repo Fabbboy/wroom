@@ -15,6 +15,8 @@ const IRGen = @import("IR/IRGen.zig");
 
 const Source = @import("ADT/Source.zig");
 
+const Compiler = @import("Compiler/Compiler.zig");
+
 var fmt_buf: [4096]u8 = undefined;
 
 var gpa = std.heap.GeneralPurposeAllocator(.{
@@ -91,6 +93,9 @@ pub fn main() !void {
     try module.fmt(&buf_writer);
     std.debug.print("{s}\n", .{format_buffer.items});
     format_buffer.clearRetainingCapacity();
+
+    const compiler = Compiler.init(&module, gpa.allocator());
+    _ = compiler;
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
 }
