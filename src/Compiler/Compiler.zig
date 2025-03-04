@@ -3,27 +3,30 @@ const mem = std.mem;
 
 const Module = @import("../IR/Module.zig");
 
-const Target = @import("Target.zig").Target;
+const TargetNs = @import("Target.zig");
+const Machine = TargetNs.Machine;
+
+const GetStub = @import("stub.zig").GetStub;
 
 const Self = @This();
 
 module: *const Module,
 allocator: mem.Allocator,
 buffer: std.ArrayList(u8),
-target: Target,
+machine: Machine,
 
-pub fn init(allocator: mem.Allocator, module: *const Module, target: Target) Self {
+pub fn init(allocator: mem.Allocator, module: *const Module, target: Machine) Self {
     return Self{
         .module = module,
         .allocator = allocator,
         .buffer = std.ArrayList(u8).init(allocator),
-        .target = target,
+        .machine = target,
     };
 }
 
 pub fn compile(self: *Self) ![]const u8 {
     const writter = self.buffer.writer();
-    _ = writter;
+    try writter.print("{s}\n", .{GetStub(self.machine)});
 
     return self.buffer.items;
 }

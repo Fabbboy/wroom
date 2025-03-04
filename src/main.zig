@@ -17,6 +17,8 @@ const Compiler = @import("Compiler/Compiler.zig");
 
 const Source = @import("ADT/Source.zig");
 
+const Machine = @import("Compiler/Target.zig").Machine;
+
 var fmt_buf: [4096]u8 = undefined;
 
 var gpa = std.heap.GeneralPurposeAllocator(.{
@@ -94,7 +96,12 @@ pub fn main() !void {
     std.debug.print("{s}\n", .{format_buffer.items});
     format_buffer.clearRetainingCapacity();
 
-    var compiler = Compiler.init(gpa.allocator(), &module, .X86_64);
+    const machine: Machine = .{
+        .target = .X86_64,
+        .os = .Linux,
+        .abi = .SysV,
+    };
+    var compiler = Compiler.init(gpa.allocator(), &module, machine);
     defer compiler.deinit();
 
     const assembly = try compiler.compile();
