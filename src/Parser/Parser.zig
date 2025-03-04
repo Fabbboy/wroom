@@ -444,18 +444,9 @@ fn parse_tl(self: *Self, linkage: Linkage) ParseStatus!void {
     }
 
     switch (tok.kind) {
-        TokenKind.Let => {
-            const stmt = self.parseAssignStmt(false, linkage) catch {
-                self.sync(&tl_expected);
-                return error.NotGood;
-            };
-
-            self.ast.pushGlobal(stmt) catch {
-                return error.NotGood;
-            };
-        },
-        TokenKind.Const => {
-            const stmt = self.parseAssignStmt(true, linkage) catch {
+        TokenKind.Let, TokenKind.Const => {
+            const constant = if (tok.kind == TokenKind.Const) true else false;
+            const stmt = self.parseAssignStmt(constant, linkage) catch {
                 self.sync(&tl_expected);
                 return error.NotGood;
             };
@@ -494,34 +485,18 @@ pub fn parse(self: *Self) ParseStatus!void {
         }
 
         switch (tok.kind) {
-            TokenKind.Let => {
-                const stmt = self.parseAssignStmt(false, .Internal) catch {
-                    hasErr = true;
+            TokenKind.Let, TokenKind.Const => {
+                const constant = if (tok.kind == TokenKind.Const) true else false;
+                const stmt = self.parseAssignStmt(constant, .Internal) catch {
                     self.sync(&tl_expected);
-                    continue;
+                    return error.NotGood;
                 };
 
                 self.ast.pushGlobal(stmt) catch {
-                    continue;
+                    return error.NotGood;
                 };
             },
-            TokenKind.Const => {
-                const stmt = self.parseAssignStmt(true, .Internal) catch {
-                    hasErr = true;
-                    self.sync(&tl_expected);
-                    continue;
-                };
-
-                self.ast.pushGlobal(stmt) catch {
-                    continue;
-                };
-            },
-            TokenKind.Pub => self.parse_tl(.Public) catch {
-                hasErr = true;
-                self.sync(&tl_expected);
-                continue;
-            },
-            TokenKind.Extern => self.parse_tl(.External) catch {
+            TokenKind.Pub, TokenKind.Extern => self.parse_tl(if (tok.kind == TokenKind.Pub) .Public else .External) catch {
                 hasErr = true;
                 self.sync(&tl_expected);
                 continue;
