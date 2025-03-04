@@ -16,6 +16,7 @@ pub const SemaError = union(enum) {
     CannotAssignToVoid: CannotAssignToVoid,
     ArgumentCountMismatch: ArgumentCountMismatch,
     UnusedReturnValue: UnusedReturnValue,
+    MainNeedsPublicInt: MainNeedsPublicInt,
 
     pub fn init_symbol_already_declared(name: []const u8, pos: Position) SemaError {
         return SemaError{ .SymbolAlreadyDeclared = SymbolAlreadyDeclared.init(name, pos) };
@@ -45,6 +46,10 @@ pub const SemaError = union(enum) {
         return SemaError{ .UnusedReturnValue = UnusedReturnValue.init(pos) };
     }
 
+    pub fn init_main_needs_public_int(pos: Position) SemaError {
+        return SemaError{ .MainNeedsPublicInt = MainNeedsPublicInt.init(pos) };
+    }
+
     pub fn fmt(self: *const SemaError, fbuf: anytype) !void {
         switch (self.*) {
             SemaError.SymbolAlreadyDeclared => try self.SymbolAlreadyDeclared.fmt(fbuf),
@@ -54,6 +59,7 @@ pub const SemaError = union(enum) {
             SemaError.CannotAssignToVoid => try self.CannotAssignToVoid.fmt(fbuf),
             SemaError.ArgumentCountMismatch => try self.ArgumentCountMismatch.fmt(fbuf),
             SemaError.UnusedReturnValue => try self.UnusedReturnValue.fmt(fbuf),
+            SemaError.MainNeedsPublicInt => try self.MainNeedsPublicInt.fmt(fbuf),
         }
     }
 };
@@ -165,5 +171,19 @@ pub const UnusedReturnValue = struct {
 
     pub fn fmt(self: *const UnusedReturnValue, fbuf: anytype) !void {
         try fbuf.print("{}:{} Unused return value", .{ self.pos.line, self.pos.column });
+    }
+};
+
+pub const MainNeedsPublicInt = struct {
+    pos: Position,
+
+    pub fn init(pos: Position) MainNeedsPublicInt {
+        return MainNeedsPublicInt{
+            .pos = pos,
+        };
+    }
+
+    pub fn fmt(self: *const MainNeedsPublicInt, fbuf: anytype) !void {
+        try fbuf.print("{}:{} Main function must be public and return an int", .{ self.pos.line, self.pos.column });
     }
 };

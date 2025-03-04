@@ -181,6 +181,13 @@ fn analyze_function(self: *Self, func: *const FunctionDecl) SemaStatus!void {
     }
 
     try self.currentScope.pushFunc(func);
+    if (mem.eql(u8, func.name.lexeme, "main")) {
+        if (func.linkage != .Public or func.ret_type != ValueType.I32) {
+            try self.pushError(SemaError.init_main_needs_public_int(func.pos()));
+            return error.NotGood;
+        }
+    }
+
     try self.pushScope();
     defer self.popScope();
 
