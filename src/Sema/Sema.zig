@@ -50,13 +50,6 @@ fn pushScope(self: *Self) !void {
 }
 
 fn popScope(self: *Self) void {
-    var iter = self.currentScope.symbols.iterator();
-    while (iter.next()) |entry| {
-        const key = entry.key_ptr.*;
-        const value = entry.value_ptr.*;
-        std.debug.print("Popping scope: {s} {s}\n", .{ key, value.fmt() });
-    }
-
     if (self.currentScope.parent) |parent| {
         const temp = self.currentScope;
         self.currentScope = parent;

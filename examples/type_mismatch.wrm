@@ -1,0 +1,4 @@
+func main() int {
+    let test: float = 123
+    return test
+}
