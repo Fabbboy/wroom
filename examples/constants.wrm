@@ -1,5 +1,5 @@
 const other = 69
-const hell = 123 + other
+pub const hell = 123 + other
 
 func main() int {
     const t = 1

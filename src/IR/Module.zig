@@ -58,7 +58,7 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
     while (glblsIter.next()) |entry| {
         const name = entry.key_ptr;
         const value = entry.value_ptr;
-        if(value.constant) continue;
+        if(value.constant and value.linkage != .External) continue;
         try value.fmt(fbuf, name.*);
         try fbuf.writeAll("\n");
     }

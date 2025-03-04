@@ -164,7 +164,7 @@ fn generateExpression(self: *Self, expr: *const Expr) IRStatus!IRValue {
 
             const global = self.module.globals.get(name);
             if (global) |g| {
-                if (g.constant) {
+                if (g.constant and g.linkage == .Internal) {
                     return IRValue.init_constant(self.allocator, g.initializer);
                 } else {
                     const globalLoc = Location.LocGlobal(GlobalLocation.init(name, g.val_type));
@@ -326,7 +326,7 @@ pub fn generate(self: *Self) IRStatus!void {
         const ty = glbl.getType();
 
         const initializer = try self.compileConstantExpr(glbl.getValue(), ty);
-        try self.builder.createGlobal(name, ty, initializer, glbl.constant);
+        try self.builder.createGlobal(name, ty, initializer, glbl.constant, glbl.linkage);
     }
 
     const functions = self.ast.getFunctions();

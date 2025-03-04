@@ -36,6 +36,8 @@ const AllocaInst = MoveInst.AllocaInst;
 const StoreInst = MoveInst.StoreInst;
 const LoadInst = MoveInst.LoadInst;
 
+const Linkage = @import("../AST/AssignStatement.zig").Linkage;
+
 const Self = @This();
 
 module: *Module,
@@ -50,7 +52,7 @@ pub fn init(allocator: mem.Allocator, module: *Module) Self {
     };
 }
 
-pub fn createGlobal(self: *Self, name: []const u8, val_type: ValueType, initializer: Constant, is_const: bool) IRStatus!void {
+pub fn createGlobal(self: *Self, name: []const u8, val_type: ValueType, initializer: Constant, is_const: bool, linkage: Linkage) !void {
     var local_init = initializer;
     if (local_init.getType() != val_type) {
         switch (local_init) {
@@ -72,6 +74,7 @@ pub fn createGlobal(self: *Self, name: []const u8, val_type: ValueType, initiali
         local_init,
         val_type,
         is_const,
+        linkage,
     );
 
     try self.module.globals.insert(name, variable);

@@ -12,6 +12,8 @@ const Lexer = @import("Lexer.zig");
 const Ast = @import("Ast.zig");
 
 const AssignStatement = @import("../AST/AssignStatement.zig");
+const Linkage = AssignStatement.Linkage;
+
 const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
 const ExprData = ExprNs.ExprData;
@@ -216,7 +218,7 @@ fn parseExpr(self: *Self) ParseStatus!Expr {
     return lhs;
 }
 
-pub fn parseAssignStmt(self: *Self, constant: bool) ParseStatus!AssignStatement {
+pub fn parseAssignStmt(self: *Self, constant: bool, linkage: Linkage) ParseStatus!AssignStatement {
     const ident = try self.next(&[_]TokenKind{TokenKind.Ident});
 
     var ty = ValueType.Untyped;
@@ -239,7 +241,15 @@ pub fn parseAssignStmt(self: *Self, constant: bool) ParseStatus!AssignStatement 
     const assign = try self.next(&[_]TokenKind{TokenKind.Assign});
     const value = try self.parseExpr();
 
-    return AssignStatement.init(ident, ty, value, constant, assign.data.?.Assign, true);
+    return AssignStatement.init(
+        ident,
+        ty,
+        value,
+        constant,
+        assign.data.?.Assign,
+        true,
+        linkage,
+    );
 }
 
 fn parseBlock(self: *Self) ParseStatus!Block {
@@ -285,14 +295,14 @@ pub fn parseStatement(self: *Self) ParseStatus!Stmt {
 
     switch (tok.kind) {
         TokenKind.Const => {
-            const stmt = self.parseAssignStmt(true) catch {
+            const stmt = self.parseAssignStmt(true, .Internal) catch {
                 self.sync(&tl_expected);
                 return error.NotGood;
             };
             return Stmt.init_assign(stmt);
         },
         TokenKind.Let => {
-            const stmt = self.parseAssignStmt(false) catch {
+            const stmt = self.parseAssignStmt(false, .Internal) catch {
                 self.sync(&tl_expected);
                 return error.NotGood;
             };
@@ -317,6 +327,7 @@ pub fn parseStatement(self: *Self) ParseStatus!Stmt {
                     false,
                     assign.data.?.Assign,
                     false,
+                    .Internal,
                 ));
             } else if (self.peek(&[_]TokenKind{TokenKind.LParen})) {
                 _ = try self.next(&[_]TokenKind{TokenKind.LParen});
@@ -424,7 +435,7 @@ fn parseFunctionDecl(self: *Self) ParseStatus!FunctionDecl {
 pub fn parse(self: *Self) ParseStatus!void {
     var hasErr = false;
 
-    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.Const, TokenKind.Func, TokenKind.EOF };
+    const tl_expected = [_]TokenKind{ TokenKind.Let, TokenKind.Const, TokenKind.Pub, TokenKind.Func, TokenKind.EOF };
     while (true) {
         const tok = self.next(&tl_expected) catch {
             hasErr = true;
@@ -438,7 +449,7 @@ pub fn parse(self: *Self) ParseStatus!void {
 
         switch (tok.kind) {
             TokenKind.Let => {
-                const stmt = self.parseAssignStmt(false) catch {
+                const stmt = self.parseAssignStmt(false, .Internal) catch {
                     hasErr = true;
                     self.sync(&tl_expected);
                     continue;
@@ -449,7 +460,29 @@ pub fn parse(self: *Self) ParseStatus!void {
                 };
             },
             TokenKind.Const => {
-                const stmt = self.parseAssignStmt(true) catch {
+                const stmt = self.parseAssignStmt(true, .Internal) catch {
+                    hasErr = true;
+                    self.sync(&tl_expected);
+                    continue;
+                };
+
+                self.ast.pushGlobal(stmt) catch {
+                    continue;
+                };
+            },
+            TokenKind.Pub => {
+                const var_pre = self.next(&[_]TokenKind{ TokenKind.Const, TokenKind.Let }) catch {
+                    hasErr = true;
+                    self.sync(&tl_expected);
+                    continue;
+                };
+
+                var constant = false;
+                if (var_pre.kind == TokenKind.Const) {
+                    constant = true;
+                }
+
+                const stmt = self.parseAssignStmt(constant, .External) catch {
                     hasErr = true;
                     self.sync(&tl_expected);
                     continue;
