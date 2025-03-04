@@ -3,6 +3,10 @@
 It has absolutly nothing to do with cars or wind's and it's also not fast actually it's a blessing that the compiler even compiles.
 Inspired by [Buzz](https://github.com/buzz-language/buzz)
 
+## ⚠️Important⚠️
+
+In favor of a better and more stable IR I decided to put this project on ice until I built a more stable and better IR. After that the IR system will be completely rewritten.
+
 ### Next Steps
 
 - [ ] Add alignment to IR
@@ -10,21 +14,21 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 - [ ] Prevent values and enforce types for extern variables
 - [ ] Remove global from IRValue
 - [ ] Better error messages please
-- [ ] ~~Create snippets for error~~ => string formating is ****
-- [X] Bug: You can create void variables implicitly through a function which returns void
-- [X] Constants
-- [X] Different linkages
+- [ ] ~~Create snippets for error~~ => string formating is \*\*\*\*
+- [x] Bug: You can create void variables implicitly through a function which returns void
+- [x] Constants
+- [x] Different linkages
 - [ ] Separate Variable and Function checks from type inference
 - [ ] Check if function returns if not void
-- [X] Complain when function return value is not used
-- [X] Remove unnecessary external enum for expressions
-- [X] Add function call as Statement
-- [X] Check function call fits signature
+- [x] Complain when function return value is not used
+- [x] Remove unnecessary external enum for expressions
+- [x] Add function call as Statement
+- [x] Check function call fits signature
 - [ ] ~~SSA not correctly implemented~~ => optimization required
-- [X] Using function parameters results in segmentation fault
-- [X] Leaving the ending brace of a function results in memory leaks and multiple parser errors
-- [X] X-Assigns result in weird IR and memory leak
-- [X] Errors for IRGen
+- [x] Using function parameters results in segmentation fault
+- [x] Leaving the ending brace of a function results in memory leaks and multiple parser errors
+- [x] X-Assigns result in weird IR and memory leak
+- [x] Errors for IRGen
 - [x] Add function body
 - [x] Create Statment tagged union
 - [x] Parse parameters
@@ -36,7 +40,7 @@ Inspired by [Buzz](https://github.com/buzz-language/buzz)
 - [x] Illegal assignment on undeclared variable
 - [ ] Fix case where position is 0 because body is empty
 - [x] ~~Costexpr doesn't really allow implicit floats anymore~~ => is actually expected behaviour
-- [X] Fix constant expr on division =>
+- [x] Fix constant expr on division =>
 
 ```
 2 * 5 + 2 * 3 / 2 = 12
@@ -50,13 +54,15 @@ actual result: 13
 - ~~Binary expressions in global scope with different types. IT WILL TRIGGER THE INCORRECT MATH GODS~~ Fixed somewhat but I wouldn't trust my self with this.
 
 ### SSA
+
 #### Simple expressions
+
 Wroom:
 
 ```
-let glbl = 123 
+let glbl = 123
 func main(argc: int) int {
-    let locl = 123 * 2 + 1 * glbl  
+    let locl = 123 * 2 + 1 * glbl
     return locl
 }
 ```
@@ -79,14 +85,15 @@ entry:
 ```
 
 #### Function calls
+
 Wroom:
 
 ```
 func multiply(a: int) int {
-    return 2 * a 
-} 
+    return 2 * a
+}
 
-func main() int { 
+func main() int {
     let wtf = multiply(69420)
     return wtf
 }
