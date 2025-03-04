@@ -1,5 +1,5 @@
 const other = 69
-pub const hell = 123 
+pub const hell = 123 + other
 
 extern func puts(a: int) void 
 
