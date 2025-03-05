@@ -8,12 +8,12 @@ const Stmt = @import("Stmt.zig").Stmt;
 const Self = @This();
 
 stmts: std.ArrayList(Stmt),
-pos: Position,
+position: Position,
 
 pub fn init(stmts: std.ArrayList(Stmt), position: Position) Self {
     return Self{
         .stmts = stmts,
-        .pos = position,
+        .position = position,
     };
 }
 
@@ -38,13 +38,13 @@ pub fn getBody(self: *const Self) *const []Stmt {
 }
 
 pub fn start(self: *const Self) usize {
-    return self.pos.start;
+    return self.position.start;
 }
 
 pub fn stop(self: *const Self) usize {
-    return self.pos.end;
+    return self.position.end;
 }
 
-pub fn pos(self: *const Self) Stmt.Position {
-    return self.pos;
+pub fn pos(self: *const Self) Position {
+    return self.position;
 }

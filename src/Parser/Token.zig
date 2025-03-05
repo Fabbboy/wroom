@@ -173,16 +173,16 @@ pub const KeywordValue = struct {
 };
 
 pub const keywords = std.StaticStringMap(KeywordValue).initComptime(.{
-    .{ "let", .{ .kind = TokenKind.Let, .data = null } },
-    .{ "const", .{ .kind = TokenKind.Const, .data = null } },
-    .{ "pub", .{ .kind = TokenKind.Pub, .data = null } },
-    .{ "extern", .{ .kind = TokenKind.Extern, .data = null } },
-    .{ "int", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.I32 } } },
-    .{ "float", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.F32 } } },
-    .{ "void", .{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.Void } } },
-    .{ "func", .{ .kind = TokenKind.Func, .data = null } },
-    .{ "return", .{ .kind = TokenKind.Return, .data = null } },
-    .{ "null", .{ .kind = TokenKind.Null, .data = null } },
+    .{ "let", KeywordValue{ .kind = TokenKind.Let, .data = null } },
+    .{ "const", KeywordValue{ .kind = TokenKind.Const, .data = null } },
+    .{ "pub", KeywordValue{ .kind = TokenKind.Pub, .data = null } },
+    .{ "extern", KeywordValue{ .kind = TokenKind.Extern, .data = null } },
+    .{ "int", KeywordValue{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.I32 } } },
+    .{ "float", KeywordValue{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.F32 } } },
+    .{ "void", KeywordValue{ .kind = TokenKind.Type, .data = TokenData{ .Type = ValueType.Void } } },
+    .{ "func", KeywordValue{ .kind = TokenKind.Func, .data = null } },
+    .{ "return", KeywordValue{ .kind = TokenKind.Return, .data = null } },
+    .{ "null", KeywordValue{ .kind = TokenKind.Null, .data = null } },
 });
 
 pub const operators = std.StaticStringMap(OperatorType).initComptime(.{

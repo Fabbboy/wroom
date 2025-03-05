@@ -10,9 +10,6 @@ const Lexer = @import("Parser/Lexer.zig");
 const Parser = @import("Parser/Parser.zig");
 const Sema = @import("Sema/Sema.zig");
 
-const IRModule = @import("IR/Module.zig");
-const IRGen = @import("IR/IRGen.zig");
-
 const Source = @import("ADT/Source.zig");
 
 var fmt_buf: [4096]u8 = undefined;
@@ -40,7 +37,7 @@ fn handleErrs(errs: anytype, format_buffer: *std.ArrayList(u8)) !void {
 pub fn main() !void {
     var format_buffer = std.ArrayList(u8).init(fixed_buf_allocator.allocator());
     defer format_buffer.deinit();
-    const buf_writer = format_buffer.writer();
+//    const buf_writer = format_buffer.writer();
 
     const args = try process.argsAlloc(fixed_buf_allocator.allocator());
     defer process.argsFree(fixed_buf_allocator.allocator(), args);
@@ -78,19 +75,6 @@ pub fn main() !void {
         try handleErrs(errs, &format_buffer);
         return;
     };
-
-    var module = IRModule.init(gpa.allocator(), "main");
-    defer module.deinit();
-    var generator = IRGen.init(ast, &module, gpa.allocator());
-    defer generator.deinit();
-    try generator.generate();
-
-    const errs = generator.getErrs();
-    try handleErrs(errs, &format_buffer);
-
-    try module.fmt(&buf_writer);
-    std.debug.print("{s}\n", .{format_buffer.items});
-    format_buffer.clearRetainingCapacity();
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
 }
