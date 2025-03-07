@@ -12,6 +12,8 @@ const Sema = @import("Sema/Sema.zig");
 
 const Source = @import("ADT/Source.zig");
 
+const Module = @import("IR/Module.zig");
+
 var fmt_buf: [4096]u8 = undefined;
 
 var gpa = std.heap.GeneralPurposeAllocator(.{
@@ -37,7 +39,7 @@ fn handleErrs(errs: anytype, format_buffer: *std.ArrayList(u8)) !void {
 pub fn main() !void {
     var format_buffer = std.ArrayList(u8).init(fixed_buf_allocator.allocator());
     defer format_buffer.deinit();
-//    const buf_writer = format_buffer.writer();
+    const buf_writer = format_buffer.writer();
 
     const args = try process.argsAlloc(fixed_buf_allocator.allocator());
     defer process.argsFree(fixed_buf_allocator.allocator(), args);
@@ -75,6 +77,12 @@ pub fn main() !void {
         try handleErrs(errs, &format_buffer);
         return;
     };
+
+    var mod = Module.init("main", gpa.allocator());
+    defer mod.deinit();
+
+    try mod.fmt(&buf_writer);
+    std.debug.print("{s}\n", .{format_buffer.items});
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
 }

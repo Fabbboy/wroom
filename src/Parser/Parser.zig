@@ -12,7 +12,8 @@ const Lexer = @import("Lexer.zig");
 const Ast = @import("Ast.zig");
 
 const AssignStatement = @import("../AST/AssignStatement.zig");
-const Linkage = AssignStatement.Linkage;
+
+const Linkage = @import("../IR/Linkage.zig").Linkage;
 
 const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;

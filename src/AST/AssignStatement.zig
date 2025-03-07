@@ -10,20 +10,7 @@ const Expr = ExprNs.Expr;
 const ExprData = ExprNs.ExprData;
 
 const Position = @import("../Parser/Position.zig");
-
-pub const Linkage = enum {
-    Public,
-    Internal,
-    External,
-
-    pub fn fmt(self: Linkage) []const u8 {
-        switch (self) {
-            .Public => return "public",
-            .Internal => return "internal",
-            .External => return "external",
-        }
-    }
-};
+const Linkage = @import("../IR/Linkage.zig").Linkage;
 
 const Self = @This();
 

@@ -8,7 +8,7 @@ const ParameterExpr = @import("ParameterExpr.zig");
 
 const Block = @import("Block.zig");
 
-const Linkage = @import("AssignStatement.zig").Linkage;
+const Linkage = @import("../IR/Linkage.zig").Linkage;
 
 const Self = @This();
 
