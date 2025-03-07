@@ -81,6 +81,12 @@ pub fn main() !void {
     var compiler = Compiler.init(gpa.allocator(), ast, "main");
     defer compiler.deinit();
 
+    compiler.compile() catch {
+        const errs = compiler.getCerrs();
+        try handleErrs(errs, &format_buffer);
+        return;
+    };
+
     const mod = compiler.getMod();
     try mod.fmt(&buf_writer);
     std.debug.print("{s}\n", .{format_buffer.items});
