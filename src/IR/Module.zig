@@ -21,7 +21,7 @@ pub fn deinit(self: *const Self) void {
     self.globals.deinit();
 }
 
-pub fn fmt(self: *Self, fbuf: anytype) !void {
+pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try fbuf.print("module = {s}\n", .{self.name});
     for (self.globals.items) |global| {
         try global.fmt(fbuf);

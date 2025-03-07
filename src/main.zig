@@ -12,7 +12,7 @@ const Sema = @import("Sema/Sema.zig");
 
 const Source = @import("ADT/Source.zig");
 
-const Module = @import("IR/Module.zig");
+const Compiler = @import("Compiler/Compiler.zig");
 
 var fmt_buf: [4096]u8 = undefined;
 
@@ -78,9 +78,10 @@ pub fn main() !void {
         return;
     };
 
-    var mod = Module.init("main", gpa.allocator());
-    defer mod.deinit();
+    var compiler = Compiler.init(gpa.allocator(), ast, "main");
+    defer compiler.deinit();
 
+    const mod = compiler.getMod();
     try mod.fmt(&buf_writer);
     std.debug.print("{s}\n", .{format_buffer.items});
 
