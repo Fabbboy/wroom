@@ -1,8 +1,9 @@
 .{
-    .name = "wroom",
+    .name = .wroom,
     .version = "0.0.0",
     .dependencies = .{},
     .minimum_zig_version = "0.14.0",
+    .fingerprint = 0xde0b4545276cda12,
     .paths = .{
         "build.zig",
         "build.zig.zon",
