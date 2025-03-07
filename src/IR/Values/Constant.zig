@@ -1,3 +1,10 @@
+const std = @import("std");
+const zfmt = std.fmt;
+
+const TypeNs = @import("../Type.zig");
+const Type = TypeNs.Type;
+const IntegerTy = TypeNs.IntegerTy;
+
 pub const Constant = union(enum) {
     IntValue: IntValue,
 
@@ -23,6 +30,20 @@ pub const IntValue = union(enum) {
         return IntValue{
             .I32 = value,
         };
+    }
+
+    pub fn from(ty: Type, value: []const u8) !IntValue {
+        switch (ty) {
+            Type.Integer => {
+                const ity = ty.Integer;
+                switch (ity) {
+                    IntegerTy.I32 => {
+                        const raw_val: i32 = zfmt.parseInt(i32, value, 10) catch unreachable;
+                        return IntValue.init_i32(raw_val);
+                    },
+                }
+            },
+        }
     }
 
     pub fn fmt(self: *const IntValue, fbuf: anytype) !void {

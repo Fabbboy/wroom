@@ -28,3 +28,7 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
         try fbuf.writeByte('\n');
     }
 }
+
+pub fn addGlobal(self: *Self, global: GlobalVariable) !void {
+    try self.globals.append(global);
+}
