@@ -1,12 +1,15 @@
 const std = @import("std");
 const zfmt = std.fmt;
 
+const IRStatus = @import("../Error.zig").IRStatus;
+
 const TypeNs = @import("../Type.zig");
 const Type = TypeNs.Type;
 const IntegerTy = TypeNs.IntegerTy;
 
 pub const Constant = union(enum) {
     IntValue: IntValue,
+    FloatValue: FloatValue,
 
     pub fn init_int_value(value: IntValue) Constant {
         return Constant{
@@ -14,10 +17,32 @@ pub const Constant = union(enum) {
         };
     }
 
+    pub fn init_float_value(value: FloatValue) Constant {
+        return Constant{
+            .FloatValue = value,
+        };
+    }
+
+    pub fn init_from(val: []const u8, ty: Type) IRStatus!Constant {
+        switch (ty) {
+            Type.Integer => {
+                const value = try zfmt.parseInt(i32, val, 10);
+                return Constant.init_int_value(IntValue.init_i32(value));
+            },
+            Type.Float => {
+                const value = try zfmt.parseFloat(f32, val);
+                return Constant.init_float_value(FloatValue.init_f32(value));
+            },
+        }
+    }
+
     pub fn fmt(self: *const Constant, fbuf: anytype) !void {
         switch (self.*) {
             Constant.IntValue => {
                 try self.IntValue.fmt(fbuf);
+            },
+            Constant.FloatValue => {
+                try self.FloatValue.fmt(fbuf);
             },
         }
     }
@@ -32,24 +57,28 @@ pub const IntValue = union(enum) {
         };
     }
 
-    pub fn from(ty: Type, value: []const u8) !IntValue {
-        switch (ty) {
-            Type.Integer => {
-                const ity = ty.Integer;
-                switch (ity) {
-                    IntegerTy.I32 => {
-                        const raw_val: i32 = zfmt.parseInt(i32, value, 10) catch unreachable;
-                        return IntValue.init_i32(raw_val);
-                    },
-                }
-            },
-        }
-    }
-
     pub fn fmt(self: *const IntValue, fbuf: anytype) !void {
         switch (self.*) {
             IntValue.I32 => {
                 try fbuf.print("{}", .{self.I32});
+            },
+        }
+    }
+};
+
+pub const FloatValue = union(enum) {
+    F32: f32,
+
+    pub fn init_f32(value: f32) FloatValue {
+        return FloatValue{
+            .F32 = value,
+        };
+    }
+
+    pub fn fmt(self: *const FloatValue, fbuf: anytype) !void {
+        switch (self.*) {
+            FloatValue.F32 => {
+                try fbuf.print("{}", .{self.F32});
             },
         }
     }

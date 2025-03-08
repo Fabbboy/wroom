@@ -21,6 +21,7 @@ const Linkage = @import("../IR/Linkage.zig").Linkage;
 const TypeNs = @import("../IR/Type.zig");
 const Type = TypeNs.Type;
 const IntType = TypeNs.IntegerTy;
+const FloatType = TypeNs.FloatTy;
 
 const Token = @import("../Parser/Token.zig");
 const ValueType = Token.ValueType;
@@ -51,14 +52,15 @@ fn resolveValType(self: *const Self, valt: ValueType) Type {
     _ = self;
     switch (valt) {
         ValueType.I32 => return Type.init_int(IntType.I32),
-        else => unreachable,
+        ValueType.F32 => return Type.init_float(FloatType.F32),
+        else => unreachable,    
     }
 }
 
 fn compileLiteral(self: *const Self, lit: *const LiteralExpr) CompileStatus!IRValue {
     const val = lit.val;
     const ty = self.resolveValType(lit.value_type);
-    return IRValue.init_constant(Constant.init_int_value(try IntValue.from(ty, val.lexeme)));
+    return IRValue.init_constant(try Constant.init_from(val.lexeme, ty));
 }
 
 fn compileExpr(self: *const Self, expr: *const Expr) CompileStatus!IRValue {
