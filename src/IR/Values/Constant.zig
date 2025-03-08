@@ -6,6 +6,7 @@ const IRStatus = @import("../Error.zig").IRStatus;
 const TypeNs = @import("../Type.zig");
 const Type = TypeNs.Type;
 const IntegerTy = TypeNs.IntegerTy;
+const FloatTy = TypeNs.FloatTy;
 
 pub const Constant = union(enum) {
     IntValue: IntValue,
@@ -26,16 +27,10 @@ pub const Constant = union(enum) {
     pub fn init_from(val: []const u8, ty: Type) IRStatus!Constant {
         switch (ty) {
             Type.Integer => {
-                const value = zfmt.parseInt(i32, val, 10) catch {
-                    return error.FailedToParseNumeric;
-                };
-                return Constant.init_int_value(IntValue.init_i32(value));
+                return .init_int_value(try IntValue.int_from(val, ty.Integer));
             },
             Type.Float => {
-                const value = zfmt.parseFloat(f32, val) catch {
-                    return error.FailedToParseNumeric;
-                };
-                return Constant.init_float_value(FloatValue.init_f32(value));
+                return .init_float_value(try FloatValue.float_from(val, ty.Float));
             },
         }
     }
@@ -61,6 +56,17 @@ pub const IntValue = union(enum) {
         };
     }
 
+    pub fn int_from(val: []const u8, ty: IntegerTy) !IntValue {
+        switch (ty) {
+            IntegerTy.I32 => {
+                const value = zfmt.parseInt(i32, val, 10) catch {
+                    return error.FailedToParseNumeric;
+                };
+                return IntValue.init_i32(value);
+            },
+        }
+    }
+
     pub fn fmt(self: *const IntValue, fbuf: anytype) !void {
         switch (self.*) {
             IntValue.I32 => {
@@ -77,6 +83,17 @@ pub const FloatValue = union(enum) {
         return FloatValue{
             .F32 = value,
         };
+    }
+
+    pub fn float_from(val: []const u8, ty: FloatTy) !FloatValue {
+        switch (ty) {
+            FloatTy.F32 => {
+                const value = zfmt.parseFloat(f32, val) catch {
+                    return error.FailedToParseNumeric;
+                };
+                return FloatValue.init_f32(value);
+            },
+        }
     }
 
     pub fn fmt(self: *const FloatValue, fbuf: anytype) !void {
