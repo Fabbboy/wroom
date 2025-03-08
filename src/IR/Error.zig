@@ -4,4 +4,5 @@ const ParseIntError = std.fmt.ParseIntError;
 pub const IRStatus = error{
     OutOfMemory,
     NotGood,
-} || ParseIntError;
+    FailedToParseNumeric,
+};

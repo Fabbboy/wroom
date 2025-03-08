@@ -53,14 +53,18 @@ fn resolveValType(self: *const Self, valt: ValueType) Type {
     switch (valt) {
         ValueType.I32 => return Type.init_int(IntType.I32),
         ValueType.F32 => return Type.init_float(FloatType.F32),
-        else => unreachable,    
+        else => unreachable,
     }
 }
 
 fn compileLiteral(self: *const Self, lit: *const LiteralExpr) CompileStatus!IRValue {
     const val = lit.val;
     const ty = self.resolveValType(lit.value_type);
-    return IRValue.init_constant(try Constant.init_from(val.lexeme, ty));
+    const value = Constant.init_from(val.lexeme, ty) catch {
+        return error.FailedToParseNumeric;
+    };
+
+    return IRValue.init_constant(value);
 }
 
 fn compileExpr(self: *const Self, expr: *const Expr) CompileStatus!IRValue {

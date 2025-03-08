@@ -26,11 +26,15 @@ pub const Constant = union(enum) {
     pub fn init_from(val: []const u8, ty: Type) IRStatus!Constant {
         switch (ty) {
             Type.Integer => {
-                const value = try zfmt.parseInt(i32, val, 10);
+                const value = zfmt.parseInt(i32, val, 10) catch {
+                    return error.FailedToParseNumeric;
+                };
                 return Constant.init_int_value(IntValue.init_i32(value));
             },
             Type.Float => {
-                const value = try zfmt.parseFloat(f32, val);
+                const value = zfmt.parseFloat(f32, val) catch {
+                    return error.FailedToParseNumeric;
+                };
                 return Constant.init_float_value(FloatValue.init_f32(value));
             },
         }
