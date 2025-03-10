@@ -32,6 +32,8 @@ const ExprData = ExprNs.ExprData;
 
 const LiteralExpr = @import("../AST/LiteralExpr.zig");
 
+const evalBinaryAdd = @import("../IR/Eval/Binary.zig").evalBinaryAdd;
+
 const Self = @This();
 
 ast: *const Ast,
@@ -74,6 +76,16 @@ fn compileExpr(self: *const Self, expr: *const Expr) CompileStatus!IRValue {
             const lit = data.Literal;
             return self.compileLiteral(&lit);
         },
+        ExprData.Binary => {
+            const binary = data.Binary;
+            const lhs = try self.compileExpr(binary.getLHS());
+            const rhs = try self.compileExpr(binary.getRHS());
+            const op = binary.op;
+            switch (op) {
+                Token.OperatorType.Plus => return evalBinaryAdd(&lhs, &rhs),
+                else => unreachable,
+            }
+        },
         else => unreachable,
     }
 }
@@ -94,6 +106,7 @@ pub fn compile(self: *Self) CompileStatus!void {
             glbl.constant,
             linkage,
         );
+
         try self.module.addGlobal(global);
     }
 

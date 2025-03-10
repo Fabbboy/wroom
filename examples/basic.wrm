@@ -1,5 +1,5 @@
-pub const t = 1232
-const second = 22.2
+pub const t= 2.2
+const second = 22 + 2.2
 
 pub func main() int {
   return 0

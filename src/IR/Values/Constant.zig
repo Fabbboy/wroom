@@ -45,6 +45,17 @@ pub const Constant = union(enum) {
             },
         }
     }
+
+    pub fn add(self: *const Constant, other: *const Constant) Constant {
+        switch (self.*) {
+            Constant.IntValue => {
+                return self.IntValue.add(other);
+            },
+            Constant.FloatValue => {
+                return self.FloatValue.add(other);
+            },
+        }
+    }
 };
 
 pub const IntValue = union(enum) {
@@ -74,6 +85,18 @@ pub const IntValue = union(enum) {
             },
         }
     }
+
+    pub fn add(self: *const IntValue, other: *const Constant) Constant {
+        switch (other.*) {
+            Constant.IntValue => {
+                return Constant.init_int_value(IntValue.init_i32(self.I32 + other.IntValue.I32));
+            },
+            Constant.FloatValue => {
+                const val = @as(f32, @floatFromInt(self.I32)) + other.FloatValue.F32;
+                return Constant.init_float_value(FloatValue.init_f32(val));
+            },
+        }
+    }
 };
 
 pub const FloatValue = union(enum) {
@@ -100,6 +123,18 @@ pub const FloatValue = union(enum) {
         switch (self.*) {
             FloatValue.F32 => {
                 try fbuf.print("{}", .{self.F32});
+            },
+        }
+    }
+
+    pub fn add(self: *const FloatValue, other: *const Constant) Constant {
+        switch (other.*) {
+            Constant.IntValue => {
+                const val = self.F32 + @as(f32, @floatFromInt(other.IntValue.I32));
+                return Constant.init_float_value(FloatValue.init_f32(val));
+            },
+            Constant.FloatValue => {
+                return Constant.init_float_value(FloatValue.init_f32(self.F32 + other.FloatValue.F32));
             },
         }
     }
