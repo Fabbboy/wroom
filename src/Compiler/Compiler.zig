@@ -25,6 +25,7 @@ const FloatType = TypeNs.FloatTy;
 
 const Token = @import("../Parser/Token.zig");
 const ValueType = Token.ValueType;
+const OperatorType = Token.OperatorType;
 
 const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
@@ -32,7 +33,11 @@ const ExprData = ExprNs.ExprData;
 
 const LiteralExpr = @import("../AST/LiteralExpr.zig");
 
-const evalBinaryAdd = @import("../IR/Eval/Binary.zig").evalBinaryAdd;
+const binEvalNs = @import("../IR/Eval/Binary.zig");
+const evalBinaryAdd = binEvalNs.evalBinaryAdd;
+const evalBinarySub = binEvalNs.evalBinarySub;
+const evalBinaryMul = binEvalNs.evalBinaryMul;
+const evalBinaryDiv = binEvalNs.evalBinaryDiv;
 
 const Self = @This();
 
@@ -82,7 +87,10 @@ fn compileExpr(self: *const Self, expr: *const Expr) CompileStatus!IRValue {
             const rhs = try self.compileExpr(binary.getRHS());
             const op = binary.op;
             switch (op) {
-                Token.OperatorType.Plus => return evalBinaryAdd(&lhs, &rhs),
+                OperatorType.Plus => return evalBinaryAdd(&lhs, &rhs),
+                OperatorType.Minus => return evalBinarySub(&lhs, &rhs),
+                OperatorType.Star => return evalBinaryMul(&lhs, &rhs),
+                OperatorType.Slash => return evalBinaryDiv(&lhs, &rhs),
                 else => unreachable,
             }
         },

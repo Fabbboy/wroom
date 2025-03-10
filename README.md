@@ -9,7 +9,8 @@ In favor of a better and more stable IR I decided to put this project on ice unt
 
 ### Next Steps
 
-- [ ] 
+- [ ] cast floats back to int
+- [ ] add the globals to compiler for further use
 
 - [ ] Split globals and global constants in module
 - [ ] Prevent values and enforce types for extern variables
