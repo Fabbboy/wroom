@@ -8,6 +8,8 @@ const Type = TypeNs.Type;
 const IntegerTy = TypeNs.IntegerTy;
 const FloatTy = TypeNs.FloatTy;
 
+const INF_FLOAT = 0x7F800000;
+
 pub const Constant = union(enum) {
     IntValue: IntValue,
     FloatValue: FloatValue,
@@ -170,7 +172,7 @@ pub const IntValue = union(enum) {
             Constant.FloatValue => {
                 var rhs_val: f32 = other.FloatValue.F32;
                 if (rhs_val == 0.0) {
-                    rhs_val = 1.0;
+                    rhs_val = INF_FLOAT;
                 }
 
                 const val = @as(f32, @floatFromInt(self.I32)) / other.FloatValue.F32;
@@ -258,7 +260,7 @@ pub const FloatValue = union(enum) {
             Constant.FloatValue => {
                 var rhs_val: f32 = other.FloatValue.F32;
                 if (rhs_val == 0.0) {
-                    rhs_val = 1.0;
+                    rhs_val = INF_FLOAT;
                 }
 
                 return Constant.init_float_value(FloatValue.init_f32(self.F32 / rhs_val));
