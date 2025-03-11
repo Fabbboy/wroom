@@ -101,16 +101,8 @@ fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
                 return lhs_type;
             }
 
-            if ((lhs_type == ValueType.I32 and rhs_type == ValueType.F32) or
-                (lhs_type == ValueType.F32 and rhs_type == ValueType.I32))
-            {
-                return ValueType.F32;
-            }
-
-            if (lhs_type == ValueType.Untyped) return rhs_type;
-            if (rhs_type == ValueType.Untyped) return lhs_type;
-
-            return ValueType.Untyped;
+            try self.pushError(SemaError.init_type_mismatch(lhs_type, rhs_type, expr.pos()));
+            return error.NotGood;
         },
         ExprData.Variable => {
             const fvar = expr.data.Variable;
