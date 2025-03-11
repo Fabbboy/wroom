@@ -2,6 +2,7 @@ const std = @import("std");
 const mem = std.mem;
 
 const GlobalVariable = @import("Values/GlobalVariable.zig");
+const IRValue = @import("IRValue.zig").IRValue;
 
 const Self = @This();
 
@@ -31,4 +32,13 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
 
 pub fn addGlobal(self: *Self, global: GlobalVariable) !void {
     try self.globals.append(global);
+}
+
+pub fn findGlobal(self: *const Self, name: []const u8) ?*const GlobalVariable {
+    for (self.globals.items) |global| {
+        if (mem.eql(u8, global.name, name)) {
+            return &global;
+        }
+    }
+    return null;
 }

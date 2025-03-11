@@ -94,6 +94,13 @@ fn compileExpr(self: *const Self, expr: *const Expr) CompileStatus!IRValue {
                 else => unreachable,
             }
         },
+        ExprData.Variable => {
+            const variable = data.Variable;
+            if (self.module.findGlobal(variable.name.lexeme)) |glbl| {
+                return IRValue.init_constant(glbl.value);
+            }
+            unreachable;
+        },
         else => unreachable,
     }
 }
