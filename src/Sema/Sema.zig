@@ -153,7 +153,10 @@ fn analyze_variable(self: *Self, variable: *AssignStatement, glbl: bool) SemaSta
         return error.NotGood;
     }
 
-    const val_type = try self.infer_expr(&variable.value, glbl);
+    const val_type = self.infer_expr(&variable.value, glbl) catch |e| {
+        try self.currentScope.push(variable.ident.lexeme, variable.getType());
+        return e;
+    };
     if (val_type == ValueType.Void) {
         try self.pushError(SemaError.init_cannot_assign_to_void(variable.pos()));
         return error.NotGood;
