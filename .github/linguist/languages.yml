@@ -1,0 +1,7 @@
+Wroom:
+  type: programming
+  extensions:
+    - .wrm
+  ace_mode: go
+  tm_scope: source.go
+  color: "#00ADD8"
