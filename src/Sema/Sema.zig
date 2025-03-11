@@ -70,7 +70,7 @@ fn analyze_func_call(self: *Self, func: *const FunctionCall) SemaStatus!ValueTyp
 
         for (f.params.items, 0..) |*param, i| {
             const arg = func.arguments.items[i];
-            const arg_type = try self.infer_expr(&arg);
+            const arg_type = try self.infer_expr(&arg, false);
             if (param.type != arg_type) {
                 try self.pushError(SemaError.init_type_mismatch(param.type, arg_type, arg.pos()));
                 return error.NotGood;
@@ -84,13 +84,13 @@ fn analyze_func_call(self: *Self, func: *const FunctionCall) SemaStatus!ValueTyp
     return error.NotGood;
 }
 
-fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
+fn infer_expr(self: *Self, expr: *const Expr, glbl: bool) SemaStatus!ValueType {
     return switch (expr.data.*) {
         ExprData.Literal => expr.data.Literal.value_type,
         ExprData.Binary => {
             const bin = expr.data.Binary;
-            const lhs_type = try self.infer_expr(&bin.lhs);
-            const rhs_type = try self.infer_expr(&bin.rhs);
+            const lhs_type = try self.infer_expr(&bin.lhs, glbl);
+            const rhs_type = try self.infer_expr(&bin.rhs, glbl);
 
             if (lhs_type == ValueType.Void or rhs_type == ValueType.Void) {
                 try self.pushError(SemaError.init_cannot_assign_to_void(expr.pos()));
@@ -113,13 +113,18 @@ fn infer_expr(self: *Self, expr: *const Expr) SemaStatus!ValueType {
             return error.NotGood;
         },
         ExprData.FunctionCall => {
+            if (glbl) {
+                try self.pushError(SemaError.init_call_not_allowed(expr.pos()));
+                return error.NotGood;
+            }
+
             return self.analyze_func_call(&expr.data.FunctionCall);
         },
         else => unreachable,
     };
 }
 
-fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
+fn analyze_variable(self: *Self, variable: *AssignStatement, glbl: bool) SemaStatus!void {
     if (!variable.new_var) {
         const found: ?ValueType = self.currentScope.find(variable.ident.lexeme);
         if (found == null) {
@@ -127,7 +132,7 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
             return error.NotGood;
         }
 
-        const val_type = try self.infer_expr(&variable.value);
+        const val_type = try self.infer_expr(&variable.value, glbl);
         if (found != val_type) {
             try self.pushError(SemaError.init_type_mismatch(found.?, val_type, variable.pos()));
             return error.NotGood;
@@ -148,7 +153,7 @@ fn analyze_variable(self: *Self, variable: *AssignStatement) SemaStatus!void {
         return error.NotGood;
     }
 
-    const val_type = try self.infer_expr(&variable.value);
+    const val_type = try self.infer_expr(&variable.value, glbl);
     if (val_type == ValueType.Void) {
         try self.pushError(SemaError.init_cannot_assign_to_void(variable.pos()));
         return error.NotGood;
@@ -233,10 +238,10 @@ fn analyze_block(self: *Self, block: *const Block, needs_scope: bool, name: []co
 
 fn analyze_statement(self: *Self, stmt: *Stmt, name: []const u8) SemaStatus!void {
     return switch (stmt.*) {
-        Stmt.AssignStatement => self.analyze_variable(&stmt.AssignStatement),
+        Stmt.AssignStatement => self.analyze_variable(&stmt.AssignStatement, false),
         Stmt.ReturnStatement => {
             const ret = stmt.ReturnStatement;
-            const val_type = try self.infer_expr(&ret.value);
+            const val_type = try self.infer_expr(&ret.value, false);
 
             const func = self.currentScope.findFunc(name);
             if (func) |f| {
@@ -258,7 +263,7 @@ fn analyze_statement(self: *Self, stmt: *Stmt, name: []const u8) SemaStatus!void
 
 pub fn analyze(self: *Self) SemaStatus!void {
     for (self.ast.globals.items) |*glbl| {
-        self.analyze_variable(glbl) catch {
+        self.analyze_variable(glbl, true) catch {
             continue;
         };
     }
