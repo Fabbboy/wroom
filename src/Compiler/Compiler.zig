@@ -76,7 +76,7 @@ fn compileLiteral(self: *const Self, lit: *const LiteralExpr) CompileStatus!IRVa
     return IRValue.init_constant(value);
 }
 
-fn compileExpr(self: *const Self, expr: *const Expr) CompileStatus!IRValue {
+fn compileConstantExpr(self: *const Self, expr: *const Expr) CompileStatus!IRValue {
     const data = expr.data;
     switch (data.*) {
         ExprData.Literal => {
@@ -85,8 +85,8 @@ fn compileExpr(self: *const Self, expr: *const Expr) CompileStatus!IRValue {
         },
         ExprData.Binary => {
             const binary = data.Binary;
-            const lhs = try self.compileExpr(binary.getLHS());
-            const rhs = try self.compileExpr(binary.getRHS());
+            const lhs = try self.compileConstantExpr(binary.getLHS());
+            const rhs = try self.compileConstantExpr(binary.getRHS());
             const op = binary.op;
             switch (op) {
                 OperatorType.Plus => return evalBinaryAdd(&lhs, &rhs),
@@ -105,7 +105,7 @@ fn compileExpr(self: *const Self, expr: *const Expr) CompileStatus!IRValue {
         },
         ExprData.Cast => {
             const cast = data.Cast;
-            const val = try self.compileExpr(&cast.val);
+            const val = try self.compileConstantExpr(&cast.val);
             switch (val) {
                 IRValue.Constant => {
                     const ty = self.resolveValType(cast.cast_to);
@@ -124,7 +124,7 @@ pub fn compile(self: *Self) CompileStatus!void {
         const name = glbl.getName().lexeme;
         const ty = self.resolveValType(glbl.getType());
         const val = glbl.getValue();
-        const irval = try self.compileExpr(val);
+        const irval = try self.compileConstantExpr(val);
         const final_val = switch (irval) {
             IRValue.Constant => CastConstant(irval.Constant, ty),
         };
