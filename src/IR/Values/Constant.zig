@@ -8,8 +8,6 @@ const Type = TypeNs.Type;
 const IntegerTy = TypeNs.IntegerTy;
 const FloatTy = TypeNs.FloatTy;
 
-const INF_FLOAT = 0x7F800000;
-
 pub const Constant = union(enum) {
     IntValue: IntValue,
     FloatValue: FloatValue,
@@ -47,50 +45,6 @@ pub const Constant = union(enum) {
             },
         }
     }
-
-    pub fn add(self: *const Constant, other: *const Constant) Constant {
-        switch (self.*) {
-            Constant.IntValue => {
-                return self.IntValue.add(other);
-            },
-            Constant.FloatValue => {
-                return self.FloatValue.add(other);
-            },
-        }
-    }
-
-    pub fn sub(self: *const Constant, other: *const Constant) Constant {
-        switch (self.*) {
-            Constant.IntValue => {
-                return self.IntValue.sub(other);
-            },
-            Constant.FloatValue => {
-                return self.FloatValue.sub(other);
-            },
-        }
-    }
-
-    pub fn mul(self: *const Constant, other: *const Constant) Constant {
-        switch (self.*) {
-            Constant.IntValue => {
-                return self.IntValue.mul(other);
-            },
-            Constant.FloatValue => {
-                return self.FloatValue.mul(other);
-            },
-        }
-    }
-
-    pub fn div(self: *const Constant, other: *const Constant) Constant {
-        switch (self.*) {
-            Constant.IntValue => {
-                return self.IntValue.div(other);
-            },
-            Constant.FloatValue => {
-                return self.FloatValue.div(other);
-            },
-        }
-    }
 };
 
 pub const IntValue = union(enum) {
@@ -121,64 +75,12 @@ pub const IntValue = union(enum) {
         }
     }
 
-    pub fn add(self: *const IntValue, other: *const Constant) Constant {
-        switch (other.*) {
-            Constant.IntValue => {
-                return Constant.init_int_value(IntValue.init_i32(self.I32 + other.IntValue.I32));
-            },
-            Constant.FloatValue => {
-                const val = @as(f32, @floatFromInt(self.I32)) + other.FloatValue.F32;
-                return Constant.init_float_value(FloatValue.init_f32(val));
-            },
-        }
+    pub fn to_i64(self: IntValue) i64 {
+        return @as(i64, self.I32);
     }
 
-    pub fn sub(self: *const IntValue, other: *const Constant) Constant {
-        switch (other.*) {
-            Constant.IntValue => {
-                return Constant.init_int_value(IntValue.init_i32(self.I32 - other.IntValue.I32));
-            },
-            Constant.FloatValue => {
-                const val = @as(f32, @floatFromInt(self.I32)) - other.FloatValue.F32;
-                return Constant.init_float_value(FloatValue.init_f32(val));
-            },
-        }
-    }
-
-    pub fn mul(self: *const IntValue, other: *const Constant) Constant {
-        switch (other.*) {
-            Constant.IntValue => {
-                return Constant.init_int_value(IntValue.init_i32(self.I32 * other.IntValue.I32));
-            },
-            Constant.FloatValue => {
-                const val = @as(f32, @floatFromInt(self.I32)) * other.FloatValue.F32;
-                return Constant.init_float_value(FloatValue.init_f32(val));
-            },
-        }
-    }
-
-    pub fn div(self: *const IntValue, other: *const Constant) Constant {
-        switch (other.*) {
-            Constant.IntValue => {
-                var rhs_val: f32 = @as(f32, @floatFromInt(other.IntValue.I32));
-                if (rhs_val == 0) {
-                    rhs_val = 1.0;
-                }
-
-                const lhs_val = @as(f32, @floatFromInt(self.I32));
-
-                return Constant.init_float_value(FloatValue.init_f32(lhs_val / rhs_val));
-            },
-            Constant.FloatValue => {
-                var rhs_val: f32 = other.FloatValue.F32;
-                if (rhs_val == 0.0) {
-                    rhs_val = INF_FLOAT;
-                }
-
-                const val = @as(f32, @floatFromInt(self.I32)) / other.FloatValue.F32;
-                return Constant.init_float_value(FloatValue.init_f32(val));
-            },
-        }
+    pub fn to_f64(self: IntValue) f64 {
+        return @as(f64, @floatFromInt(self.I32));
     }
 };
 
@@ -210,61 +112,7 @@ pub const FloatValue = union(enum) {
         }
     }
 
-    pub fn add(self: *const FloatValue, other: *const Constant) Constant {
-        switch (other.*) {
-            Constant.IntValue => {
-                const val = self.F32 + @as(f32, @floatFromInt(other.IntValue.I32));
-                return Constant.init_float_value(FloatValue.init_f32(val));
-            },
-            Constant.FloatValue => {
-                return Constant.init_float_value(FloatValue.init_f32(self.F32 + other.FloatValue.F32));
-            },
-        }
-    }
-
-    pub fn sub(self: *const FloatValue, other: *const Constant) Constant {
-        switch (other.*) {
-            Constant.IntValue => {
-                const val = self.F32 - @as(f32, @floatFromInt(other.IntValue.I32));
-                return Constant.init_float_value(FloatValue.init_f32(val));
-            },
-            Constant.FloatValue => {
-                return Constant.init_float_value(FloatValue.init_f32(self.F32 - other.FloatValue.F32));
-            },
-        }
-    }
-
-    pub fn mul(self: *const FloatValue, other: *const Constant) Constant {
-        switch (other.*) {
-            Constant.IntValue => {
-                const val = self.F32 * @as(f32, @floatFromInt(other.IntValue.I32));
-                return Constant.init_float_value(FloatValue.init_f32(val));
-            },
-            Constant.FloatValue => {
-                return Constant.init_float_value(FloatValue.init_f32(self.F32 * other.FloatValue.F32));
-            },
-        }
-    }
-
-    pub fn div(self: *const FloatValue, other: *const Constant) Constant {
-        switch (other.*) {
-            Constant.IntValue => {
-                var rhs_val: i32 = other.IntValue.I32;
-                if (rhs_val == 0) {
-                    rhs_val = 1;
-                }
-
-                const val = self.F32 / @as(f32, @floatFromInt(rhs_val));
-                return Constant.init_float_value(FloatValue.init_f32(val));
-            },
-            Constant.FloatValue => {
-                var rhs_val: f32 = other.FloatValue.F32;
-                if (rhs_val == 0.0) {
-                    rhs_val = INF_FLOAT;
-                }
-
-                return Constant.init_float_value(FloatValue.init_f32(self.F32 / rhs_val));
-            },
-        }
+    pub fn to_f64(self: FloatValue) f64 {
+        return @as(f64, self.F32);
     }
 };

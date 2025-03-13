@@ -34,10 +34,7 @@ const ExprData = ExprNs.ExprData;
 const LiteralExpr = @import("../AST/LiteralExpr.zig");
 
 const binEvalNs = @import("../IR/Eval/Binary.zig");
-const evalBinaryAdd = binEvalNs.evalBinaryAdd;
-const evalBinarySub = binEvalNs.evalBinarySub;
-const evalBinaryMul = binEvalNs.evalBinaryMul;
-const evalBinaryDiv = binEvalNs.evalBinaryDiv;
+const evalBinary = binEvalNs.evalBinary;
 
 const CastConstant = @import("../IR/Eval/Casting.zig").CastConstant;
 
@@ -88,12 +85,11 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr) CompileStatus!IRVal
             const lhs = try self.compileConstantExpr(binary.getLHS());
             const rhs = try self.compileConstantExpr(binary.getRHS());
             const op = binary.op;
-            switch (op) {
-                OperatorType.Plus => return evalBinaryAdd(&lhs, &rhs),
-                OperatorType.Minus => return evalBinarySub(&lhs, &rhs),
-                OperatorType.Star => return evalBinaryMul(&lhs, &rhs),
-                OperatorType.Slash => return evalBinaryDiv(&lhs, &rhs),
-                else => unreachable,
+            const res = evalBinary(lhs.Constant, rhs.Constant, op);
+            if (res) |r| {
+                return IRValue.init_constant(r);
+            } else {
+                return error.FailedToEvalBinary;
             }
         },
         ExprData.Variable => {
