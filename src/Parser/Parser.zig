@@ -173,22 +173,28 @@ fn parseTerm(self: *Self) ParseStatus!Expr {
     const lhs = try self.parseFactor();
 
     if (self.peek(&[_]TokenKind{ TokenKind.Star, TokenKind.Slash })) {
-        const op = self.next(&[_]TokenKind{ TokenKind.Star, TokenKind.Slash }) catch |err| {
-            lhs.deinit();
-            return err;
-        };
-        const fin_op = switch (op.kind) {
-            TokenKind.Star => OperatorType.Star,
-            TokenKind.Slash => OperatorType.Slash,
-            else => unreachable,
-        };
-
-        const rhs = self.parseTerm() catch |err| {
+        const tok = self.next(&[_]TokenKind{ TokenKind.Star, TokenKind.Slash }) catch |err| {
             lhs.deinit();
             return err;
         };
 
-        return Expr.init_binary(lhs, rhs, fin_op, self.allocator);
+        switch (tok.kind) {
+            TokenKind.Star, TokenKind.Slash => {
+                const op = switch (tok.kind) {
+                    TokenKind.Star => OperatorType.Star,
+                    TokenKind.Slash => OperatorType.Slash,
+                    else => unreachable,
+                };
+
+                const rhs = self.parseTerm() catch |err| {
+                    lhs.deinit();
+                    return err;
+                };
+
+                return Expr.init_binary(lhs, rhs, op, self.allocator);
+            },
+            else => {},
+        }
     }
 
     return lhs;
