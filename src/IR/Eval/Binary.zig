@@ -1,58 +1,30 @@
-const Constant = @import("../Values/Constant.zig").Constant;
+const ConstantNs = @import("../Values/Constant.zig");
+const Constant = ConstantNs.Constant;
+const IntValue = ConstantNs.IntValue;
+const FloatValue = ConstantNs.FloatValue;
+
 const IRValue = @import("../IRValue.zig").IRValue;
 
-pub fn evalBinaryAdd(lhs: *const IRValue, rhs: *const IRValue) IRValue {
-    switch (lhs.*) {
-        IRValue.Constant => {
-            const l = lhs.Constant;
-            switch (rhs.*) {
-                IRValue.Constant => {
-                    const r = rhs.Constant;
-                    return IRValue.init_constant(Constant.add(&l, &r));
+fn evalBinaryAddInt(lhs: IntValue, rhs: IntValue) Constant {
+    return switch (lhs) {
+        IntValue.I32 => |lval| {
+            return switch (rhs) {
+                IntValue.I32 => |rval| {
+                    return Constant.init_int_value(IntValue.init_i32(lval + rval));
                 },
-            }
+            };
         },
-    }
+    };
 }
 
-pub fn evalBinarySub(lhs: *const IRValue, rhs: *const IRValue) IRValue {
-    switch (lhs.*) {
-        IRValue.Constant => {
-            const l = lhs.Constant;
-            switch (rhs.*) {
-                IRValue.Constant => {
-                    const r = rhs.Constant;
-                    return IRValue.init_constant(Constant.sub(&l, &r));
-                },
-            }
+pub fn evalBinaryAdd(lhs: Constant, rhs: Constant) Constant {
+    return switch (lhs) {
+        Constant.IntValue => |rlhs| {
+            return switch (rhs) {
+                Constant.IntValue => |rrhs| evalBinaryAddInt(rlhs, rrhs),
+                else => unreachable,
+            };
         },
-    }
-}
-
-pub fn evalBinaryMul(lhs: *const IRValue, rhs: *const IRValue) IRValue {
-    switch (lhs.*) {
-        IRValue.Constant => {
-            const l = lhs.Constant;
-            switch (rhs.*) {
-                IRValue.Constant => {
-                    const r = rhs.Constant;
-                    return IRValue.init_constant(Constant.mul(&l, &r));
-                },
-            }
-        },
-    }
-}
-
-pub fn evalBinaryDiv(lhs: *const IRValue, rhs: *const IRValue) IRValue {
-    switch (lhs.*) {
-        IRValue.Constant => {
-            const l = lhs.Constant;
-            switch (rhs.*) {
-                IRValue.Constant => {
-                    const r = rhs.Constant;
-                    return IRValue.init_constant(Constant.div(&l, &r));
-                },
-            }
-        },
-    }
+        else => unreachable,
+    };
 }
