@@ -1,6 +1,6 @@
 const other = 69
 pub let hell = 123 + other
-pub const other2 = 1 + hell
+pub const other2 = 1.2 + hell as float
 
 extern func puts(a: int) void 
 

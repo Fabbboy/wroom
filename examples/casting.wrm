@@ -1,1 +1,2 @@
-const a = (23) * 2.2 as int
+const someFloat = 2.3
+const someInteger = 4 * someFloat as int

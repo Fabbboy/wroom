@@ -39,6 +39,8 @@ const evalBinarySub = binEvalNs.evalBinarySub;
 const evalBinaryMul = binEvalNs.evalBinaryMul;
 const evalBinaryDiv = binEvalNs.evalBinaryDiv;
 
+const CastConstant = @import("../IR/Eval/Casting.zig").CastConstant;
+
 const Self = @This();
 
 ast: *const Ast,
@@ -104,8 +106,12 @@ fn compileExpr(self: *const Self, expr: *const Expr) CompileStatus!IRValue {
         ExprData.Cast => {
             const cast = data.Cast;
             const val = try self.compileExpr(&cast.val);
-            //const ty = self.resolveValType(cast.cast_to);
-            return val;
+            switch (val) {
+                IRValue.Constant => {
+                    const ty = self.resolveValType(cast.cast_to);
+                    return IRValue.init_constant(CastConstant(val.Constant, ty));
+                },
+            }
         },
         else => unreachable,
     }
@@ -119,11 +125,15 @@ pub fn compile(self: *Self) CompileStatus!void {
         const ty = self.resolveValType(glbl.getType());
         const val = glbl.getValue();
         const irval = try self.compileExpr(val);
+        const final_val = switch (irval) {
+            IRValue.Constant => CastConstant(irval.Constant, ty),
+        };
+
         const linkage = glbl.linkage;
         const global = GlobalVariable.init(
             name,
             ty,
-            irval.Constant,
+            final_val,
             glbl.constant,
             linkage,
         );

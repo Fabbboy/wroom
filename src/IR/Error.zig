@@ -5,4 +5,5 @@ pub const IRStatus = error{
     OutOfMemory,
     NotGood,
     FailedToParseNumeric,
+    UnableToCast,
 };

@@ -11,7 +11,7 @@ In favor of a better and more stable IR I decided to put this project on ice unt
 
 - [ ] extract constant value binary from the constant it self
 - [ ] Observed bug where using casting the type results to be "untyped"
-- [ ] implement casting on irvalues
+- [x] implement casting on irvalues
 - [X] add the globals to compiler for further use
 
 - [ ] Free expr from manual creation of Expr-T
