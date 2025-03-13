@@ -14,7 +14,6 @@ const IRValue = @import("../IRValue.zig").IRValue;
 
 const BinOpFunc = fn (lhs: Constant, rhs: Constant) ?Constant;
 
-// === Integer Arithmetic ===
 fn binOpInt(comptime op: OperatorType, lhs: i64, rhs: i64) ?i64 {
     return switch (op) {
         .Plus => lhs + rhs,
@@ -25,7 +24,6 @@ fn binOpInt(comptime op: OperatorType, lhs: i64, rhs: i64) ?i64 {
     };
 }
 
-// === Float Arithmetic ===
 fn binOpFloat(comptime op: OperatorType, lhs: f64, rhs: f64) ?f64 {
     return switch (op) {
         .Plus => lhs + rhs,
@@ -36,7 +34,6 @@ fn binOpFloat(comptime op: OperatorType, lhs: f64, rhs: f64) ?f64 {
     };
 }
 
-// === Determine Type Index (Integer vs Float) ===
 fn getIdx(val: Constant) u8 {
     return switch (val) {
         .IntValue => 0,
@@ -98,7 +95,17 @@ fn binOpHandlerDiv(lhs: Constant, rhs: Constant) ?Constant {
     return binOpHandler(.Slash, lhs, rhs);
 }
 
+fn getFunc(op: OperatorType) *const fn (Constant, Constant) ?Constant {
+    switch (op) {
+        .Plus => return &binOpHandlerPlus,
+        .Minus => return &binOpHandlerMinus,
+        .Star => return &binOpHandlerMul,
+        .Slash => return &binOpHandlerDiv,
+        else => return null,
+    }
+}
+
 pub fn evalBinary(lhs: Constant, rhs: Constant, op: OperatorType) ?Constant {
-    const func = BinOpFuncTable[@intFromEnum(op) - 1]; //ignoreing the first element
+    const func = getFunc(op) orelse return null;
     return func(lhs, rhs);
 }
