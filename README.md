@@ -9,7 +9,7 @@ In favor of a better and more stable IR I decided to put this project on ice unt
 
 ### Next Steps
 
-- [ ] cast floats back to int
+- [ ] implement casting on irvalues
 - [X] add the globals to compiler for further use
 
 - [ ] Forbidde implicit binary operations between different data types

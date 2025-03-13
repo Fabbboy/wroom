@@ -131,6 +131,7 @@ fn infer_expr(self: *Self, expr: *const Expr, glbl: bool) SemaStatus!ValueType {
 
             return self.analyze_func_call(&expr.data.FunctionCall);
         },
+        ExprData.Cast => expr.data.Cast.cast_to,
         else => unreachable,
     };
 }

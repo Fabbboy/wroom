@@ -32,6 +32,7 @@ pub const TokenKind = enum {
     LBrace,
     RBrace,
     Return,
+    As,
 
     pub fn fmt(self: TokenKind) []const u8 {
         return switch (self) {
@@ -60,6 +61,7 @@ pub const TokenKind = enum {
             TokenKind.LBrace => "LBrace",
             TokenKind.RBrace => "RBrace",
             TokenKind.Return => "Return",
+            TokenKind.As => "As",
         };
     }
 };
@@ -126,6 +128,7 @@ pub const TokenData = union(TokenKind) {
     LBrace: void,
     RBrace: void,
     Return: void,
+    As: void
 };
 
 kind: TokenKind,
@@ -183,6 +186,7 @@ pub const keywords = std.StaticStringMap(KeywordValue).initComptime(.{
     .{ "func", KeywordValue{ .kind = TokenKind.Func, .data = null } },
     .{ "return", KeywordValue{ .kind = TokenKind.Return, .data = null } },
     .{ "null", KeywordValue{ .kind = TokenKind.Null, .data = null } },
+    .{ "as", KeywordValue{ .kind = TokenKind.As, .data = null } },
 });
 
 pub const operators = std.StaticStringMap(OperatorType).initComptime(.{

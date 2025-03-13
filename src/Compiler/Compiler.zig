@@ -101,6 +101,12 @@ fn compileExpr(self: *const Self, expr: *const Expr) CompileStatus!IRValue {
             }
             unreachable;
         },
+        ExprData.Cast => {
+            const cast = data.Cast;
+            const val = try self.compileExpr(&cast.val);
+            //const ty = self.resolveValType(cast.cast_to);
+            return val;
+        },
         else => unreachable,
     }
 }

@@ -197,23 +197,35 @@ fn parseTerm(self: *Self) ParseStatus!Expr {
 fn parseExpr(self: *Self) ParseStatus!Expr {
     const lhs = try self.parseTerm();
 
-    if (self.peek(&[_]TokenKind{ TokenKind.Plus, TokenKind.Minus })) {
-        const op = self.next(&[_]TokenKind{ TokenKind.Plus, TokenKind.Minus }) catch |err| {
+    if (self.peek(&[_]TokenKind{ TokenKind.Plus, TokenKind.Minus, TokenKind.As })) {
+        const tok = self.next(&[_]TokenKind{ TokenKind.Plus, TokenKind.Minus, TokenKind.As }) catch |err| {
             lhs.deinit();
             return err;
         };
-        const fin_op = switch (op.kind) {
-            TokenKind.Plus => OperatorType.Plus,
-            TokenKind.Minus => OperatorType.Minus,
+
+        switch (tok.kind) {
+            TokenKind.Plus, TokenKind.Minus => {
+                const op = switch (tok.kind) {
+                    TokenKind.Plus => OperatorType.Plus,
+                    TokenKind.Minus => OperatorType.Minus,
+                    else => unreachable,
+                };
+
+                const rhs = self.parseExpr() catch |err| {
+                    lhs.deinit();
+                    return err;
+                };
+
+                return Expr.init_binary(lhs, rhs, op, self.allocator);
+            },
+            TokenKind.As => {
+                const tyTok = try self.next(&[_]TokenKind{TokenKind.Type});
+                var pos = tok.pos;
+                pos.end = tyTok.pos.end;
+                return Expr.init_cast(lhs, tyTok.data.?.Type, pos, self.allocator);
+            },
             else => unreachable,
-        };
-
-        const rhs = self.parseExpr() catch |err| {
-            lhs.deinit();
-            return err;
-        };
-
-        return Expr.init_binary(lhs, rhs, fin_op, self.allocator);
+        }
     }
 
     return lhs;
