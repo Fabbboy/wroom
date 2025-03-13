@@ -1,1 +1,2 @@
-const hello = 123 + 2
+const hello = (123 + 2) * 4
+const world = 2.3 + hello as float

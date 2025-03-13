@@ -9,7 +9,8 @@ In favor of a better and more stable IR I decided to put this project on ice unt
 
 ### Next Steps
 
-- [ ] extract constant value binary from the constant it self
+- [ ] handle bits better in constant binary
+- [x] extract constant value binary from the constant it self
 - [ ] Observed bug where using casting the type results to be "untyped"
 - [x] implement casting on irvalues
 - [X] add the globals to compiler for further use

@@ -74,6 +74,14 @@ pub const IntValue = union(enum) {
             },
         }
     }
+
+    pub fn to_i64(self: IntValue) i64 {
+        return @as(i64, self.I32);
+    }
+
+    pub fn to_f64(self: IntValue) f64 {
+        return @as(f64, @floatFromInt(self.I32));
+    }
 };
 
 pub const FloatValue = union(enum) {
@@ -102,5 +110,9 @@ pub const FloatValue = union(enum) {
                 try fbuf.print("{}", .{self.F32});
             },
         }
+    }
+
+    pub fn to_f64(self: FloatValue) f64 {
+        return @as(f64, self.F32);
     }
 };
