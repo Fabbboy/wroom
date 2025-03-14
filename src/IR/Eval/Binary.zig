@@ -95,13 +95,13 @@ fn binOpHandlerDiv(lhs: Constant, rhs: Constant) ?Constant {
     return binOpHandler(.Slash, lhs, rhs);
 }
 
-fn getFunc(op: OperatorType) *const fn (Constant, Constant) ?Constant {
+fn getFunc(op: OperatorType) ?*const fn (Constant, Constant) ?Constant {
     switch (op) {
         .Plus => return &binOpHandlerPlus,
         .Minus => return &binOpHandlerMinus,
         .Star => return &binOpHandlerMul,
         .Slash => return &binOpHandlerDiv,
-        else => return null,
+        else => return null, 
     }
 }
 
