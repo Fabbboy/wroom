@@ -55,6 +55,11 @@ pub fn deinit(self: *const Func) void {
     self.blocks.deinit();
 }
 
+pub fn addBlock(self: *Func, name: []const u8) !*FuncBlock {
+    const block = FuncBlock.init(self.blocks.allocator, name, self);
+    try self.blocks.append(block);
+    return &self.blocks.items[self.blocks.items.len - 1];
+}
 
 pub fn fmt(self: *const Func, fbuf: anytype) !void {
     try fbuf.print("{s} {s} @{s}", .{

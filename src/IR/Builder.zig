@@ -14,9 +14,3 @@ pub fn init(mod: *Module) Self {
 pub fn setInsert(self: *Self, block: *FuncBlock) void {
     self.active_block = block;
 }
-
-pub fn createBlock(self: *Self, name: []const u8, parent: *Function) !*FuncBlock {
-    const block = FuncBlock.init(self.mod.allocator, name, parent);
-    try parent.blocks.append(block);
-    return &parent.blocks.items[parent.blocks.items.len - 1];
-}

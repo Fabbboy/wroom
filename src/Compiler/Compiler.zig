@@ -175,7 +175,7 @@ pub fn compile(self: *Self) CompileStatus!void {
 
         const body = func.getBody();
         if (body) |block| {
-            const bb = try self.builder.createBlock("entry", &f);
+            const bb = try f.addBlock("entry");
             self.builder.setInsert(bb);
             const b = block.getBody();
             for (b.*) |stmt| {
