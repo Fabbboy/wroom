@@ -24,6 +24,9 @@ pub fn init(name: []const u8, allocator: mem.Allocator) Self {
 
 pub fn deinit(self: *const Self) void {
     self.globals.deinit();
+    for (self.funcs.items) |func| {
+        func.deinit();
+    }
     self.funcs.deinit();
 }
 

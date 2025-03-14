@@ -8,15 +8,17 @@ const Linkage = @import("Linkage.zig").Linkage;
 pub const FuncBlock = struct {
     name: []const u8,
     body: std.ArrayList(Instruction),
+    parent: *Func,
 
-    pub fn init(allocator: mem.Allocator, name: []const u8) FuncBlock {
+    pub fn init(allocator: mem.Allocator, name: []const u8, parent: *Func) FuncBlock {
         return FuncBlock{
             .name = name,
             .body = std.ArrayList(Instruction).init(allocator),
+            .parent = parent,
         };
     }
 
-    pub fn deinit(self: *FuncBlock) void {
+    pub fn deinit(self: *const FuncBlock) void {
         self.body.deinit();
     }
 
@@ -37,18 +39,22 @@ return_ty: Type,
 linkage: Linkage,
 blocks: std.ArrayList(FuncBlock),
 
-pub fn init(name: []const u8, return_ty: Type, linkage: Linkage, blocks: std.ArrayList(FuncBlock)) Func {
+pub fn init(name: []const u8, return_ty: Type, linkage: Linkage, allocator: mem.Allocator) Func {
     return Func{
         .name = name,
         .return_ty = return_ty,
         .linkage = linkage,
-        .blocks = blocks,
+        .blocks = std.ArrayList(FuncBlock).init(allocator),
     };
 }
 
-pub fn deinit(self: *Func) void {
+pub fn deinit(self: *const Func) void {
+    for (self.blocks.items) |*block| {
+        block.deinit();
+    }
     self.blocks.deinit();
 }
+
 
 pub fn fmt(self: *const Func, fbuf: anytype) !void {
     try fbuf.print("{s} {s} @{s}", .{

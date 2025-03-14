@@ -41,6 +41,10 @@ const LiteralExpr = @import("../AST/LiteralExpr.zig");
 
 const AssignStatement = @import("../AST/AssignStatement.zig");
 
+const Builder = @import("../IR/Builder.zig");
+
+const Stmt = @import("../AST/Stmt.zig").Stmt;
+
 const binEvalNs = @import("../IR/Eval/Binary.zig");
 const evalBinary = binEvalNs.evalBinary;
 
@@ -52,13 +56,17 @@ ast: *const Ast,
 module: Module,
 allocator: mem.Allocator,
 cerrs: std.ArrayList(CompilerError),
+builder: Builder,
 
 pub fn init(allocator: mem.Allocator, ast: *const Ast, name: []const u8) Self {
+    var mod = Module.init(name, allocator);
+
     return Self{
-        .module = Module.init(name, allocator),
+        .module = mod,
         .allocator = allocator,
         .ast = ast,
         .cerrs = std.ArrayList(CompilerError).init(allocator),
+        .builder = Builder.init(&mod),
     };
 }
 
@@ -144,10 +152,9 @@ fn compileGlobal(self: *Self, glbl: AssignStatement) CompileStatus!void {
     try self.module.addGlobal(global);
 }
 
-fn compileBlock(self: *Self, body: *const Block) CompileStatus!std.ArrayList(FuncBlock) {
-    _ = body;
-    const blocks = std.ArrayList(FuncBlock).init(self.allocator);
-    return blocks;
+fn compileStatement(self: *Self, stmt:Stmt) CompileStatus!void {
+    _ = self;
+    _ = stmt;
 }
 
 pub fn compile(self: *Self) CompileStatus!void {
@@ -162,11 +169,19 @@ pub fn compile(self: *Self) CompileStatus!void {
         const name = func.getName().lexeme;
         const ret_ty = self.resolveValType(func.getReturnType());
         const linkage = func.linkage;
-        const body = func.getBody();
-        const blocks = try self.compileBlock(body.?);
 
-        const f = Function.init(name, ret_ty, linkage, blocks);
+        var f = Function.init(name, ret_ty, linkage, self.allocator);
         try self.module.addFunction(f);
+
+        const body = func.getBody();
+        if (body) |block| {
+            const bb = try self.builder.createBlock("entry", &f);
+            self.builder.setInsert(bb);
+            const b = block.getBody();
+            for (b.*) |stmt| {
+                try self.compileStatement(stmt);
+            }
+        }
     }
 
     return;
