@@ -81,5 +81,5 @@ pub fn deinit(self: *const Self) void {
 }
 
 pub fn getBody(self: *const Self) ?*const Block {
-    return self.body;
+    return if (self.body) |*block| block else null;
 }

@@ -31,7 +31,15 @@ const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
 const ExprData = ExprNs.ExprData;
 
+const ParseFunction = @import("../AST/FunctionDecl.zig");
+const Block = @import("../AST/Block.zig");
+
+const Function = @import("../IR/Function.zig");
+const FuncBlock = Function.FuncBlock;
+
 const LiteralExpr = @import("../AST/LiteralExpr.zig");
+
+const AssignStatement = @import("../AST/AssignStatement.zig");
 
 const binEvalNs = @import("../IR/Eval/Binary.zig");
 const evalBinary = binEvalNs.evalBinary;
@@ -107,34 +115,58 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr) CompileStatus!IRVal
                     const ty = self.resolveValType(cast.cast_to);
                     return IRValue.init_constant(CastConstant(val.Constant, ty));
                 },
+                else => unreachable,
             }
         },
         else => unreachable,
     }
 }
 
+fn compileGlobal(self: *Self, glbl: AssignStatement) CompileStatus!void {
+    const name = glbl.getName().lexeme;
+    const ty = self.resolveValType(glbl.getType());
+    const val = glbl.getValue();
+    const irval = try self.compileConstantExpr(val);
+    const final_val = switch (irval) {
+        IRValue.Constant => CastConstant(irval.Constant, ty),
+        else => unreachable,
+    };
+
+    const linkage = glbl.linkage;
+    const global = GlobalVariable.init(
+        name,
+        ty,
+        final_val,
+        glbl.constant,
+        linkage,
+    );
+
+    try self.module.addGlobal(global);
+}
+
+fn compileBlock(self: *Self, body: *const Block) CompileStatus!std.ArrayList(FuncBlock) {
+    _ = body;
+    const blocks = std.ArrayList(FuncBlock).init(self.allocator);
+    return blocks;
+}
+
 pub fn compile(self: *Self) CompileStatus!void {
     const ast = self.ast;
     const glbls = ast.getGlobals();
     for (glbls.*) |glbl| {
-        const name = glbl.getName().lexeme;
-        const ty = self.resolveValType(glbl.getType());
-        const val = glbl.getValue();
-        const irval = try self.compileConstantExpr(val);
-        const final_val = switch (irval) {
-            IRValue.Constant => CastConstant(irval.Constant, ty),
-        };
+        try self.compileGlobal(glbl);
+    }
 
-        const linkage = glbl.linkage;
-        const global = GlobalVariable.init(
-            name,
-            ty,
-            final_val,
-            glbl.constant,
-            linkage,
-        );
+    const funcs = ast.getFunctions();
+    for (funcs.*) |func| {
+        const name = func.getName().lexeme;
+        const ret_ty = self.resolveValType(func.getReturnType());
+        const linkage = func.linkage;
+        const body = func.getBody();
+        const blocks = try self.compileBlock(body.?);
 
-        try self.module.addGlobal(global);
+        const f = Function.init(name, ret_ty, linkage, blocks);
+        try self.module.addFunction(f);
     }
 
     return;
