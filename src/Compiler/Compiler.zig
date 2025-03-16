@@ -170,7 +170,13 @@ pub fn compile(self: *Self) CompileStatus!void {
         const ret_ty = self.resolveValType(func.getReturnType());
         const linkage = func.linkage;
 
-        const f = try Function.init(&self.module, name, ret_ty, linkage, self.allocator);
+        const f = try Function.init(
+            &self.module,
+            name,
+            ret_ty,
+            linkage,
+            self.allocator,
+        );
 
         const body = func.getBody();
         if (body) |block| {
