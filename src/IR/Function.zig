@@ -38,6 +38,7 @@ name: []const u8,
 return_ty: Type,
 linkage: Linkage,
 blocks: std.ArrayList(FuncBlock),
+allocator: mem.Allocator,
 
 pub fn init(name: []const u8, return_ty: Type, linkage: Linkage, allocator: mem.Allocator) Func {
     return Func{
@@ -45,18 +46,21 @@ pub fn init(name: []const u8, return_ty: Type, linkage: Linkage, allocator: mem.
         .return_ty = return_ty,
         .linkage = linkage,
         .blocks = std.ArrayList(FuncBlock).init(allocator),
+        .allocator = allocator,
     };
 }
 
 pub fn deinit(self: *const Func) void {
-    for (self.blocks.items) |*block| {
+    std.debug.print("Deinit function {s}:{}\n", .{ self.name, self.blocks.items.len });
+    for (self.blocks.items) |block| {
         block.deinit();
     }
     self.blocks.deinit();
 }
 
 pub fn addBlock(self: *Func, name: []const u8) !*FuncBlock {
-    const block = FuncBlock.init(self.blocks.allocator, name, self);
+    std.debug.print("Add block {s}\n", .{name});
+    const block = FuncBlock.init(self.allocator, name, self);
     try self.blocks.append(block);
     return &self.blocks.items[self.blocks.items.len - 1];
 }
