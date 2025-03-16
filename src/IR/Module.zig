@@ -42,8 +42,9 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
     }
 }
 
-pub fn addGlobal(self: *Self, global: GlobalVariable) !void {
+pub fn addGlobal(self: *Self, global: GlobalVariable) !*GlobalVariable {
     try self.globals.append(global);
+    return &self.globals.items[self.globals.items.len - 1];
 }
 
 pub fn addFunction(self: *Self, func: Function) !*Function {

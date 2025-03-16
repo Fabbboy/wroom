@@ -141,15 +141,14 @@ fn compileGlobal(self: *Self, glbl: AssignStatement) CompileStatus!void {
     };
 
     const linkage = glbl.linkage;
-    const global = GlobalVariable.init(
+    _ = try GlobalVariable.init(
+        &self.module,
         name,
         ty,
         final_val,
         glbl.constant,
         linkage,
     );
-
-    try self.module.addGlobal(global);
 }
 
 fn compileBody(self: *Self, block: *const ParseBlock, irf: *Function) CompileStatus!void {
