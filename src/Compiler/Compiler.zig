@@ -32,7 +32,7 @@ const Expr = ExprNs.Expr;
 const ExprData = ExprNs.ExprData;
 
 const ParseFunction = @import("../AST/FunctionDecl.zig");
-const Block = @import("../AST/Block.zig");
+const ParseBlock = @import("../AST/Block.zig");
 
 const Function = @import("../IR/Function.zig");
 const FuncBlock = Function.FuncBlock;
@@ -152,9 +152,10 @@ fn compileGlobal(self: *Self, glbl: AssignStatement) CompileStatus!void {
     try self.module.addGlobal(global);
 }
 
-fn compileStatement(self: *Self, stmt:Stmt) CompileStatus!void {
-    _ = self;
-    _ = stmt;
+fn compileBody(self: *Self, block: *const ParseBlock, irf: *Function) CompileStatus!void {
+    const bb = try irf.createBlock("entry");
+    self.builder.setInsert(bb);
+    _ = block;
 }
 
 pub fn compile(self: *Self) CompileStatus!void {
@@ -175,12 +176,7 @@ pub fn compile(self: *Self) CompileStatus!void {
 
         const body = func.getBody();
         if (body) |block| {
-            const bb = try f.addBlock("entry");
-            self.builder.setInsert(bb);
-            const b = block.getBody();
-            for (b.*) |stmt| {
-                try self.compileStatement(stmt);
-            }
+            try self.compileBody(block, &f);
         }
     }
 

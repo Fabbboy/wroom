@@ -58,8 +58,7 @@ pub fn deinit(self: *const Func) void {
     self.blocks.deinit();
 }
 
-pub fn addBlock(self: *Func, name: []const u8) !*FuncBlock {
-    std.debug.print("Add block {s}\n", .{name});
+pub fn createBlock(self: *Func, name: []const u8) !*FuncBlock {
     const block = FuncBlock.init(self.allocator, name, self);
     try self.blocks.append(block);
     return &self.blocks.items[self.blocks.items.len - 1];
