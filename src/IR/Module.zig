@@ -46,8 +46,9 @@ pub fn addGlobal(self: *Self, global: GlobalVariable) !void {
     try self.globals.append(global);
 }
 
-pub fn addFunction(self: *Self, func: Function) !void {
+pub fn addFunction(self: *Self, func: Function) !*Function {
     try self.funcs.append(func);
+    return &self.funcs.items[self.funcs.items.len - 1];
 }
 
 pub fn findGlobal(self: *const Self, name: []const u8) ?*const GlobalVariable {
