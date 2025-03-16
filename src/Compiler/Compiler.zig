@@ -178,6 +178,7 @@ pub fn compile(self: *Self) CompileStatus!void {
         if (body) |block| {
             try self.compileBody(block, &f);
         }
+        f.deinit(); //if i do this then it doesnt leak
     }
 
     return;
