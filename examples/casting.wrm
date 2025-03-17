@@ -1,7 +1,6 @@
 const someFloat = 2.3
 const someInteger = 4 * someFloat as int
 
-
 func test() void {
   return null
 }

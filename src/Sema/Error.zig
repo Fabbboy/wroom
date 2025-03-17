@@ -19,6 +19,7 @@ pub const SemaError = union(enum) {
     MainNeedsPublicInt: MainNeedsPublicInt,
     ExternCannotHaveBody: ExternCannotHaveBody,
     CallNotAllowed: CallNotAllowed,
+    CannotCast: CannotCast,
 
     pub fn init_symbol_already_declared(sy: SymbolAlreadyDeclared) SemaError {
         return SemaError{ .SymbolAlreadyDeclared = sy };
@@ -60,6 +61,10 @@ pub const SemaError = union(enum) {
         return SemaError{ .CallNotAllowed = call };
     }
 
+    pub fn init_cannot_cast(cast: CannotCast) SemaError {
+        return SemaError{ .CannotCast = cast };
+    }
+
     pub fn fmt(self: *const SemaError, fbuf: anytype) !void {
         switch (self.*) {
             SemaError.SymbolAlreadyDeclared => try self.SymbolAlreadyDeclared.fmt(fbuf),
@@ -72,6 +77,7 @@ pub const SemaError = union(enum) {
             SemaError.MainNeedsPublicInt => try self.MainNeedsPublicInt.fmt(fbuf),
             SemaError.ExternCannotHaveBody => try self.ExternCannotHaveBody.fmt(fbuf),
             SemaError.CallNotAllowed => try self.CallNotAllowed.fmt(fbuf),
+            SemaError.CannotCast => try self.CannotCast.fmt(fbuf),
         }
     }
 };
@@ -225,5 +231,23 @@ pub const CallNotAllowed = struct {
 
     pub fn fmt(self: *const CallNotAllowed, fbuf: anytype) !void {
         try fbuf.print("{}:{} Function call not allowed here", .{ self.pos.line, self.pos.column });
+    }
+};
+
+pub const CannotCast = struct {
+    pos: Position,
+    from: ValueType,
+    to: ValueType,
+
+    pub fn init(pos: Position, from: ValueType, to: ValueType) CannotCast {
+        return CannotCast{
+            .pos = pos,
+            .from = from,
+            .to = to,
+        };
+    }
+
+    pub fn fmt(self: *const CannotCast, fbuf: anytype) !void {
+        try fbuf.print("{}:{} Cannot cast from '{s}' to '{s}'", .{ self.pos.line, self.pos.column, self.from.fmt(), self.to.fmt() });
     }
 };

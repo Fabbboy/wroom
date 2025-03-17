@@ -18,6 +18,7 @@ const UnusedReturnValue = ErrorNs.UnusedReturnValue;
 const MainNeedsPublicInt = ErrorNs.MainNeedsPublicInt;
 const ExternCannotHaveBody = ErrorNs.ExternCannotHaveBody;
 const CallNotAllowed = ErrorNs.CallNotAllowed;
+const CannotCast = ErrorNs.CannotCast;
 
 const Ast = @import("../Parser/Ast.zig");
 const AssignStatement = @import("../AST/AssignStatement.zig");
@@ -131,7 +132,21 @@ fn infer_expr(self: *Self, expr: *const Expr, glbl: bool) SemaStatus!ValueType {
 
             return self.analyze_func_call(&expr.data.FunctionCall);
         },
-        ExprData.Cast => expr.data.Cast.cast_to,
+        ExprData.Cast => {
+            const lexpr = expr.data.Cast;
+            const to_cast = lexpr.val;
+            const expr_type = try self.infer_expr(&to_cast, glbl);
+
+            if (expr_type == ValueType.Void) {
+                try self.pushError(SemaError.init_cannot_cast(CannotCast.init(expr.pos(), expr_type, lexpr.cast_to)));
+                return error.NotGood;
+            }
+
+            if (lexpr.cast_to == ValueType.Untyped) {
+                return expr_type;
+            }
+            return expr.data.Cast.cast_to;
+        },
         else => unreachable,
     };
 }
@@ -178,7 +193,7 @@ fn analyze_variable(self: *Self, variable: *AssignStatement, glbl: bool) SemaSta
         try self.pushError(SemaError.init_cannot_assign_to_void(CannotAssignToVoid.init(variable.pos())));
         return error.NotGood;
     }
-
+    
     if (variable.type == ValueType.Untyped) {
         variable.setType(val_type);
     }
