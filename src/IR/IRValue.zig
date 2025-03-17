@@ -17,6 +17,15 @@ pub const IRValue = union(enum) {
         };
     }
 
+    pub fn deinit(self: *const IRValue) void {
+        switch (self.*) {
+            IRValue.Instruction => {
+                self.Instruction.deinit();
+            },
+            else => {},
+        }
+    }
+
     pub fn fmt(self: *const IRValue, fbuf: anytype) !void {
         switch (self.*) {
             IRValue.Constant => {

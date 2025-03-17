@@ -23,6 +23,10 @@ pub const FuncBlock = struct {
     }
 
     pub fn deinit(self: *const FuncBlock) void {
+        for (self.body.items) |instr| {
+            instr.deinit();
+        }
+
         self.body.deinit();
     }
 

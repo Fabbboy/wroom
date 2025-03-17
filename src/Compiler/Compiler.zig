@@ -66,7 +66,7 @@ pub fn init(allocator: mem.Allocator, ast: *const Ast, name: []const u8) Self {
         .allocator = allocator,
         .ast = ast,
         .cerrs = std.ArrayList(CompilerError).init(allocator),
-        .builder = Builder.init(&mod),
+        .builder = Builder.init(&mod, allocator),
     };
 }
 
