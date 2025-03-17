@@ -22,11 +22,13 @@ pub fn init(name: []const u8, allocator: mem.Allocator) Self {
     };
 }
 
-pub fn deinit(self: *const Self) void {
+pub fn deinit(self: *Self) void {
     self.globals.deinit();
-    for (self.funcs.items) |func| {
+
+    for (self.funcs.items) |*func| {
         func.deinit();
     }
+
     self.funcs.deinit();
 }
 

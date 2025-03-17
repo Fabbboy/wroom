@@ -192,7 +192,7 @@ pub fn compile(self: *Self) CompileStatus!void {
     return;
 }
 
-pub fn deinit(self: *const Self) void {
+pub fn deinit(self: *Self) void {
     self.module.deinit();
     self.cerrs.deinit();
 }

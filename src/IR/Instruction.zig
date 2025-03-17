@@ -36,30 +36,35 @@ pub const InstructionData = union(enum) {
 };
 
 pub const Instruction = struct {
-    data: *InstructionData,
+    data: InstructionData,
     allocator: mem.Allocator,
+    next: ?*Instruction,
+    prev: ?*Instruction,
 
-    pub fn init_alloca(allocator: mem.Allocator, alloca: AllocaInst) IRStatus!Instruction {
-        const data = try allocator.create(InstructionData);
-        data.* = InstructionData{ .Alloca = alloca };
-        return Instruction{
-            .data = data,
+    pub fn init_alloca(alloca: AllocaInst, next: ?*Instruction, prev: ?*Instruction, allocator: mem.Allocator) IRStatus!*Instruction {
+        const inst = try allocator.create(Instruction);
+        inst.* = Instruction{
+            .data = InstructionData{ .Alloca = alloca },
             .allocator = allocator,
+            .next = next,
+            .prev = prev,
         };
+        return inst;
     }
 
-    pub fn init_store(allocator: mem.Allocator, store: StoreInst) IRStatus!Instruction {
-        const data = try allocator.create(InstructionData);
-        data.* = InstructionData{ .Store = store };
-        return Instruction{
-            .data = data,
+    pub fn init_store(store: StoreInst, next: ?*Instruction, prev: ?*Instruction, allocator: mem.Allocator) IRStatus!*Instruction {
+        const inst = try allocator.create(Instruction);
+        inst.* = Instruction{
+            .data = InstructionData{ .Store = store },
             .allocator = allocator,
+            .next = next,
+            .prev = prev,
         };
+        return inst;
     }
 
     pub fn deinit(self: *const Instruction) void {
-        self.data.deinit();
-        self.allocator.destroy(self.data);
+        self.allocator.destroy(self);
     }
 
     pub fn fmt(self: *const Instruction, fbuf: anytype) !void {
@@ -67,7 +72,7 @@ pub const Instruction = struct {
     }
 
     pub fn get_reg(self: *const Instruction) ?VReg {
-        switch (self.data.*) {
+        switch (self.*.data) {
             .Alloca => return self.data.Alloca.vreg,
             else => return null,
         }

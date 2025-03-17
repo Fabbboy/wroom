@@ -11,38 +11,54 @@ const Module = @import("Module.zig");
 
 pub const FuncBlock = struct {
     name: []const u8,
-    body: std.ArrayList(Instruction),
+    head: ?*Instruction = null,
+    tail: ?*Instruction = null,
     parent: *Func,
 
-    pub fn init(allocator: mem.Allocator, name: []const u8, parent: *Func) FuncBlock {
+    pub fn init(name: []const u8, parent: *Func) FuncBlock {
         return FuncBlock{
             .name = name,
-            .body = std.ArrayList(Instruction).init(allocator),
-
+            .head = null,
+            .tail = null,
             .parent = parent,
         };
     }
 
-    pub fn deinit(self: *const FuncBlock) void {
-        for (self.body.items) |instr| {
-            instr.deinit();
+    pub fn deinit(self: *FuncBlock) void {
+        var instr = self.head;
+        while (instr) |current| {
+            const next = current.next;
+            current.deinit();
+            instr = next;
         }
-
-        self.body.deinit();
+        self.head = null;
+        self.tail = null;
     }
 
-    pub fn insert(self: *FuncBlock, instr: Instruction) !*const Instruction {
-        try self.body.append(instr);
-        return &self.body.items[self.body.items.len - 1];
+    pub fn insert(self: *FuncBlock, instr: *Instruction) !*Instruction {
+        instr.prev = self.tail;
+        instr.next = null;
+
+        if (self.tail) |last| {
+            last.next = instr;
+        } else {
+            self.head = instr;
+        }
+
+        self.tail = instr;
+        return instr;
     }
 
     pub fn fmt(self: *const FuncBlock, fbuf: anytype) !void {
         try fbuf.print("{s}:\n", .{self.name});
-        for (self.body.items) |instr| {
+        var instr = self.head;
+        while (instr) |i| {
             try fbuf.writeAll("\t");
-            try instr.fmt(fbuf);
+            try i.fmt(fbuf);
             try fbuf.writeAll("\n");
+            instr = i.next;
         }
+        try fbuf.writeAll("\n");
     }
 };
 
@@ -68,15 +84,15 @@ pub fn init(module: *Module, name: []const u8, return_ty: Type, linkage: Linkage
     return try module.addFunction(f);
 }
 
-pub fn deinit(self: *const Func) void {
-    for (self.blocks.items) |block| {
+pub fn deinit(self: *Func) void {
+    for (self.blocks.items) |*block| {
         block.deinit();
     }
     self.blocks.deinit();
 }
 
 pub fn createBlock(self: *Func, name: []const u8) !*FuncBlock {
-    const block = FuncBlock.init(self.allocator, name, self);
+    const block = FuncBlock.init(name, self);
     try self.blocks.append(block);
     return &self.blocks.items[self.blocks.items.len - 1];
 }
