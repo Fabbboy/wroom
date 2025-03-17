@@ -9,7 +9,7 @@ In favor of a better and more stable IR I decided to put this project on ice unt
 
 ### Next Steps
 
-- [ ] Remove "const" from all `deinit` functions in the codebase
+- [x] Remove "const" from all `deinit` functions in the codebase
 
 - [ ] handle bits better in constant binary
 - [x] extract constant value binary from the constant it self

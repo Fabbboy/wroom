@@ -63,7 +63,7 @@ pub fn getValue(self: *const Self) *const Expr {
     return &self.value;
 }
 
-pub fn deinit(self: *const Self) void {
+pub fn deinit(self: *Self) void {
     self.value.deinit();
 }
 

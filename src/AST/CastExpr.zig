@@ -27,7 +27,7 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try fbuf.writeAll(" }");
 }
 
-pub fn deinit(self: *const Self) void {
+pub fn deinit(self: *Self) void {
     self.val.deinit();
 }
 

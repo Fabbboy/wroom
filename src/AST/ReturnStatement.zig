@@ -14,7 +14,7 @@ pub fn init(value: Expr, position: Position) Self {
     };
 }
 
-pub fn deinit(self: *const Self) void {
+pub fn deinit(self: *Self) void {
     self.value.deinit();
 }
 

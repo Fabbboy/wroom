@@ -19,7 +19,7 @@ pub fn init(name: Token, arguments: std.ArrayList(Expr), position: Position) Sel
     };
 }
 
-pub fn deinit(self: *const Self) void {
+pub fn deinit(self: *Self) void {
     for (self.arguments.items) |arg| {
         arg.deinit();
     }

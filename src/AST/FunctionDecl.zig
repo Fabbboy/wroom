@@ -73,9 +73,9 @@ pub fn pos(self: *const Self) Position {
     return self.position;
 }
 
-pub fn deinit(self: *const Self) void {
+pub fn deinit(self: *Self) void {
     self.params.deinit();
-    if (self.body) |block| {
+    if (self.body) |*block| {
         block.deinit();
     }
 }
