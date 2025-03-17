@@ -75,7 +75,11 @@ fn resolveValType(self: *const Self, valt: ValueType) Type {
     switch (valt) {
         ValueType.I32 => return Type.init_int(IntType.I32),
         ValueType.F32 => return Type.init_float(FloatType.F32),
-        else => unreachable,
+        else => {
+            std.debug.print("Unknown type: {s}\n", .{valt.fmt()});
+        
+            unreachable;
+        },
     }
 }
 
