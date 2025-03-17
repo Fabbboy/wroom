@@ -12,12 +12,14 @@ const Module = @import("Module.zig");
 pub const FuncBlock = struct {
     name: []const u8,
     body: std.ArrayList(Instruction),
+    inst_id: usize,
     parent: *Func,
 
     pub fn init(allocator: mem.Allocator, name: []const u8, parent: *Func) FuncBlock {
         return FuncBlock{
             .name = name,
             .body = std.ArrayList(Instruction).init(allocator),
+            .inst_id = 0,
             .parent = parent,
         };
     }
@@ -32,6 +34,12 @@ pub const FuncBlock = struct {
 
     pub fn createInst(self: *FuncBlock, inst: Instruction) !void {
         try self.body.append(inst);
+    }
+
+    pub fn getNextInstId(self: *FuncBlock) usize {
+        const id = self.inst_id;
+        self.inst_id += 1;
+        return id;
     }
 
     pub fn fmt(self: *const FuncBlock, fbuf: anytype) !void {

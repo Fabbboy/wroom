@@ -36,19 +36,28 @@ pub const InstructionData = union(enum) {
 };
 
 pub const Instruction = struct {
-    data: *InstructionData, // Pointer is here instead of IRValue
+    id: usize,
+    data: *InstructionData,
     allocator: mem.Allocator,
 
-    pub fn init_alloca(allocator: mem.Allocator, alloca: AllocaInst) IRStatus!Instruction {
+    pub fn init_alloca(id: usize, allocator: mem.Allocator, alloca: AllocaInst) IRStatus!Instruction {
         const data = try allocator.create(InstructionData);
         data.* = InstructionData{ .Alloca = alloca };
-        return Instruction{ .data = data, .allocator = allocator };
+        return Instruction{
+            .data = data,
+            .allocator = allocator,
+            .id = id,
+        };
     }
 
-    pub fn init_store(allocator: mem.Allocator, store: StoreInst) IRStatus!Instruction {
+    pub fn init_store(id: usize, allocator: mem.Allocator, store: StoreInst) IRStatus!Instruction {
         const data = try allocator.create(InstructionData);
         data.* = InstructionData{ .Store = store };
-        return Instruction{ .data = data, .allocator = allocator };
+        return Instruction{
+            .data = data,
+            .allocator = allocator,
+            .id = id,
+        };
     }
 
     pub fn deinit(self: *const Instruction) void {
