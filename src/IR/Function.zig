@@ -5,6 +5,8 @@ const Instruction = @import("Instruction.zig").Instruction;
 const Type = @import("Type.zig").Type;
 const Linkage = @import("Linkage.zig").Linkage;
 
+const VRegManager = @import("Instructions/VReg.zig").VRegManager;
+
 const Module = @import("Module.zig");
 
 pub const FuncBlock = struct {
@@ -24,8 +26,12 @@ pub const FuncBlock = struct {
         self.body.deinit();
     }
 
+    pub fn createInst(self: *FuncBlock, inst: Instruction) !void {
+        try self.body.append(inst);
+    }
+
     pub fn fmt(self: *const FuncBlock, fbuf: anytype) !void {
-        try fbuf.print("{s}:", .{self.name});
+        try fbuf.print("{s}:\n", .{self.name});
         for (self.body.items) |instr| {
             try fbuf.writeAll("\t");
             try instr.fmt(fbuf);
@@ -41,6 +47,7 @@ return_ty: Type,
 linkage: Linkage,
 blocks: std.ArrayList(FuncBlock),
 allocator: mem.Allocator,
+manager: VRegManager,
 
 pub fn init(module: *Module, name: []const u8, return_ty: Type, linkage: Linkage, allocator: mem.Allocator) !*Func {
     const f = Func{
@@ -49,6 +56,7 @@ pub fn init(module: *Module, name: []const u8, return_ty: Type, linkage: Linkage
         .linkage = linkage,
         .blocks = std.ArrayList(FuncBlock).init(allocator),
         .allocator = allocator,
+        .manager = VRegManager.init(),
     };
 
     return try module.addFunction(f);
