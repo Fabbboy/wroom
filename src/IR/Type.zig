@@ -1,6 +1,7 @@
 pub const Type = union(enum) {
     Integer: IntegerTy,
     Float: FloatTy,
+    Void: void,
 
     pub fn init_int(ty: IntegerTy) Type {
         return Type{
@@ -14,10 +15,17 @@ pub const Type = union(enum) {
         };
     }
 
+    pub fn init_void() Type {
+        return Type{
+            .Void = void{},
+        };
+    }
+
     pub fn fmt(self: Type) []const u8 {
         switch (self) {
             Type.Integer => return self.Integer.fmt(),
             Type.Float => return self.Float.fmt(),
+            Type.Void => return "void",
         }
     }
 };

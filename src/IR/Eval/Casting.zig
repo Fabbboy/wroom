@@ -46,6 +46,7 @@ pub fn castIntValue(val: IntValue, to: Type) Constant {
     return switch (to) {
         Type.Integer => castIntToInt(val, to.Integer),
         Type.Float => castIntToFloat(val, to.Float),
+        Type.Void => unreachable,
     };
 }
 
@@ -53,6 +54,7 @@ pub fn castFloatValue(val: FloatValue, to: Type) Constant {
     return switch (to) {
         Type.Integer => castFloatToInt(val, to.Integer),
         Type.Float => castFloatToFloat(val, to.Float),
+        Type.Void => unreachable,
     };
 }
 

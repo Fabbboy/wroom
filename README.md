@@ -15,8 +15,7 @@ In favor of a better and more stable IR I decided to put this project on ice unt
 - [x] implement casting on irvalues
 - [X] add the globals to compiler for further use
 
-- [ ] Free expr from manual creation of Expr-T
-- [ ] Forbidde implicit binary operations between different data types
+- [ ] Disallow casting void values 
 - [ ] Split globals and global constants in module
 - [ ] Prevent values and enforce types for extern variables
 - [ ] Better error messages please

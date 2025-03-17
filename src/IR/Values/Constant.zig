@@ -32,6 +32,7 @@ pub const Constant = union(enum) {
             Type.Float => {
                 return .init_float_value(try FloatValue.float_from(val, ty.Float));
             },
+            Type.Void => unreachable,
         }
     }
 
