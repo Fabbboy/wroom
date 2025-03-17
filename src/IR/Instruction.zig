@@ -66,7 +66,7 @@ pub const Instruction = struct {
         try self.data.fmt(fbuf);
     }
 
-    pub fn getRegister(self: *const Instruction) ?VReg {
+    pub fn get_reg(self: *const Instruction) ?VReg {
         switch (self.data.*) {
             .Alloca => return self.data.Alloca.vreg,
             else => return null,

@@ -3,7 +3,7 @@ const Constant = @import("Values/Constant.zig").Constant;
 
 pub const IRValue = union(enum) {
     Constant: Constant,
-    Instruction: Instruction,
+    Instruction: *const Instruction,
 
     pub fn init_constant(val: Constant) IRValue {
         return IRValue{
@@ -11,7 +11,7 @@ pub const IRValue = union(enum) {
         };
     }
 
-    pub fn init_instruction(val: Instruction) IRValue {
+    pub fn init_instruction(val: *const Instruction) IRValue {
         return IRValue{
             .Instruction = val,
         };
@@ -19,9 +19,6 @@ pub const IRValue = union(enum) {
 
     pub fn deinit(self: *const IRValue) void {
         switch (self.*) {
-            IRValue.Instruction => {
-                self.Instruction.deinit();
-            },
             else => {},
         }
     }

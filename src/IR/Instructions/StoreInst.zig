@@ -4,10 +4,10 @@ const IRStatus = @import("../Error.zig").IRStatus;
 
 const Self = @This();
 
-dest: Instruction,
+dest: *const Instruction,
 val: IRValue,
 
-pub fn init(dest: Instruction, val: IRValue) Self {
+pub fn init(dest: *const Instruction, val: IRValue) Self {
     return Self{
         .dest = dest,
         .val = val,
@@ -15,22 +15,15 @@ pub fn init(dest: Instruction, val: IRValue) Self {
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) IRStatus!void {
-    try self.dest.fmt(fbuf);
-    try fbuf.writeAll("\n");
-    try fbuf.writeAll("\tstore ");
-
-    const handle = self.dest.getRegister();
+    const handle = self.dest.get_reg();
     if (handle) |r| {
+        try fbuf.writeAll("store ");
         try r.fmt(fbuf);
-    } else {
-        try fbuf.writeAll("null");
+        try fbuf.writeAll(", ");
+        try self.val.fmt(fbuf);
     }
-
-    try fbuf.writeAll(", ");
-    try self.val.fmt(fbuf);
 }
 
 pub fn deinit(self: *const Self) void {
-    self.dest.deinit();
     self.val.deinit();
 }

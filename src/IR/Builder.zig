@@ -39,21 +39,36 @@ pub fn createAlloca(self: *Self, ty: Type) !IRValue {
     if (self.active_block == null) {
         unreachable;
     }
+    const block = self.active_block.?;
 
     const par = self.getActiveParent();
     const vreg = par.?.manager.getNext();
 
     const alloca = AllocaInst.init(ty, vreg);
-    const inst_id = self.active_block.?.getNextInstId();
-    return IRValue.init_instruction(try Instruction.init_alloca(inst_id, self.allocator, alloca));
+    const alloca_inst = try block.insert(
+        try Instruction.init_alloca(
+            self.allocator,
+            alloca,
+        ),
+    );
+
+    return IRValue.init_instruction(alloca_inst);
 }
 
-pub fn createStore(self: *Self, dest: Instruction, src: IRValue) !IRValue {
+pub fn createStore(self: *Self, dest: *const Instruction, src: IRValue) !IRValue {
     if (self.active_block == null) {
         unreachable;
     }
 
+    const block = self.active_block.?;
+
     const store = StoreInst.init(dest, src);
-    const inst_id = self.active_block.?.getNextInstId();
-    return IRValue.init_instruction(try Instruction.init_store(inst_id, self.allocator, store));
+    const store_inst = try block.insert(
+        try Instruction.init_store(
+            self.allocator,
+            store,
+        ),
+    );
+
+    return IRValue.init_instruction(store_inst);
 }

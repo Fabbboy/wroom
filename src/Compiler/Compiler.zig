@@ -155,6 +155,10 @@ fn compileGlobal(self: *Self, glbl: AssignStatement) CompileStatus!void {
 fn compileBody(self: *Self, block: *const ParseBlock, irf: *Function) CompileStatus!void {
     const bb = try irf.createBlock("entry");
     self.builder.setInsert(bb);
+    const alloca_inst = try self.builder.createAlloca(Type.init_int(IntType.I32));
+    const constant = Constant.init_int_value(IntValue.init_i32(232));
+    const store_inst = try self.builder.createStore(alloca_inst.Instruction, IRValue.init_constant(constant));
+    _ = store_inst;
     _ = block;
 }
 

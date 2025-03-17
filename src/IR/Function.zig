@@ -31,8 +31,9 @@ pub const FuncBlock = struct {
         self.body.deinit();
     }
 
-    pub fn createInst(self: *FuncBlock, inst: Instruction) !void {
-        try self.body.append(inst);
+    pub fn insert(self: *FuncBlock, instr: Instruction) !*const Instruction {
+        try self.body.append(instr);
+        return &self.body.items[self.body.items.len - 1];
     }
 
     pub fn fmt(self: *const FuncBlock, fbuf: anytype) !void {
