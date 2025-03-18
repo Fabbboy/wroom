@@ -2,5 +2,5 @@ const someFloat = 2.3
 const someInteger = 4 * someFloat as int
 
 pub func main() int {
-  const dontCare = 69 
+  const dontCare = -69 
 }
