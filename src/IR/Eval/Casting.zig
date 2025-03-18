@@ -42,25 +42,25 @@ pub fn castFloatToInt(val: FloatValue, to: IntegerTy) Constant {
     };
 }
 
-pub fn castIntValue(val: IntValue, to: Type) Constant {
+pub fn castIntValue(val: IntValue, to: Type) IRStatus!Constant {
     return switch (to) {
         Type.Integer => castIntToInt(val, to.Integer),
         Type.Float => castIntToFloat(val, to.Float),
-        Type.Void => unreachable,
+        Type.Void => error.UnableToCast,
     };
 }
 
-pub fn castFloatValue(val: FloatValue, to: Type) Constant {
+pub fn castFloatValue(val: FloatValue, to: Type) IRStatus!Constant {
     return switch (to) {
         Type.Integer => castFloatToInt(val, to.Integer),
         Type.Float => castFloatToFloat(val, to.Float),
-        Type.Void => unreachable,
+        Type.Void => error.UnableToCast,
     };
 }
 
-pub fn CastConstant(val: Constant, to: Type) Constant {
+pub fn CastConstant(val: Constant, to: Type) IRStatus!Constant {
     return switch (val) {
-        Constant.IntValue => castIntValue(val.IntValue, to),
-        Constant.FloatValue => castFloatValue(val.FloatValue, to),
+        Constant.IntValue => try castIntValue(val.IntValue, to),
+        Constant.FloatValue => try castFloatValue(val.FloatValue, to),
     };
 }

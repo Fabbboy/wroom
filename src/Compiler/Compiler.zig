@@ -122,7 +122,7 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr) CompileStatus!IRVal
             switch (val) {
                 IRValue.Constant => {
                     const ty = self.resolveValType(cast.cast_to);
-                    return IRValue.init_constant(CastConstant(val.Constant, ty));
+                    return IRValue.init_constant(try CastConstant(val.Constant, ty));
                 },
                 else => unreachable,
             }
@@ -137,7 +137,7 @@ fn compileGlobal(self: *Self, glbl: AssignStatement) CompileStatus!void {
     const val = glbl.getValue();
     const irval = try self.compileConstantExpr(val);
     const final_val = switch (irval) {
-        IRValue.Constant => CastConstant(irval.Constant, ty),
+        IRValue.Constant => try CastConstant(irval.Constant, ty),
         else => unreachable,
     };
 
