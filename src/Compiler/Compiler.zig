@@ -152,19 +152,39 @@ fn compileGlobal(self: *Self, glbl: AssignStatement) CompileStatus!void {
     );
 }
 
+fn compileExpr(self: *Self, expr: *const Expr) CompileStatus!IRValue {
+    const data = expr.data;
+    switch (data.*) {
+        ExprData.Literal => {
+            const lit = data.Literal;
+            return self.compileLiteral(&lit);
+        },
+        else => unreachable,
+    }
+}
+
+fn compileStmt(self: *Self, stmt: *const Stmt) CompileStatus!void {
+    switch (stmt.*) {
+        Stmt.AssignStatement => {
+            const assign = stmt.AssignStatement;
+            const val = try self.compileExpr(assign.getValue());
+            const ty = self.resolveValType(assign.getType());
+
+            const alloca = try self.builder.createAlloca(ty);
+            try self.builder.createStore(alloca.Instruction, val);
+        },
+        else => unreachable,
+    }
+}
+
 fn compileBody(self: *Self, block: *const ParseBlock, irf: *Function) CompileStatus!void {
     const bb = try irf.createBlock("entry");
     self.builder.setInsert(bb);
-    const alloca_inst = try self.builder.createAlloca(Type.init_int(IntType.I32));
-    const constant = Constant.init_int_value(IntValue.init_i32(232));
-    const store_inst = try self.builder.createStore(alloca_inst.Instruction, IRValue.init_constant(constant));
-    _ = store_inst;
 
-    const alloca_inst2 = try self.builder.createAlloca(Type.init_int(IntType.I32));
-    const constant2 = Constant.init_int_value(IntValue.init_i32(232));
-    const store_inst2 = try self.builder.createStore(alloca_inst2.Instruction, IRValue.init_constant(constant2));
-    _ = store_inst2;
-    _ = block;
+    const stmts = block.getBody();
+    for (stmts.*) |*stmt| {
+        try self.compileStmt(stmt);
+    }
 }
 
 pub fn compile(self: *Self) CompileStatus!void {

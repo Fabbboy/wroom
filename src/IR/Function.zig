@@ -28,8 +28,10 @@ pub const FuncBlock = struct {
     }
 
     pub fn deinit(self: *FuncBlock) void {
-        var instr = self.head;
-        instr.?.deinit();
+        const instr = self.head;
+        if (instr) |i| {
+            i.deinit();
+        }
     }
 
     pub fn insert(self: *FuncBlock, instr: Instruction) !*Instruction {

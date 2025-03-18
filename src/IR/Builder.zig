@@ -58,7 +58,7 @@ pub fn createAlloca(self: *Self, ty: Type) !IRValue {
     return IRValue.init_instruction(try block.insert(alloca_inst));
 }
 
-pub fn createStore(self: *Self, dest: *const Instruction, src: IRValue) IRStatus!IRValue {
+pub fn createStore(self: *Self, dest: *const Instruction, src: IRValue) IRStatus!void {
     if (self.active_block == null) {
         return error.NoActiveContext;
     }
@@ -70,5 +70,5 @@ pub fn createStore(self: *Self, dest: *const Instruction, src: IRValue) IRStatus
         store,
     );
 
-    return IRValue.init_instruction(try block.insert(store_inst));
+    _ = try block.insert(store_inst);
 }
