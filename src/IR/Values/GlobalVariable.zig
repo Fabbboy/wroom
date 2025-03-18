@@ -24,9 +24,9 @@ pub fn init(mod: *Module, name: []const u8, ty: Type, value: Constant, is_const:
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
-    try fbuf.print("{s} @{s} =", .{ self.linkage.fmt(), self.name });
+    try fbuf.print("{s} @{s} = ", .{ self.linkage.fmt(), self.name });
     if (self.is_const) {
-        try fbuf.writeAll(" const ");
+        try fbuf.writeAll("const ");
     }
     try fbuf.print("{s} ", .{self.ty.fmt()});
     try self.value.fmt(fbuf);
