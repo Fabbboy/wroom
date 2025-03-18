@@ -20,7 +20,7 @@ pub fn init(mod: *Module, name: []const u8, ty: Type, value: Constant, is_const:
         .linkage = linkage,
     };
 
-    return try mod.addGlobal(va);
+    return try mod.addGlobal(name, va);
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {

@@ -9,7 +9,7 @@ const FuncBlock = Function.FuncBlock;
 
 const IRStatus = @import("Error.zig").IRStatus;
 
-const VReg = @import("Instructions/VReg.zig");
+const VReg = @import("Instructions/VReg.zig").VReg;
 
 const Instruction = @import("Instruction.zig").Instruction;
 const AllocaInst = @import("Instructions/AllocaInst.zig");
@@ -17,6 +17,11 @@ const StoreInst = @import("Instructions/StoreInst.zig");
 
 const BinaryInst = @import("Instructions/BinaryInst.zig");
 const AddInst = BinaryInst.AddInst;
+const SubInst = BinaryInst.SubInst;
+const MulInst = BinaryInst.MulInst;
+const DivInst = BinaryInst.DivInst;
+
+const LoadInst = @import("Instructions/LoadInst.zig");
 
 const Self = @This();
 
@@ -100,7 +105,7 @@ pub fn createSub(self: *Self, lhs: IRValue, rhs: IRValue) IRStatus!IRValue {
 
     const vreg = self.active_func.?.manager.getNext();
 
-    const sub = BinaryInst.SubInst.init(vreg, lhs, rhs);
+    const sub = SubInst.init(vreg, lhs, rhs);
     const sub_inst = Instruction.init_sub(sub);
 
     return IRValue.init_instruction(try block.insert(sub_inst));
@@ -115,7 +120,7 @@ pub fn createMul(self: *Self, lhs: IRValue, rhs: IRValue) IRStatus!IRValue {
 
     const vreg = self.active_func.?.manager.getNext();
 
-    const mul = BinaryInst.MulInst.init(vreg, lhs, rhs);
+    const mul = MulInst.init(vreg, lhs, rhs);
     const mul_inst = Instruction.init_mul(mul);
 
     return IRValue.init_instruction(try block.insert(mul_inst));
@@ -130,8 +135,23 @@ pub fn createDiv(self: *Self, lhs: IRValue, rhs: IRValue) IRStatus!IRValue {
 
     const vreg = self.active_func.?.manager.getNext();
 
-    const div = BinaryInst.DivInst.init(vreg, lhs, rhs);
+    const div = DivInst.init(vreg, lhs, rhs);
     const div_inst = Instruction.init_div(div);
 
     return IRValue.init_instruction(try block.insert(div_inst));
+}
+
+pub fn createLoad(self: *Self, src: VReg, ty: Type) IRStatus!IRValue {
+    if (self.active_block == null) {
+        return error.NoActiveContext;
+    }
+
+    const block = self.active_block.?;
+
+    const vreg = self.active_func.?.manager.getNext();
+
+    const load = LoadInst.init(vreg, src, ty);
+    const load_inst = Instruction.init_load(load);
+
+    return IRValue.init_instruction(try block.insert(load_inst));
 }

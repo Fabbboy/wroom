@@ -50,6 +50,8 @@ const evalBinary = binEvalNs.evalBinary;
 
 const CastConstant = @import("../IR/Eval/Casting.zig").CastConstant;
 
+const VReg = @import("../IR/Instructions/VReg.zig").VReg;
+
 const Self = @This();
 
 ast: *const Ast,
@@ -171,6 +173,13 @@ fn compileExpr(self: *Self, expr: *const Expr) CompileStatus!IRValue {
                 OperatorType.Slash => try self.builder.createDiv(lhs, rhs),
                 else => unreachable,
             };
+        },
+        ExprData.Variable => {
+            const variable = data.Variable;
+            if (self.module.findGlobal(variable.name.lexeme)) |glbl| {
+                return self.builder.createLoad(VReg.init_global(glbl.name), glbl.ty);
+            }
+            unreachable;
         },
         else => unreachable,
     }

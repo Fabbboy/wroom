@@ -12,7 +12,9 @@ const SubInst = BinaryInst.SubInst;
 const MulInst = BinaryInst.MulInst;
 const DivInst = BinaryInst.DivInst;
 
-const VReg = @import("Instructions/VReg.zig");
+const LoadInst = @import("Instructions/LoadInst.zig");
+
+const VReg = @import("Instructions/VReg.zig").VReg;
 
 pub const Instruction = union(enum) {
     Alloca: AllocaInst,
@@ -21,6 +23,7 @@ pub const Instruction = union(enum) {
     Sub: SubInst,
     Mul: MulInst,
     Div: DivInst,
+    Load: LoadInst,
 
     pub fn init_alloca(alloca: AllocaInst) Instruction {
         return Instruction{ .Alloca = alloca };
@@ -46,6 +49,10 @@ pub const Instruction = union(enum) {
         return Instruction{ .Div = div };
     }
 
+    pub fn init_load(load: LoadInst) Instruction {
+        return Instruction{ .Load = load };
+    }
+
     pub fn deinit(self: *Instruction) void {
         switch (self.*) {
             .Store => self.Store.deinit(),
@@ -65,6 +72,7 @@ pub const Instruction = union(enum) {
             .Sub => try self.Sub.fmt(fbuf),
             .Mul => try self.Mul.fmt(fbuf),
             .Div => try self.Div.fmt(fbuf),
+            .Load => try self.Load.fmt(fbuf),
         }
     }
 
@@ -75,6 +83,7 @@ pub const Instruction = union(enum) {
             .Sub => return self.Sub.get_reg(),
             .Mul => return self.Mul.get_reg(),
             .Div => return self.Div.get_reg(),
+            .Load => return self.Load.get_reg(),
             else => return null,
         }
     }
@@ -87,6 +96,7 @@ pub const Instruction = union(enum) {
             .Sub => self.Sub.set_parent(parent),
             .Mul => self.Mul.set_parent(parent),
             .Div => self.Div.set_parent(parent),
+            .Load => self.Load.set_parent(parent),
         }
     }
 
@@ -98,6 +108,7 @@ pub const Instruction = union(enum) {
             .Sub => return self.Sub.get_parent(),
             .Mul => return self.Mul.get_parent(),
             .Div => return self.Div.get_parent(),
+            .Load => return self.Load.get_parent(),
         }
     }
 };

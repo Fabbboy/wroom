@@ -1,5 +1,5 @@
 const InstructionNode = @import("../Instruction.zig").InstructionNode;
-const VReg = @import("VReg.zig");
+const VReg = @import("VReg.zig").VReg;
 const IRValue = @import("../IRValue.zig").IRValue;
 const IRStatus = @import("../Error.zig").IRStatus;
 

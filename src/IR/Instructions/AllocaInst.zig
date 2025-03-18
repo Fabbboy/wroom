@@ -1,7 +1,7 @@
 const InstructionNode = @import("../Instruction.zig").InstructionNode;
 
 const Type = @import("../Type.zig").Type;
-const VReg = @import("VReg.zig");
+const VReg = @import("VReg.zig").VReg;
 
 const Self = @This();
 
