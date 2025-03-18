@@ -6,4 +6,5 @@ pub const IRStatus = error{
     NotGood,
     FailedToParseNumeric,
     UnableToCast,
+    NoActiveContext,
 };

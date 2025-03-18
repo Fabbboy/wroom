@@ -7,6 +7,8 @@ const Module = @import("Module.zig");
 const Function = @import("Function.zig");
 const FuncBlock = Function.FuncBlock;
 
+const IRStatus = @import("Error.zig").IRStatus;
+
 const VReg = @import("Instructions/VReg.zig");
 
 const Instruction = @import("Instruction.zig").Instruction;
@@ -36,11 +38,11 @@ pub fn setInsert(self: *Self, block: *FuncBlock) void {
 
 pub fn createAlloca(self: *Self, ty: Type) !IRValue {
     if (self.active_block == null) {
-        unreachable;
+        return error.NoActiveContext;
     }
 
     if (self.active_func == null) {
-        unreachable;
+        return error.NoActiveContext;
     }
 
     const block = self.active_block.?;
@@ -56,9 +58,9 @@ pub fn createAlloca(self: *Self, ty: Type) !IRValue {
     return IRValue.init_instruction(try block.insert(alloca_inst));
 }
 
-pub fn createStore(self: *Self, dest: *const Instruction, src: IRValue) !IRValue {
+pub fn createStore(self: *Self, dest: *const Instruction, src: IRValue) IRStatus!IRValue {
     if (self.active_block == null) {
-        unreachable;
+        return error.NoActiveContext;
     }
 
     const block = self.active_block.?;
