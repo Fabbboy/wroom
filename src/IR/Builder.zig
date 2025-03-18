@@ -49,11 +49,8 @@ pub fn createAlloca(self: *Self, ty: Type) !IRValue {
     const vreg = par.manager.getNext();
 
     const alloca = AllocaInst.init(ty, vreg);
-    const alloca_inst = try Instruction.init_alloca(
+    const alloca_inst = Instruction.init_alloca(
         alloca,
-        null,
-        block.tail,
-        self.allocator,
     );
 
     return IRValue.init_instruction(try block.insert(alloca_inst));
@@ -67,11 +64,8 @@ pub fn createStore(self: *Self, dest: *const Instruction, src: IRValue) !IRValue
     const block = self.active_block.?;
 
     const store = StoreInst.init(dest, src);
-    const store_inst = try Instruction.init_store(
+    const store_inst = Instruction.init_store(
         store,
-        null,
-        block.tail,
-        self.allocator,
     );
 
     return IRValue.init_instruction(try block.insert(store_inst));

@@ -17,3 +17,7 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try self.vreg.fmt(fbuf);
     try fbuf.print(" = alloca {s}", .{self.size.fmt()});
 }
+
+pub fn get_reg(self: *const Self) *const VReg {
+    return &self.vreg;
+}

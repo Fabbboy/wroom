@@ -1,7 +1,10 @@
 const std = @import("std");
 const mem = std.mem;
 
-const Instruction = @import("Instruction.zig").Instruction;
+const InstructionNs = @import("Instruction.zig");
+const Instruction = InstructionNs.Instruction;
+const InstructionNode = InstructionNs.InstructionNode;
+
 const Type = @import("Type.zig").Type;
 const Linkage = @import("Linkage.zig").Linkage;
 
@@ -11,8 +14,8 @@ const Module = @import("Module.zig");
 
 pub const FuncBlock = struct {
     name: []const u8,
-    head: ?*Instruction = null,
-    tail: ?*Instruction = null,
+    head: ?*InstructionNode = null,
+    tail: ?*InstructionNode = null,
     parent: *Func,
 
     pub fn init(name: []const u8, parent: *Func) FuncBlock {
@@ -26,39 +29,37 @@ pub const FuncBlock = struct {
 
     pub fn deinit(self: *FuncBlock) void {
         var instr = self.head;
-        while (instr) |current| {
-            const next = current.next;
-            current.deinit();
-            instr = next;
-        }
-        self.head = null;
-        self.tail = null;
+        instr.?.deinit();
     }
 
-    pub fn insert(self: *FuncBlock, instr: *Instruction) !*Instruction {
-        instr.prev = self.tail;
-        instr.next = null;
+    pub fn insert(self: *FuncBlock, instr: Instruction) !*Instruction {
+        const node = try InstructionNode.init(
+            instr,
+            null,
+            self.tail,
+            self.parent.allocator,
+        );
 
-        if (self.tail) |last| {
-            last.next = instr;
-        } else {
-            self.head = instr;
+        if (self.tail) |t| {
+            t.*.next = node;
         }
 
-        self.tail = instr;
-        return instr;
+        self.tail = node;
+        if (self.head == null) {
+            self.head = node;
+        }
+        return &node.inst;
     }
 
     pub fn fmt(self: *const FuncBlock, fbuf: anytype) !void {
         try fbuf.print("{s}:\n", .{self.name});
         var instr = self.head;
         while (instr) |i| {
-            try fbuf.writeAll("\t");
-            try i.fmt(fbuf);
+            try fbuf.writeAll("    ");
+            try i.getInst().fmt(fbuf);
             try fbuf.writeAll("\n");
             instr = i.next;
         }
-        try fbuf.writeAll("\n");
     }
 };
 
