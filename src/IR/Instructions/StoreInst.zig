@@ -24,7 +24,17 @@ pub fn fmt(self: *const Self, fbuf: anytype) IRStatus!void {
         try fbuf.writeAll("store ");
         try r.fmt(fbuf);
         try fbuf.writeAll(", ");
-        try self.val.fmt(fbuf);
+        switch (self.val) {
+            IRValue.Constant => {
+                try self.val.Constant.fmt(fbuf);
+            },
+            IRValue.Instruction => {
+                const inst = self.val.Instruction;
+                if (inst.get_reg()) |reg| {
+                    try reg.fmt(fbuf);
+                }
+            },
+        }
     }
 }
 

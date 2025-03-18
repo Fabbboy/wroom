@@ -29,7 +29,10 @@ pub const IRValue = union(enum) {
                 try self.Constant.fmt(fbuf);
             },
             IRValue.Instruction => {
-                try self.Instruction.fmt(fbuf);
+                const reg = self.Instruction.get_reg();
+                if (reg) |r| {
+                    try r.fmt(fbuf);
+                }
             },
         }
     }

@@ -159,6 +159,19 @@ fn compileExpr(self: *Self, expr: *const Expr) CompileStatus!IRValue {
             const lit = data.Literal;
             return self.compileLiteral(&lit);
         },
+        ExprData.Binary => {
+            const binary = data.Binary;
+            const lhs = try self.compileExpr(binary.getLHS());
+            const rhs = try self.compileExpr(binary.getRHS());
+            const op = binary.op;
+            return switch (op) {
+                OperatorType.Plus => try self.builder.createAdd(lhs, rhs),
+                OperatorType.Minus => try self.builder.createSub(lhs, rhs),
+                OperatorType.Star => try self.builder.createMul(lhs, rhs),
+                OperatorType.Slash => try self.builder.createDiv(lhs, rhs),
+                else => unreachable,
+            };
+        },
         else => unreachable,
     }
 }
@@ -167,10 +180,10 @@ fn compileStmt(self: *Self, stmt: *const Stmt) CompileStatus!void {
     switch (stmt.*) {
         Stmt.AssignStatement => {
             const assign = stmt.AssignStatement;
-            const val = try self.compileExpr(assign.getValue());
             const ty = self.resolveValType(assign.getType());
 
             const alloca = try self.builder.createAlloca(ty);
+            const val = try self.compileExpr(assign.getValue());
             try self.builder.createStore(alloca.Instruction, val);
         },
         else => unreachable,

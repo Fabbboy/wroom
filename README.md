@@ -17,6 +17,7 @@ In favor of a better and more stable IR I decided to put this project on ice unt
 - [x] implement casting on irvalues
 - [X] add the globals to compiler for further use
 
+- [ ] Negative numbers cause a infinite loop in the lexer
 - [X] ~Handle void assigns allow "null"~ => confused
 - [ ] Disallow casting void values 
 - [ ] Split globals and global constants in module

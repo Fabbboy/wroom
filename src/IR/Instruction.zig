@@ -6,11 +6,21 @@ const IRStatus = @import("Error.zig").IRStatus;
 const AllocaInst = @import("Instructions/AllocaInst.zig");
 const StoreInst = @import("Instructions/StoreInst.zig");
 
+const BinaryInst = @import("Instructions/BinaryInst.zig");
+const AddInst = BinaryInst.AddInst;
+const SubInst = BinaryInst.SubInst;
+const MulInst = BinaryInst.MulInst;
+const DivInst = BinaryInst.DivInst;
+
 const VReg = @import("Instructions/VReg.zig");
 
 pub const Instruction = union(enum) {
     Alloca: AllocaInst,
     Store: StoreInst,
+    Add: AddInst,
+    Sub: SubInst,
+    Mul: MulInst,
+    Div: DivInst,
 
     pub fn init_alloca(alloca: AllocaInst) Instruction {
         return Instruction{ .Alloca = alloca };
@@ -20,9 +30,29 @@ pub const Instruction = union(enum) {
         return Instruction{ .Store = store };
     }
 
+    pub fn init_add(add: AddInst) Instruction {
+        return Instruction{ .Add = add };
+    }
+
+    pub fn init_sub(sub: SubInst) Instruction {
+        return Instruction{ .Sub = sub };
+    }
+
+    pub fn init_mul(mul: MulInst) Instruction {
+        return Instruction{ .Mul = mul };
+    }
+
+    pub fn init_div(div: DivInst) Instruction {
+        return Instruction{ .Div = div };
+    }
+
     pub fn deinit(self: *Instruction) void {
         switch (self.*) {
             .Store => self.Store.deinit(),
+            .Add => self.Add.deinit(),
+            .Sub => self.Sub.deinit(),
+            .Mul => self.Mul.deinit(),
+            .Div => self.Div.deinit(),
             else => {},
         }
     }
@@ -31,13 +61,21 @@ pub const Instruction = union(enum) {
         switch (self.*) {
             .Alloca => try self.Alloca.fmt(fbuf),
             .Store => try self.Store.fmt(fbuf),
+            .Add => try self.Add.fmt(fbuf),
+            .Sub => try self.Sub.fmt(fbuf),
+            .Mul => try self.Mul.fmt(fbuf),
+            .Div => try self.Div.fmt(fbuf),
         }
     }
 
     pub fn get_reg(self: *const Instruction) ?*const VReg {
         switch (self.*) {
             .Alloca => return self.Alloca.get_reg(),
-            .Store => return null,
+            .Add => return self.Add.get_reg(),
+            .Sub => return self.Sub.get_reg(),
+            .Mul => return self.Mul.get_reg(),
+            .Div => return self.Div.get_reg(),
+            else => return null,
         }
     }
 
@@ -45,6 +83,10 @@ pub const Instruction = union(enum) {
         switch (self.*) {
             .Alloca => self.Alloca.set_parent(parent),
             .Store => self.Store.set_parent(parent),
+            .Add => self.Add.set_parent(parent),
+            .Sub => self.Sub.set_parent(parent),
+            .Mul => self.Mul.set_parent(parent),
+            .Div => self.Div.set_parent(parent),
         }
     }
 
@@ -52,6 +94,10 @@ pub const Instruction = union(enum) {
         switch (self.*) {
             .Alloca => return self.Alloca.get_parent(),
             .Store => return self.Store.get_parent(),
+            .Add => return self.Add.get_parent(),
+            .Sub => return self.Sub.get_parent(),
+            .Mul => return self.Mul.get_parent(),
+            .Div => return self.Div.get_parent(),
         }
     }
 };
