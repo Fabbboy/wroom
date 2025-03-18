@@ -159,6 +159,11 @@ fn compileBody(self: *Self, block: *const ParseBlock, irf: *Function) CompileSta
     const constant = Constant.init_int_value(IntValue.init_i32(232));
     const store_inst = try self.builder.createStore(alloca_inst.Instruction, IRValue.init_constant(constant));
     _ = store_inst;
+
+    const alloca_inst2 = try self.builder.createAlloca(Type.init_int(IntType.I32));
+    const constant2 = Constant.init_int_value(IntValue.init_i32(232));
+    const store_inst2 = try self.builder.createStore(alloca_inst2.Instruction, IRValue.init_constant(constant2));
+    _ = store_inst2;
     _ = block;
 }
 
