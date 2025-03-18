@@ -40,6 +40,20 @@ pub const Instruction = union(enum) {
             .Store => return null,
         }
     }
+
+    pub fn set_parent(self: *Instruction, parent: ?*const InstructionNode) void {
+        switch (self.*) {
+            .Alloca => self.Alloca.set_parent(parent),
+            .Store => self.Store.set_parent(parent),
+        }
+    }
+
+    pub fn get_parent(self: *const Instruction) ?*const InstructionNode {
+        switch (self.*) {
+            .Alloca => return self.Alloca.get_parent(),
+            .Store => return self.Store.get_parent(),
+        }
+    }
 };
 
 pub const InstructionNode = struct {
@@ -50,7 +64,10 @@ pub const InstructionNode = struct {
 
     pub fn init(inst: Instruction, next: ?*InstructionNode, prev: ?*InstructionNode, allocator: mem.Allocator) !*InstructionNode {
         const node = try allocator.create(InstructionNode);
-        node.inst = inst;
+
+        var inst_copy = inst;
+        inst_copy.set_parent(node);
+        node.inst = inst_copy;
         node.next = next;
         node.prev = prev;
         node.allocator = allocator;

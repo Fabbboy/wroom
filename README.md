@@ -20,7 +20,7 @@ In favor of a better and more stable IR I decided to put this project on ice unt
 - [X] ~Handle void assigns allow "null"~ => confused
 - [ ] Disallow casting void values 
 - [ ] Split globals and global constants in module
-- [ ] Prevent values and enforce types for extern variables
+- [ ] Prevent values and enforce types for extern variables. What I meant is: you can assign values to extern variables which is not allowed
 - [ ] Better error messages please
 - [ ] ~~Create snippets for error~~ => string formating is \*\*\*\*
 - [x] Bug: You can create void variables implicitly through a function which returns void
