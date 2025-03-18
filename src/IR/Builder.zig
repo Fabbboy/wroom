@@ -17,32 +17,36 @@ const Self = @This();
 
 mod: *Module,
 active_block: ?*FuncBlock,
+active_func: ?*Function,
 allocator: mem.Allocator,
 
 pub fn init(mod: *Module, allocator: mem.Allocator) Self {
     return Self{
         .mod = mod,
         .active_block = null,
+        .active_func = null,
         .allocator = allocator,
     };
 }
 
 pub fn setInsert(self: *Self, block: *FuncBlock) void {
     self.active_block = block;
-}
-
-fn getActiveParent(self: *Self) ?*Function {
-    return self.active_block.?.parent;
+    self.active_func = block.parent;
 }
 
 pub fn createAlloca(self: *Self, ty: Type) !IRValue {
     if (self.active_block == null) {
         unreachable;
     }
-    const block = self.active_block.?;
 
-    const par = self.getActiveParent();
-    const vreg = par.?.manager.getNext();
+    if (self.active_func == null) {
+        unreachable;
+    }
+
+    const block = self.active_block.?;
+    const par = self.active_func.?;
+
+    const vreg = par.manager.getNext();
 
     const alloca = AllocaInst.init(ty, vreg);
     const alloca_inst = try Instruction.init_alloca(
