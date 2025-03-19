@@ -10,14 +10,14 @@ const Self = @This();
 
 name: []const u8,
 globals: std.StringHashMap(GlobalVariable),
-funcs: std.ArrayList(Function),
+funcs: std.StringHashMap(Function),
 allocator: mem.Allocator,
 
 pub fn init(name: []const u8, allocator: mem.Allocator) Self {
     return Self{
         .name = name,
         .globals = std.StringHashMap(GlobalVariable).init(allocator),
-        .funcs = std.ArrayList(Function).init(allocator),
+        .funcs = std.StringHashMap(Function).init(allocator),
         .allocator = allocator,
     };
 }
@@ -25,8 +25,10 @@ pub fn init(name: []const u8, allocator: mem.Allocator) Self {
 pub fn deinit(self: *Self) void {
     self.globals.deinit();
 
-    for (self.funcs.items) |*func| {
-        func.deinit();
+    var funcNext = self.funcs.iterator();
+    while (funcNext.next()) |func| {
+        const f = func.value_ptr;
+        f.deinit();
     }
 
     self.funcs.deinit();
@@ -41,8 +43,11 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
         try v.fmt(fbuf);
         try fbuf.writeByte('\n');
     }
-    for (self.funcs.items) |func| {
-        try func.fmt(fbuf);
+
+    var funcNext = self.funcs.iterator();
+    while (funcNext.next()) |func| {
+        const f = func.value_ptr;
+        try f.fmt(fbuf);
         try fbuf.writeByte('\n');
     }
 }
@@ -53,8 +58,8 @@ pub fn addGlobal(self: *Self, name: []const u8, global: GlobalVariable) !*Global
 }
 
 pub fn addFunction(self: *Self, func: Function) !*Function {
-    try self.funcs.append(func);
-    return &self.funcs.items[self.funcs.items.len - 1];
+    try self.funcs.put(func.name, func);
+    return self.funcs.getPtr(func.name).?;
 }
 
 pub fn findGlobal(self: *const Self, name: []const u8) ?*const GlobalVariable {
