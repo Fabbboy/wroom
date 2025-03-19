@@ -37,11 +37,11 @@ pub fn pushFunction(self: *Self, func: FunctionDecl) !void {
 }
 
 pub fn deinit(self: *Self) void {
-    for (self.globals.items) |global| {
+    for (self.globals.items) |*global| {
         global.deinit();
     }
     self.globals.deinit();
-    for (self.functions.items) |func| {
+    for (self.functions.items) |*func| {
         func.deinit();
     }
     self.functions.deinit();

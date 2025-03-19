@@ -15,6 +15,8 @@ const ParameterExpr = @import("ParameterExpr.zig");
 
 const FunctionCall = @import("FunctionCall.zig");
 
+const CastExpr = @import("CastExpr.zig");
+
 const Position = @import("../Parser/Position.zig");
 
 pub const ExprData = union(enum) {
@@ -23,14 +25,14 @@ pub const ExprData = union(enum) {
     Variable: VariableExpr,
     Parameter: ParameterExpr,
     FunctionCall: FunctionCall,
+    Cast: CastExpr,
 
     pub fn deinit(self: *ExprData, allocator: mem.Allocator) void {
         switch (self.*) {
             ExprData.Binary => self.Binary.deinit(),
-            ExprData.Literal => {},
-            ExprData.Variable => {},
-            ExprData.Parameter => {},
             ExprData.FunctionCall => self.FunctionCall.deinit(),
+            ExprData.Cast => self.Cast.deinit(),
+            else => {},
         }
         allocator.destroy(self);
     }
@@ -70,6 +72,12 @@ pub const Expr = struct {
         return Expr{ .data = func_data, .allocator = allocator };
     }
 
+    pub fn init_cast(val: Expr, cast_to: ValueType, position: Position, allocator: mem.Allocator) ParseStatus!Expr {
+        const cast_data = try allocator.create(ExprData);
+        cast_data.* = ExprData{ .Cast = CastExpr.init(val, cast_to, position) };
+        return Expr{ .data = cast_data, .allocator = allocator };
+    }
+
     pub fn fmt(self: *const Expr, fbuf: anytype) ParseStatus!void {
         return switch (self.data.*) {
             ExprData.Literal => self.data.Literal.fmt(fbuf),
@@ -77,6 +85,7 @@ pub const Expr = struct {
             ExprData.Variable => self.data.Variable.fmt(fbuf),
             ExprData.Parameter => self.data.Parameter.fmt(fbuf),
             ExprData.FunctionCall => self.data.FunctionCall.fmt(fbuf),
+            ExprData.Cast => self.data.Cast.fmt(fbuf),
         };
     }
 
@@ -91,6 +100,7 @@ pub const Expr = struct {
             ExprData.Variable => self.data.Variable.start(),
             ExprData.Parameter => self.data.Parameter.start(),
             ExprData.FunctionCall => self.data.FunctionCall.start(),
+            ExprData.Cast => self.data.Cast.start(),
         };
     }
 
@@ -101,6 +111,7 @@ pub const Expr = struct {
             ExprData.Variable => self.data.Variable.stop(),
             ExprData.Parameter => self.data.Parameter.stop(),
             ExprData.FunctionCall => self.data.FunctionCall.stop(),
+            ExprData.Cast => self.data.Cast.stop(),
         };
     }
 
@@ -111,6 +122,7 @@ pub const Expr = struct {
             ExprData.Variable => self.data.Variable.pos(),
             ExprData.Parameter => self.data.Parameter.pos(),
             ExprData.FunctionCall => self.data.FunctionCall.pos(),
+            ExprData.Cast => self.data.Cast.pos(),
         };
     }
 };

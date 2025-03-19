@@ -14,7 +14,7 @@ pub fn init(value: Expr, position: Position) Self {
     };
 }
 
-pub fn deinit(self: *const Self) void {
+pub fn deinit(self: *Self) void {
     self.value.deinit();
 }
 
@@ -37,5 +37,9 @@ pub fn pos(self: *const Self) Position {
 }
 
 pub fn getValue(self: *const Self) *const Expr {
+    return &self.value;
+}
+
+pub fn getExpr(self: *const Self) *const Expr {
     return &self.value;
 }

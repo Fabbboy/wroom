@@ -139,16 +139,38 @@ fn lex(self: *Self) Token {
         '0'...'9' => return self.lexNumber(),
         'a'...'z', 'A'...'Z', '_' => return self.lexIdentifier(),
         '=' => return self.getTokenWithValue(TokenKind.Assign, .{ .Assign = OperatorType.Assign }),
-        '+', '-', '*', '/' => {
+        '+', '-' => {
             if (self.getChar() == '=') {
                 self.advance();
                 const op: OperatorType = if (operators.get(&[_]u8{c})) |op| op else unreachable;
                 return self.getTokenWithValue(TokenKind.Assign, .{ .Assign = op });
             }
 
+            if (ascii.isDigit(self.getChar())) {
+                return self.lexNumber();
+            }
+
             switch (c) {
                 '+' => return self.getToken(TokenKind.Plus),
                 '-' => return self.getToken(TokenKind.Minus),
+                else => unreachable,
+            }
+        },
+        '*', '/' => {
+            if (self.getChar() == '=') {
+                self.advance();
+                const op: OperatorType = if (operators.get(&[_]u8{c})) |op| op else unreachable;
+                return self.getTokenWithValue(TokenKind.Assign, .{ .Assign = op });
+            }
+
+            if (self.getChar() == '/') {
+                while (self.getChar() != '\n') {
+                    self.advance();
+                }
+                return self.lex();
+            }
+
+            switch (c) {
                 '*' => return self.getToken(TokenKind.Star),
                 '/' => return self.getToken(TokenKind.Slash),
                 else => unreachable,

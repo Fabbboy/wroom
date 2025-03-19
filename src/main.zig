@@ -10,10 +10,9 @@ const Lexer = @import("Parser/Lexer.zig");
 const Parser = @import("Parser/Parser.zig");
 const Sema = @import("Sema/Sema.zig");
 
-const IRModule = @import("IR/Module.zig");
-const IRGen = @import("IR/IRGen.zig");
-
 const Source = @import("ADT/Source.zig");
+
+const Compiler = @import("Compiler/Compiler.zig");
 
 var fmt_buf: [4096]u8 = undefined;
 
@@ -79,18 +78,18 @@ pub fn main() !void {
         return;
     };
 
-    var module = IRModule.init(gpa.allocator(), "main");
-    defer module.deinit();
-    var generator = IRGen.init(ast, &module, gpa.allocator());
-    defer generator.deinit();
-    try generator.generate();
+    var compiler = Compiler.init(gpa.allocator(), ast, "main");
+    defer compiler.deinit();
 
-    const errs = generator.getErrs();
-    try handleErrs(errs, &format_buffer);
+    compiler.compile() catch {
+        const errs = compiler.getCerrs();
+        try handleErrs(errs, &format_buffer);
+        return;
+    };
 
-    try module.fmt(&buf_writer);
+    const mod = compiler.getMod();
+    try mod.fmt(&buf_writer);
     std.debug.print("{s}\n", .{format_buffer.items});
-    format_buffer.clearRetainingCapacity();
 
     std.debug.print("Allocated: {d:.2}KiB\n", .{@as(f64, @floatFromInt(gpa.total_requested_bytes)) / 1024.0});
 }

@@ -1,173 +1,156 @@
 const std = @import("std");
-
-const Token = @import("../Parser/Token.zig");
-const ValueType = Token.ValueType;
-
-const IRValue = @import("Value.zig").IRValue;
+const mem = std.mem;
 
 const IRStatus = @import("Error.zig").IRStatus;
 
-const BinaryInst = @import("Instruction/Binary.zig");
+const AllocaInst = @import("Instructions/AllocaInst.zig");
+const StoreInst = @import("Instructions/StoreInst.zig");
+
+const BinaryInst = @import("Instructions/BinaryInst.zig");
 const AddInst = BinaryInst.AddInst;
 const SubInst = BinaryInst.SubInst;
 const MulInst = BinaryInst.MulInst;
 const DivInst = BinaryInst.DivInst;
 
-const MoveInst = @import("Instruction/Move.zig");
-const AllocaInst = MoveInst.AllocaInst;
-const StoreInst = MoveInst.StoreInst;
-const LoadInst = MoveInst.LoadInst;
+const LoadInst = @import("Instructions/LoadInst.zig");
+
+const RetInst = @import("Instructions/RetInst.zig");
+
+const VReg = @import("Instructions/VReg.zig").VReg;
 
 pub const Instruction = union(enum) {
-    const Self = @This();
-
     Alloca: AllocaInst,
     Store: StoreInst,
-    Load: LoadInst,
     Add: AddInst,
     Sub: SubInst,
     Mul: MulInst,
     Div: DivInst,
-    Return: IRValue,
-    Call: CallInst,
+    Load: LoadInst,
+    Return: RetInst,
 
     pub fn init_alloca(alloca: AllocaInst) Instruction {
-        return .{ .Alloca = alloca };
+        return Instruction{ .Alloca = alloca };
     }
 
     pub fn init_store(store: StoreInst) Instruction {
-        return .{ .Store = store };
-    }
-
-    pub fn init_load(load: LoadInst) Instruction {
-        return .{ .Load = load };
+        return Instruction{ .Store = store };
     }
 
     pub fn init_add(add: AddInst) Instruction {
-        return .{ .Add = add };
+        return Instruction{ .Add = add };
     }
 
     pub fn init_sub(sub: SubInst) Instruction {
-        return .{ .Sub = sub };
+        return Instruction{ .Sub = sub };
     }
 
     pub fn init_mul(mul: MulInst) Instruction {
-        return .{ .Mul = mul };
+        return Instruction{ .Mul = mul };
     }
 
     pub fn init_div(div: DivInst) Instruction {
-        return .{ .Div = div };
+        return Instruction{ .Div = div };
     }
 
-    pub fn init_return(ret: IRValue) Instruction {
-        return .{ .Return = ret };
+    pub fn init_load(load: LoadInst) Instruction {
+        return Instruction{ .Load = load };
     }
 
-    pub fn init_call(call: CallInst) Instruction {
-        return .{ .Call = call };
+    pub fn init_return(ret: RetInst) Instruction {
+        return Instruction{ .Return = ret };
     }
 
-    pub fn fmt(self: *const Self, fbuf: anytype) IRStatus!void {
-        return switch (self.*) {
-            Instruction.Alloca => |alloca| {
-                try alloca.fmt(fbuf);
-            },
-            Instruction.Store => |store| {
-                try store.fmt(fbuf);
-            },
-            Instruction.Load => |load| {
-                try load.fmt(fbuf);
-            },
-            Instruction.Add => |add| {
-                try add.fmt(fbuf);
-            },
-            Instruction.Sub => |sub| {
-                try sub.fmt(fbuf);
-            },
-            Instruction.Mul => |mul| {
-                try mul.fmt(fbuf);
-            },
-            Instruction.Div => |div| {
-                try div.fmt(fbuf);
-            },
-            Instruction.Return => |ret| {
-                try fbuf.writeAll("return ");
-                try ret.fmt(fbuf);
-            },
-            Instruction.Call => |call| {
-                try call.fmt(fbuf);
-            },
-        };
-    }
-
-    pub fn deinit(self: *const Self) void {
-        return switch (self.*) {
-            Instruction.Store => |store| {
-                store.deinit();
-            },
-            Instruction.Load => |load| {
-                load.deinit();
-            },
-            Instruction.Add => |add| {
-                add.deinit();
-            },
-            Instruction.Sub => |sub| {
-                sub.deinit();
-            },
-            Instruction.Mul => |mul| {
-                mul.deinit();
-            },
-            Instruction.Div => |div| {
-                div.deinit();
-            },
-            Instruction.Return => |ret| {
-                ret.deinit();
-            },
-            Instruction.Call => |call| {
-                call.deinit();
-            },
+    pub fn deinit(self: *Instruction) void {
+        switch (self.*) {
+            .Store => self.Store.deinit(),
+            .Add => self.Add.deinit(),
+            .Sub => self.Sub.deinit(),
+            .Mul => self.Mul.deinit(),
+            .Div => self.Div.deinit(),
+            .Return => self.Return.deinit(),
             else => {},
-        };
+        }
+    }
+
+    pub fn fmt(self: *const Instruction, fbuf: anytype) !void {
+        switch (self.*) {
+            .Alloca => try self.Alloca.fmt(fbuf),
+            .Store => try self.Store.fmt(fbuf),
+            .Add => try self.Add.fmt(fbuf),
+            .Sub => try self.Sub.fmt(fbuf),
+            .Mul => try self.Mul.fmt(fbuf),
+            .Div => try self.Div.fmt(fbuf),
+            .Load => try self.Load.fmt(fbuf),
+            .Return => try self.Return.fmt(fbuf),
+        }
+    }
+
+    pub fn get_reg(self: *const Instruction) ?VReg {
+        switch (self.*) {
+            .Alloca => return self.Alloca.get_reg(),
+            .Add => return self.Add.get_reg(),
+            .Sub => return self.Sub.get_reg(),
+            .Mul => return self.Mul.get_reg(),
+            .Div => return self.Div.get_reg(),
+            .Load => return self.Load.get_reg(),
+            else => return null,
+        }
+    }
+
+    pub fn set_parent(self: *Instruction, parent: ?*const InstructionNode) void {
+        switch (self.*) {
+            .Alloca => self.Alloca.set_parent(parent),
+            .Store => self.Store.set_parent(parent),
+            .Add => self.Add.set_parent(parent),
+            .Sub => self.Sub.set_parent(parent),
+            .Mul => self.Mul.set_parent(parent),
+            .Div => self.Div.set_parent(parent),
+            .Load => self.Load.set_parent(parent),
+            .Return => self.Return.set_parent(parent),
+        }
+    }
+
+    pub fn get_parent(self: *const Instruction) ?*const InstructionNode {
+        switch (self.*) {
+            .Alloca => return self.Alloca.get_parent(),
+            .Store => return self.Store.get_parent(),
+            .Add => return self.Add.get_parent(),
+            .Sub => return self.Sub.get_parent(),
+            .Mul => return self.Mul.get_parent(),
+            .Div => return self.Div.get_parent(),
+            .Load => return self.Load.get_parent(),
+            .Return => return self.Return.get_parent(),
+        }
     }
 };
 
-pub const CallInst = struct {
-    id: usize,
-    name: []const u8,
-    args: std.ArrayList(IRValue),
-    noret: bool,
+pub const InstructionNode = struct {
+    inst: Instruction,
+    next: ?*InstructionNode,
+    prev: ?*InstructionNode,
+    allocator: mem.Allocator,
 
-    pub fn init(id: usize, name: []const u8, args: std.ArrayList(IRValue), noret: bool) CallInst {
-        return CallInst{
-            .id = id,
-            .name = name,
-            .args = args,
-            .noret = noret,
-        };
+    pub fn init(inst: Instruction, next: ?*InstructionNode, prev: ?*InstructionNode, allocator: mem.Allocator) !*InstructionNode {
+        const node = try allocator.create(InstructionNode);
+
+        var inst_copy = inst;
+        inst_copy.set_parent(node);
+        node.inst = inst_copy;
+        node.next = next;
+        node.prev = prev;
+        node.allocator = allocator;
+        return node;
     }
 
-    pub fn fmt(self: *const CallInst, fbuf: anytype) IRStatus!void {
-        //try fbuf.print("%{} = call ", .{self.id});
-        if (self.noret) {
-            try fbuf.writeAll("call ");
-        } else {
-            try fbuf.print("%{} = call ", .{self.id});
-        }
-        try fbuf.print("@{s}(", .{self.name});
-        for (self.args.items, 0..) |arg, i| {
-            try arg.fmt(fbuf);
-            if ((i + 1) < self.args.items.len) {
-                try fbuf.writeAll(", ");
-            }
-        }
-        try fbuf.writeAll(")");
+    pub fn getInst(self: *const InstructionNode) *const Instruction {
+        return &self.inst;
     }
 
-    pub fn deinit(self: *const CallInst) void {
-        for (self.args.items) |arg| {
-            arg.deinit();
+    pub fn deinit(self: *InstructionNode) void {
+        self.inst.deinit();
+        if (self.next) |n| {
+            n.deinit();
         }
-
-        self.args.deinit();
+        self.allocator.destroy(self);
     }
 };

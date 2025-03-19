@@ -9,10 +9,19 @@ In favor of a better and more stable IR I decided to put this project on ice unt
 
 ### Next Steps
 
-- [ ] Add alignment to IR
+- [x] Remove "const" from all `deinit` functions in the codebase
+
+- [ ] handle bits better in constant binary
+- [x] extract constant value binary from the constant it self
+- [ ] Observed bug where using casting the type results to be "untyped"
+- [x] implement casting on irvalues
+- [X] add the globals to compiler for further use
+
+- [ ] Negative numbers cause a infinite loop in the lexer
+- [X] ~Handle void assigns allow "null"~ => confused
+- [ ] Disallow casting void values 
 - [ ] Split globals and global constants in module
-- [ ] Prevent values and enforce types for extern variables
-- [ ] Remove global from IRValue
+- [ ] Prevent values and enforce types for extern variables. What I meant is: you can assign values to extern variables which is not allowed
 - [ ] Better error messages please
 - [ ] ~~Create snippets for error~~ => string formating is \*\*\*\*
 - [x] Bug: You can create void variables implicitly through a function which returns void

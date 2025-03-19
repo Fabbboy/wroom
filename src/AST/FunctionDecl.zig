@@ -8,7 +8,7 @@ const ParameterExpr = @import("ParameterExpr.zig");
 
 const Block = @import("Block.zig");
 
-const Linkage = @import("AssignStatement.zig").Linkage;
+const Linkage = @import("../IR/Linkage.zig").Linkage;
 
 const Self = @This();
 
@@ -73,13 +73,13 @@ pub fn pos(self: *const Self) Position {
     return self.position;
 }
 
-pub fn deinit(self: *const Self) void {
+pub fn deinit(self: *Self) void {
     self.params.deinit();
-    if (self.body) |block| {
+    if (self.body) |*block| {
         block.deinit();
     }
 }
 
 pub fn getBody(self: *const Self) ?*const Block {
-    return self.body;
+    return if (self.body) |*block| block else null;
 }

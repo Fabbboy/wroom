@@ -1,0 +1,19 @@
+const someFloat = 2.3
+const someInteger = 4 * someFloat as int
+
+func otherFunc(a: int, b: int) int {
+  return a + b
+}
+
+func otherOther(a: float, b: int,c:float, d: int) float {
+
+  
+}
+
+pub func main() int {
+  const otherCare = 222 + someInteger
+  const dontCare = -69 + otherCare  
+
+  dontCare *= 2
+  return dontCare
+}

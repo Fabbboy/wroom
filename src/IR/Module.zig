@@ -1,75 +1,67 @@
 const std = @import("std");
 const mem = std.mem;
 
-const SymTable = @import("../ADT/SymTable.zig").SymTable;
-const GlobalVariable = @import("IRValue/GlobalVariable.zig");
+const GlobalVariable = @import("Values/GlobalVariable.zig");
+const IRValue = @import("IRValue.zig").IRValue;
 
-const Function = @import("IRValue/Function.zig");
-const FuncBlock = Function.FuncBlock;
-
-const IRValue = @import("Value.zig").IRValue;
+const Function = @import("Function.zig");
 
 const Self = @This();
 
 name: []const u8,
+globals: std.StringHashMap(GlobalVariable),
+funcs: std.StringHashMap(Function),
 allocator: mem.Allocator,
-globals: SymTable(GlobalVariable),
-functions: SymTable(Function),
-globals_id: usize,
 
-pub fn init(allocator: mem.Allocator, name: []const u8) Self {
+pub fn init(name: []const u8, allocator: mem.Allocator) Self {
     return Self{
         .name = name,
+        .globals = std.StringHashMap(GlobalVariable).init(allocator),
+        .funcs = std.StringHashMap(Function).init(allocator),
         .allocator = allocator,
-        .globals = SymTable(GlobalVariable).init(allocator),
-        .functions = SymTable(Function).init(allocator),
-        .globals_id = 0,
     };
 }
 
 pub fn deinit(self: *Self) void {
     self.globals.deinit();
 
-    var funcNext = self.functions.table.iterator();
-    while (funcNext.next()) |entry| {
-        const value = entry.value_ptr.*;
-        value.deinit();
+    var funcNext = self.funcs.iterator();
+    while (funcNext.next()) |func| {
+        const f = func.value_ptr;
+        f.deinit();
     }
-    self.functions.deinit();
-}
 
-pub fn getNextGlobalId(self: *Self) usize {
-    const id = self.globals_id;
-    self.globals_id += 1;
-    return id;
-}
-
-pub fn getGlobals(self: *const Self) *const SymTable(GlobalVariable) {
-    return &self.globals;
-}
-
-pub fn getFunctions(self: *const Self) *const SymTable(Function) {
-    return &self.functions;
+    self.funcs.deinit();
 }
 
 pub fn fmt(self: *const Self, fbuf: anytype) !void {
-    try fbuf.print("module: {s}\n", .{self.name});
-    var glblsIter = self.globals.table.iterator();
-    while (glblsIter.next()) |entry| {
-        const name = entry.key_ptr;
-        const value = entry.value_ptr;
-        if (value.constant and value.linkage != .Public) continue;
-        try value.fmt(fbuf, name.*);
-        try fbuf.writeAll("\n");
+    try fbuf.print("module = {s}\n", .{self.name});
+    var glblNext = self.globals.iterator();
+    while (glblNext.next()) |global| {
+        const v = global.value_ptr;
+
+        try v.fmt(fbuf);
+        try fbuf.writeByte('\n');
     }
 
-    var funcsIter = self.functions.table.iterator();
-    while (funcsIter.next()) |entry| {
-        const name = entry.key_ptr;
-        const value = entry.value_ptr;
-        try value.fmt(fbuf, name.*);
-        try fbuf.writeAll("\n");
+    var funcNext = self.funcs.iterator();
+    while (funcNext.next()) |func| {
+        const f = func.value_ptr;
+        try f.fmt(fbuf);
+        try fbuf.writeByte('\n');
     }
+}
 
-    try fbuf.writeAll("\n");
+pub fn addGlobal(self: *Self, name: []const u8, global: GlobalVariable) !*GlobalVariable {
+    try self.globals.put(name, global);
+    return self.globals.getPtr(name).?;
+}
+
+pub fn addFunction(self: *Self, func: Function) !*Function {
+    try self.funcs.put(func.name, func);
+    return self.funcs.getPtr(func.name).?;
+}
+
+pub fn findGlobal(self: *const Self, name: []const u8) ?*const GlobalVariable {
+    return self.globals.getPtr(name);
 }

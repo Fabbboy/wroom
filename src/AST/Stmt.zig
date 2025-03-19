@@ -21,7 +21,7 @@ pub const Stmt = union(enum) {
         return .{ .FunctionCall = call };
     }
 
-    pub fn deinit(self: *const Stmt) void {
+    pub fn deinit(self: *Stmt) void {
         switch (self.*) {
             Stmt.AssignStatement => self.AssignStatement.deinit(),
             Stmt.ReturnStatement => self.ReturnStatement.deinit(),

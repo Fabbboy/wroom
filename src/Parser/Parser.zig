@@ -12,7 +12,8 @@ const Lexer = @import("Lexer.zig");
 const Ast = @import("Ast.zig");
 
 const AssignStatement = @import("../AST/AssignStatement.zig");
-const Linkage = AssignStatement.Linkage;
+
+const Linkage = @import("../IR/Linkage.zig").Linkage;
 
 const ExprNs = @import("../AST/Expr.zig");
 const Expr = ExprNs.Expr;
@@ -171,23 +172,35 @@ fn parseFactor(self: *Self) ParseStatus!Expr {
 fn parseTerm(self: *Self) ParseStatus!Expr {
     const lhs = try self.parseFactor();
 
-    if (self.peek(&[_]TokenKind{ TokenKind.Star, TokenKind.Slash })) {
-        const op = self.next(&[_]TokenKind{ TokenKind.Star, TokenKind.Slash }) catch |err| {
-            lhs.deinit();
-            return err;
-        };
-        const fin_op = switch (op.kind) {
-            TokenKind.Star => OperatorType.Star,
-            TokenKind.Slash => OperatorType.Slash,
-            else => unreachable,
-        };
-
-        const rhs = self.parseTerm() catch |err| {
+    if (self.peek(&[_]TokenKind{ TokenKind.Star, TokenKind.Slash, TokenKind.As })) {
+        const tok = self.next(&[_]TokenKind{ TokenKind.Star, TokenKind.Slash, TokenKind.As }) catch |err| {
             lhs.deinit();
             return err;
         };
 
-        return Expr.init_binary(lhs, rhs, fin_op, self.allocator);
+        switch (tok.kind) {
+            TokenKind.Star, TokenKind.Slash => {
+                const op = switch (tok.kind) {
+                    TokenKind.Star => OperatorType.Star,
+                    TokenKind.Slash => OperatorType.Slash,
+                    else => unreachable,
+                };
+
+                const rhs = self.parseTerm() catch |err| {
+                    lhs.deinit();
+                    return err;
+                };
+
+                return Expr.init_binary(lhs, rhs, op, self.allocator);
+            },
+            TokenKind.As => {
+                const tyTok = try self.next(&[_]TokenKind{TokenKind.Type});
+                var pos = tok.pos;
+                pos.end = tyTok.pos.end;
+                return Expr.init_cast(lhs, tyTok.data.?.Type, pos, self.allocator);
+            },
+            else => {},
+        }
     }
 
     return lhs;
@@ -196,23 +209,35 @@ fn parseTerm(self: *Self) ParseStatus!Expr {
 fn parseExpr(self: *Self) ParseStatus!Expr {
     const lhs = try self.parseTerm();
 
-    if (self.peek(&[_]TokenKind{ TokenKind.Plus, TokenKind.Minus })) {
-        const op = self.next(&[_]TokenKind{ TokenKind.Plus, TokenKind.Minus }) catch |err| {
+    if (self.peek(&[_]TokenKind{ TokenKind.Plus, TokenKind.Minus, TokenKind.As })) {
+        const tok = self.next(&[_]TokenKind{ TokenKind.Plus, TokenKind.Minus, TokenKind.As }) catch |err| {
             lhs.deinit();
             return err;
         };
-        const fin_op = switch (op.kind) {
-            TokenKind.Plus => OperatorType.Plus,
-            TokenKind.Minus => OperatorType.Minus,
+
+        switch (tok.kind) {
+            TokenKind.Plus, TokenKind.Minus => {
+                const op = switch (tok.kind) {
+                    TokenKind.Plus => OperatorType.Plus,
+                    TokenKind.Minus => OperatorType.Minus,
+                    else => unreachable,
+                };
+
+                const rhs = self.parseExpr() catch |err| {
+                    lhs.deinit();
+                    return err;
+                };
+
+                return Expr.init_binary(lhs, rhs, op, self.allocator);
+            },
+            TokenKind.As => {
+                const tyTok = try self.next(&[_]TokenKind{TokenKind.Type});
+                var pos = tok.pos;
+                pos.end = tyTok.pos.end;
+                return Expr.init_cast(lhs, tyTok.data.?.Type, pos, self.allocator);
+            },
             else => unreachable,
-        };
-
-        const rhs = self.parseExpr() catch |err| {
-            lhs.deinit();
-            return err;
-        };
-
-        return Expr.init_binary(lhs, rhs, fin_op, self.allocator);
+        }
     }
 
     return lhs;
@@ -258,7 +283,7 @@ fn parseBlock(self: *Self) ParseStatus!Block {
     var stmts = std.ArrayList(Stmt).init(self.allocator);
     while (!self.peek(&[_]TokenKind{TokenKind.RBrace})) {
         const stmt = self.parseStatement() catch {
-            for (stmts.items) |s| {
+            for (stmts.items) |*s| {
                 s.deinit();
             }
             stmts.deinit();
@@ -266,7 +291,7 @@ fn parseBlock(self: *Self) ParseStatus!Block {
         };
 
         stmts.append(stmt) catch {
-            for (stmts.items) |s| {
+            for (stmts.items) |*s| {
                 s.deinit();
             }
             stmts.deinit();
@@ -275,7 +300,7 @@ fn parseBlock(self: *Self) ParseStatus!Block {
     }
 
     const rbrance = self.next(&[_]TokenKind{TokenKind.RBrace}) catch {
-        for (stmts.items) |stmt| {
+        for (stmts.items) |*stmt| {
             stmt.deinit();
         }
 

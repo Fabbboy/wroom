@@ -1,3 +1,6 @@
+pub const t= 2.2
+const second = 40 / t as int
+
 pub func main() int {
   return 0
 }

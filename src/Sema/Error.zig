@@ -18,41 +18,51 @@ pub const SemaError = union(enum) {
     UnusedReturnValue: UnusedReturnValue,
     MainNeedsPublicInt: MainNeedsPublicInt,
     ExternCannotHaveBody: ExternCannotHaveBody,
+    CallNotAllowed: CallNotAllowed,
+    CannotCast: CannotCast,
 
-    pub fn init_symbol_already_declared(name: []const u8, pos: Position) SemaError {
-        return SemaError{ .SymbolAlreadyDeclared = SymbolAlreadyDeclared.init(name, pos) };
+    pub fn init_symbol_already_declared(sy: SymbolAlreadyDeclared) SemaError {
+        return SemaError{ .SymbolAlreadyDeclared = sy };
     }
 
-    pub fn init_type_mismatch(lhs: ValueType, rhs: ValueType, pos: Position) SemaError {
-        return SemaError{ .TypeMismatch = TypeMismatch.init(lhs, rhs, pos) };
+    pub fn init_type_mismatch(tym: TypeMismatch) SemaError {
+        return SemaError{ .TypeMismatch = tym };
     }
 
-    pub fn init_symbol_undefined(name: []const u8, pos: Position) SemaError {
-        return SemaError{ .SymbolUndefined = SymbolUndefined.init(name, pos) };
+    pub fn init_symbol_undefined(symundecl: SymbolUndefined) SemaError {
+        return SemaError{ .SymbolUndefined = symundecl };
     }
 
-    pub fn init_illegal_assignment(pos: Position) SemaError {
-        return SemaError{ .IllegalAssignment = IllegalAssignment.init(pos) };
+    pub fn init_illegal_assignment(ill: IllegalAssignment) SemaError {
+        return SemaError{ .IllegalAssignment = ill };
     }
 
-    pub fn init_cannot_assign_to_void(pos: Position) SemaError {
-        return SemaError{ .CannotAssignToVoid = CannotAssignToVoid.init(pos) };
+    pub fn init_cannot_assign_to_void(cant: CannotAssignToVoid) SemaError {
+        return SemaError{ .CannotAssignToVoid = cant };
     }
 
-    pub fn init_argument_count_mismatch(expected: usize, got: usize, pos: Position) SemaError {
-        return SemaError{ .ArgumentCountMismatch = ArgumentCountMismatch.init(expected, got, pos) };
+    pub fn init_argument_count_mismatch(arg: ArgumentCountMismatch) SemaError {
+        return SemaError{ .ArgumentCountMismatch = arg };
     }
 
-    pub fn init_unused_return_value(pos: Position) SemaError {
-        return SemaError{ .UnusedReturnValue = UnusedReturnValue.init(pos) };
+    pub fn init_unused_return_value(unused: UnusedReturnValue) SemaError {
+        return SemaError{ .UnusedReturnValue = unused };
     }
 
-    pub fn init_main_needs_public_int(pos: Position) SemaError {
-        return SemaError{ .MainNeedsPublicInt = MainNeedsPublicInt.init(pos) };
+    pub fn init_main_needs_public_int(main: MainNeedsPublicInt) SemaError {
+        return SemaError{ .MainNeedsPublicInt = main };
     }
 
-    pub fn init_extern_cannot_have_body(pos: Position) SemaError {
-        return SemaError{ .ExternCannotHaveBody = ExternCannotHaveBody.init(pos) };
+    pub fn init_extern_cannot_have_body(exter: ExternCannotHaveBody) SemaError {
+        return SemaError{ .ExternCannotHaveBody = exter };
+    }
+
+    pub fn init_call_not_allowed(call: CallNotAllowed) SemaError {
+        return SemaError{ .CallNotAllowed = call };
+    }
+
+    pub fn init_cannot_cast(cast: CannotCast) SemaError {
+        return SemaError{ .CannotCast = cast };
     }
 
     pub fn fmt(self: *const SemaError, fbuf: anytype) !void {
@@ -66,6 +76,8 @@ pub const SemaError = union(enum) {
             SemaError.UnusedReturnValue => try self.UnusedReturnValue.fmt(fbuf),
             SemaError.MainNeedsPublicInt => try self.MainNeedsPublicInt.fmt(fbuf),
             SemaError.ExternCannotHaveBody => try self.ExternCannotHaveBody.fmt(fbuf),
+            SemaError.CallNotAllowed => try self.CallNotAllowed.fmt(fbuf),
+            SemaError.CannotCast => try self.CannotCast.fmt(fbuf),
         }
     }
 };
@@ -205,5 +217,37 @@ pub const ExternCannotHaveBody = struct {
 
     pub fn fmt(self: *const ExternCannotHaveBody, fbuf: anytype) !void {
         try fbuf.print("{}:{} Extern function cannot have a body", .{ self.pos.line, self.pos.column });
+    }
+};
+
+pub const CallNotAllowed = struct {
+    pos: Position,
+
+    pub fn init(pos: Position) CallNotAllowed {
+        return CallNotAllowed{
+            .pos = pos,
+        };
+    }
+
+    pub fn fmt(self: *const CallNotAllowed, fbuf: anytype) !void {
+        try fbuf.print("{}:{} Function call not allowed here", .{ self.pos.line, self.pos.column });
+    }
+};
+
+pub const CannotCast = struct {
+    pos: Position,
+    from: ValueType,
+    to: ValueType,
+
+    pub fn init(pos: Position, from: ValueType, to: ValueType) CannotCast {
+        return CannotCast{
+            .pos = pos,
+            .from = from,
+            .to = to,
+        };
+    }
+
+    pub fn fmt(self: *const CannotCast, fbuf: anytype) !void {
+        try fbuf.print("{}:{} Cannot cast from '{s}' to '{s}'", .{ self.pos.line, self.pos.column, self.from.fmt(), self.to.fmt() });
     }
 };
