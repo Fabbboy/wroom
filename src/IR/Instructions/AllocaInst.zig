@@ -22,8 +22,8 @@ pub fn fmt(self: *const Self, fbuf: anytype) !void {
     try fbuf.print(" = alloca {s}", .{self.size.fmt()});
 }
 
-pub fn get_reg(self: *const Self) *const VReg {
-    return &self.vreg;
+pub fn get_reg(self: *const Self) VReg {
+    return self.vreg;
 }
 
 pub fn get_parent(self: *const Self) ?*const InstructionNode {

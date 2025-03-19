@@ -34,6 +34,6 @@ pub fn set_parent(self: *Self, parent: ?*const InstructionNode) void {
     self.parent = parent;
 }
 
-pub fn get_reg(self: *const Self) *const VReg {
-    return &self.dest;
+pub fn get_reg(self: *const Self) VReg {
+    return self.dest;
 }

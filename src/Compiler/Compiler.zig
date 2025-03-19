@@ -52,6 +52,8 @@ const CastConstant = @import("../IR/Eval/Casting.zig").CastConstant;
 
 const VReg = @import("../IR/Instructions/VReg.zig").VReg;
 
+const NamendPair = struct { val: IRValue, ty: Type };
+
 const Self = @This();
 
 ast: *const Ast,
@@ -59,6 +61,7 @@ module: Module,
 allocator: mem.Allocator,
 cerrs: std.ArrayList(CompilerError),
 builder: Builder,
+namend_values: std.StringHashMap(NamendPair),
 
 pub fn init(allocator: mem.Allocator, ast: *const Ast, name: []const u8) Self {
     var mod = Module.init(name, allocator);
@@ -69,6 +72,7 @@ pub fn init(allocator: mem.Allocator, ast: *const Ast, name: []const u8) Self {
         .ast = ast,
         .cerrs = std.ArrayList(CompilerError).init(allocator),
         .builder = Builder.init(&mod, allocator),
+        .namend_values = std.StringHashMap(NamendPair).init(allocator),
     };
 }
 
@@ -176,6 +180,10 @@ fn compileExpr(self: *Self, expr: *const Expr) CompileStatus!IRValue {
         },
         ExprData.Variable => {
             const variable = data.Variable;
+            if (self.namend_values.contains(variable.name.lexeme)) {
+                return self.namend_values.get(variable.name.lexeme).?.val;
+            }
+
             if (self.module.findGlobal(variable.name.lexeme)) |glbl| {
                 return self.builder.createLoad(VReg.init_global(glbl.name), glbl.ty);
             }
@@ -185,15 +193,55 @@ fn compileExpr(self: *Self, expr: *const Expr) CompileStatus!IRValue {
     }
 }
 
+fn compileAssign(self: *Self, assign: *const AssignStatement) CompileStatus!void {
+    const existing = self.namend_values.get(assign.getName().lexeme);
+    if (existing) |e| {
+        switch (assign.assign_type) {
+            OperatorType.Assign => {
+                const val = try self.compileExpr(assign.getValue());
+                try self.builder.createStore(e.val.Instruction, val);
+            },
+            OperatorType.Plus => {
+                const loaded = try self.builder.createLoad(e.val.Instruction.get_reg().?, e.ty);
+                const val = try self.compileExpr(assign.getValue());
+                const res = try self.builder.createAdd(loaded, val);
+                try self.builder.createStore(e.val.Instruction, res);
+            },
+            OperatorType.Minus => {
+                const loaded = try self.builder.createLoad(e.val.Instruction.get_reg().?, e.ty);
+                const val = try self.compileExpr(assign.getValue());
+                const res = try self.builder.createSub(loaded, val);
+                try self.builder.createStore(e.val.Instruction, res);
+            },
+            OperatorType.Star => {
+                const loaded = try self.builder.createLoad(e.val.Instruction.get_reg().?, e.ty);
+                const val = try self.compileExpr(assign.getValue());
+                const res = try self.builder.createMul(loaded, val);
+                try self.builder.createStore(e.val.Instruction, res);
+            },
+            OperatorType.Slash => {
+                const loaded = try self.builder.createLoad(e.val.Instruction.get_reg().?, e.ty);
+                const val = try self.compileExpr(assign.getValue());
+                const res = try self.builder.createDiv(loaded, val);
+                try self.builder.createStore(e.val.Instruction, res);
+            },
+        }
+    } else {
+        const ty = self.resolveValType(assign.getType());
+
+        const alloca = try self.builder.createAlloca(ty);
+        const val = try self.compileExpr(assign.getValue());
+        try self.builder.createStore(alloca.Instruction, val);
+        const namend = NamendPair{ .val = alloca, .ty = ty };
+        try self.namend_values.put(assign.getName().lexeme, namend);
+    }
+}
+
 fn compileStmt(self: *Self, stmt: *const Stmt) CompileStatus!void {
     switch (stmt.*) {
         Stmt.AssignStatement => {
             const assign = stmt.AssignStatement;
-            const ty = self.resolveValType(assign.getType());
-
-            const alloca = try self.builder.createAlloca(ty);
-            const val = try self.compileExpr(assign.getValue());
-            try self.builder.createStore(alloca.Instruction, val);
+            try self.compileAssign(&assign);
         },
         else => unreachable,
     }
@@ -218,6 +266,7 @@ pub fn compile(self: *Self) CompileStatus!void {
 
     const funcs = ast.getFunctions();
     for (funcs.*) |func| {
+        self.namend_values.clearRetainingCapacity();
         const name = func.getName().lexeme;
         const ret_ty = self.resolveValType(func.getReturnType());
         const linkage = func.linkage;
@@ -242,6 +291,7 @@ pub fn compile(self: *Self) CompileStatus!void {
 pub fn deinit(self: *Self) void {
     self.module.deinit();
     self.cerrs.deinit();
+    self.namend_values.deinit();
 }
 
 pub fn getMod(self: *const Self) *const Module {

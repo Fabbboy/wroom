@@ -76,7 +76,7 @@ pub const Instruction = union(enum) {
         }
     }
 
-    pub fn get_reg(self: *const Instruction) ?*const VReg {
+    pub fn get_reg(self: *const Instruction) ?VReg {
         switch (self.*) {
             .Alloca => return self.Alloca.get_reg(),
             .Add => return self.Add.get_reg(),

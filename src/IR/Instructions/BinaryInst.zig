@@ -26,8 +26,8 @@ pub const AddInst = struct {
         try self.rhs.fmt(fbuf);
     }
 
-    pub fn get_reg(self: *const AddInst) *const VReg {
-        return &self.dest;
+    pub fn get_reg(self: *const AddInst) VReg {
+        return self.dest;
     }
 
     pub fn get_parent(self: *const AddInst) ?*const InstructionNode {
@@ -67,8 +67,8 @@ pub const SubInst = struct {
         try self.rhs.fmt(fbuf);
     }
 
-    pub fn get_reg(self: *const SubInst) *const VReg {
-        return &self.dest;
+    pub fn get_reg(self: *const SubInst) VReg {
+        return self.dest;
     }
 
     pub fn get_parent(self: *const SubInst) ?*const InstructionNode {
@@ -108,8 +108,8 @@ pub const MulInst = struct {
         try self.rhs.fmt(fbuf);
     }
 
-    pub fn get_reg(self: *const MulInst) *const VReg {
-        return &self.dest;
+    pub fn get_reg(self: *const MulInst) VReg {
+        return self.dest;
     }
 
     pub fn get_parent(self: *const MulInst) ?*const InstructionNode {
@@ -149,8 +149,8 @@ pub const DivInst = struct {
         try self.rhs.fmt(fbuf);
     }
 
-    pub fn get_reg(self: *const DivInst) *const VReg {
-        return &self.dest;
+    pub fn get_reg(self: *const DivInst) VReg {
+        return self.dest;
     }
 
     pub fn get_parent(self: *const DivInst) ?*const InstructionNode {

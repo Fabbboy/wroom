@@ -156,8 +156,19 @@ fn lex(self: *Self) Token {
                 else => unreachable,
             }
         },
-        '*' => return self.getToken(TokenKind.Star),
-        '/' => return self.getToken(TokenKind.Slash),
+        '*', '/' => {
+            if (self.getChar() == '=') {
+                self.advance();
+                const op: OperatorType = if (operators.get(&[_]u8{c})) |op| op else unreachable;
+                return self.getTokenWithValue(TokenKind.Assign, .{ .Assign = op });
+            }
+
+            switch (c) {
+                '*' => return self.getToken(TokenKind.Star),
+                '/' => return self.getToken(TokenKind.Slash),
+                else => unreachable,
+            }
+        },
         '.' => return self.getToken(TokenKind.Period),
         ':' => return self.getToken(TokenKind.Colon),
         '(' => return self.getToken(TokenKind.LParen),
