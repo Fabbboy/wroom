@@ -8,7 +8,11 @@ const InstructionNode = InstructionNs.InstructionNode;
 const Type = @import("Type.zig").Type;
 const Linkage = @import("Linkage.zig").Linkage;
 
-const VRegManager = @import("Instructions/VReg.zig").VRegManager;
+const VRegNs = @import("Instructions/VReg.zig");
+const VReg = VRegNs.VReg;
+const VRegManager = VRegNs.VRegManager;
+
+const IRValue = @import("IRValue.zig").IRValue;
 
 const Module = @import("Module.zig");
 
@@ -65,6 +69,29 @@ pub const FuncBlock = struct {
     }
 };
 
+pub const FuncParam = struct {
+    name: []const u8,
+    vreg: VReg,
+    ty: Type,
+
+    pub fn init(name: []const u8, vreg: VReg, ty: Type) FuncParam {
+        return FuncParam{
+            .name = name,
+            .vreg = vreg,
+            .ty = ty,
+        };
+    }
+
+    pub fn fmt(self: *const FuncParam, fbuf: anytype) !void {
+        try fbuf.print("{s} ", .{self.ty.fmt()});
+        try self.vreg.fmt(fbuf);
+    }
+
+    pub fn get_reg(self: *const FuncParam) VReg {
+        return self.vreg;
+    }
+};
+
 const Func = @This();
 
 name: []const u8,
@@ -73,14 +100,15 @@ linkage: Linkage,
 blocks: std.ArrayList(FuncBlock),
 allocator: mem.Allocator,
 manager: VRegManager,
-params: std.StringHashMap(Type),
+params: std.ArrayList(FuncParam),
 
 pub fn init(
     module: *Module,
     name: []const u8,
     return_ty: Type,
     linkage: Linkage,
-    params: std.StringHashMap(Type),
+    params: std.ArrayList(FuncParam),
+    manager: VRegManager,
     allocator: mem.Allocator,
 ) !*Func {
     const f = Func{
@@ -89,7 +117,7 @@ pub fn init(
         .linkage = linkage,
         .blocks = std.ArrayList(FuncBlock).init(allocator),
         .allocator = allocator,
-        .manager = VRegManager.init(),
+        .manager = manager,
         .params = params,
     };
 
@@ -97,6 +125,7 @@ pub fn init(
 }
 
 pub fn deinit(self: *Func) void {
+    self.params.deinit();
     for (self.blocks.items) |*block| {
         block.deinit();
     }
@@ -116,16 +145,22 @@ pub fn fmt(self: *const Func, fbuf: anytype) !void {
         self.name,
     });
     try fbuf.writeAll("(");
-    var paramNext = self.params.iterator();
-    while (paramNext.next()) |param| {
-        const ty = param.value_ptr;
-        const name = param.key_ptr;
-        try fbuf.print("{s} {s}", .{ ty.fmt(), name });
+
+    for (self.params.items, 0..) |*param, i| {
+        try param.fmt(fbuf);
+        if (i + 1 != self.params.items.len) {
+            try fbuf.writeAll(", ");
+        }
     }
+
     try fbuf.writeAll(")");
     try fbuf.writeAll(" {\n");
     for (self.blocks.items) |block| {
         try block.fmt(fbuf);
     }
     try fbuf.writeAll("\n}\n");
+}
+
+pub fn getParams(self: *const Func) *const []FuncParam {
+    return &self.params.items;
 }

@@ -36,6 +36,7 @@ const ParseBlock = @import("../AST/Block.zig");
 
 const Function = @import("../IR/Function.zig");
 const FuncBlock = Function.FuncBlock;
+const FuncParam = Function.FuncParam;
 
 const LiteralExpr = @import("../AST/LiteralExpr.zig");
 
@@ -50,7 +51,9 @@ const evalBinary = binEvalNs.evalBinary;
 
 const CastConstant = @import("../IR/Eval/Casting.zig").CastConstant;
 
-const VReg = @import("../IR/Instructions/VReg.zig").VReg;
+const VRegNs = @import("../IR/Instructions/VReg.zig");
+const VReg = VRegNs.VReg;
+const VRegManager = VRegNs.VRegManager;
 
 const NamendPair = struct { val: IRValue, ty: Type };
 
@@ -62,6 +65,7 @@ allocator: mem.Allocator,
 cerrs: std.ArrayList(CompilerError),
 builder: Builder,
 namend_values: std.StringHashMap(NamendPair),
+active_func: ?*Function,
 
 pub fn init(allocator: mem.Allocator, ast: *const Ast, name: []const u8) Self {
     var mod = Module.init(name, allocator);
@@ -73,6 +77,7 @@ pub fn init(allocator: mem.Allocator, ast: *const Ast, name: []const u8) Self {
         .cerrs = std.ArrayList(CompilerError).init(allocator),
         .builder = Builder.init(&mod, allocator),
         .namend_values = std.StringHashMap(NamendPair).init(allocator),
+        .active_func = null,
     };
 }
 
@@ -185,6 +190,15 @@ fn compileExpr(self: *Self, expr: *const Expr) CompileStatus!IRValue {
                 return try self.builder.createLoad(existing.?.val.Instruction.get_reg().?, existing.?.ty);
             }
 
+            if (self.active_func) |af| {
+                const params = af.getParams();
+                for (params.*) |param| {
+                    if (mem.eql(u8, variable.name.lexeme, param.name)) {
+                        return self.builder.createLoad(param.get_reg(), param.ty);
+                    }
+                }
+            }
+
             if (self.module.findGlobal(variable.name.lexeme)) |glbl| {
                 return self.builder.createLoad(VReg.init_global(glbl.name), glbl.ty);
             }
@@ -277,11 +291,15 @@ pub fn compile(self: *Self) CompileStatus!void {
         const ret_ty = self.resolveValType(func.getReturnType());
         const linkage = func.linkage;
 
+        var manager = VRegManager.init();
+
         const params = func.getParams();
-        var param_map = std.StringHashMap(Type).init(self.allocator);
+        var param_map = std.ArrayList(FuncParam).init(self.allocator);
         for (params.*) |param| {
             const ty = self.resolveValType(param.getType());
-            try param_map.put(param.getName().lexeme, ty);
+            const vreg = manager.getNext();
+            const fparam = FuncParam.init(param.getName().lexeme, vreg, ty);
+            try param_map.append(fparam);
         }
 
         const f = try Function.init(
@@ -290,8 +308,11 @@ pub fn compile(self: *Self) CompileStatus!void {
             ret_ty,
             linkage,
             param_map,
+            manager,
             self.allocator,
         );
+
+        self.active_func = f;
 
         const body = func.getBody();
         if (body) |block| {
