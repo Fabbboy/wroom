@@ -116,7 +116,7 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr) CompileStatus!IRVal
             }
         },
         ExprData.Variable => {
-            const variable = data.Variable;
+            const variable = data.Variable; 
             if (self.module.findGlobal(variable.name.lexeme)) |glbl| {
                 return IRValue.init_constant(glbl.value);
             }
@@ -181,7 +181,8 @@ fn compileExpr(self: *Self, expr: *const Expr) CompileStatus!IRValue {
         ExprData.Variable => {
             const variable = data.Variable;
             if (self.namend_values.contains(variable.name.lexeme)) {
-                return self.namend_values.get(variable.name.lexeme).?.val;
+                const existing = self.namend_values.get(variable.name.lexeme);
+                return try self.builder.createLoad(existing.?.val.Instruction.get_reg().?, existing.?.ty);
             }
 
             if (self.module.findGlobal(variable.name.lexeme)) |glbl| {
@@ -242,6 +243,11 @@ fn compileStmt(self: *Self, stmt: *const Stmt) CompileStatus!void {
         Stmt.AssignStatement => {
             const assign = stmt.AssignStatement;
             try self.compileAssign(&assign);
+        },
+        Stmt.ReturnStatement => {
+            const ret = stmt.ReturnStatement;
+            const val = try self.compileExpr(ret.getExpr());
+            try self.builder.createReturn(val);
         },
         else => unreachable,
     }

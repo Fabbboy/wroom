@@ -23,6 +23,8 @@ const DivInst = BinaryInst.DivInst;
 
 const LoadInst = @import("Instructions/LoadInst.zig");
 
+const RetInst = @import("Instructions/RetInst.zig");
+
 const Self = @This();
 
 mod: *Module,
@@ -154,4 +156,17 @@ pub fn createLoad(self: *Self, src: VReg, ty: Type) IRStatus!IRValue {
     const load_inst = Instruction.init_load(load);
 
     return IRValue.init_instruction(try block.insert(load_inst));
+}
+
+pub fn createReturn(self: *Self, ret_val: IRValue) IRStatus!void {
+    if (self.active_block == null) {
+        return error.NoActiveContext;
+    }
+
+    const block = self.active_block.?;
+
+    const ret = RetInst.init(ret_val);
+    const ret_inst = Instruction.init_return(ret);
+
+    _ = try block.insert(ret_inst);
 }

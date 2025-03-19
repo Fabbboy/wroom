@@ -39,3 +39,7 @@ pub fn pos(self: *const Self) Position {
 pub fn getValue(self: *const Self) *const Expr {
     return &self.value;
 }
+
+pub fn getExpr(self: *const Self) *const Expr {
+    return &self.value;
+}

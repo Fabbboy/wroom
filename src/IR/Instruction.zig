@@ -14,6 +14,8 @@ const DivInst = BinaryInst.DivInst;
 
 const LoadInst = @import("Instructions/LoadInst.zig");
 
+const RetInst = @import("Instructions/RetInst.zig");
+
 const VReg = @import("Instructions/VReg.zig").VReg;
 
 pub const Instruction = union(enum) {
@@ -24,6 +26,7 @@ pub const Instruction = union(enum) {
     Mul: MulInst,
     Div: DivInst,
     Load: LoadInst,
+    Return: RetInst,
 
     pub fn init_alloca(alloca: AllocaInst) Instruction {
         return Instruction{ .Alloca = alloca };
@@ -53,6 +56,10 @@ pub const Instruction = union(enum) {
         return Instruction{ .Load = load };
     }
 
+    pub fn init_return(ret: RetInst) Instruction {
+        return Instruction{ .Return = ret };
+    }
+
     pub fn deinit(self: *Instruction) void {
         switch (self.*) {
             .Store => self.Store.deinit(),
@@ -60,6 +67,7 @@ pub const Instruction = union(enum) {
             .Sub => self.Sub.deinit(),
             .Mul => self.Mul.deinit(),
             .Div => self.Div.deinit(),
+            .Return => self.Return.deinit(),
             else => {},
         }
     }
@@ -73,6 +81,7 @@ pub const Instruction = union(enum) {
             .Mul => try self.Mul.fmt(fbuf),
             .Div => try self.Div.fmt(fbuf),
             .Load => try self.Load.fmt(fbuf),
+            .Return => try self.Return.fmt(fbuf),
         }
     }
 
@@ -97,6 +106,7 @@ pub const Instruction = union(enum) {
             .Mul => self.Mul.set_parent(parent),
             .Div => self.Div.set_parent(parent),
             .Load => self.Load.set_parent(parent),
+            .Return => self.Return.set_parent(parent),
         }
     }
 
@@ -109,6 +119,7 @@ pub const Instruction = union(enum) {
             .Mul => return self.Mul.get_parent(),
             .Div => return self.Div.get_parent(),
             .Load => return self.Load.get_parent(),
+            .Return => return self.Return.get_parent(),
         }
     }
 };
