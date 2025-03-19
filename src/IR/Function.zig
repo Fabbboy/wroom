@@ -73,8 +73,16 @@ linkage: Linkage,
 blocks: std.ArrayList(FuncBlock),
 allocator: mem.Allocator,
 manager: VRegManager,
+params: std.StringHashMap(Type),
 
-pub fn init(module: *Module, name: []const u8, return_ty: Type, linkage: Linkage, allocator: mem.Allocator) !*Func {
+pub fn init(
+    module: *Module,
+    name: []const u8,
+    return_ty: Type,
+    linkage: Linkage,
+    params: std.StringHashMap(Type),
+    allocator: mem.Allocator,
+) !*Func {
     const f = Func{
         .name = name,
         .return_ty = return_ty,
@@ -82,6 +90,7 @@ pub fn init(module: *Module, name: []const u8, return_ty: Type, linkage: Linkage
         .blocks = std.ArrayList(FuncBlock).init(allocator),
         .allocator = allocator,
         .manager = VRegManager.init(),
+        .params = params,
     };
 
     return try module.addFunction(f);
@@ -107,6 +116,12 @@ pub fn fmt(self: *const Func, fbuf: anytype) !void {
         self.name,
     });
     try fbuf.writeAll("(");
+    var paramNext = self.params.iterator();
+    while (paramNext.next()) |param| {
+        const ty = param.value_ptr;
+        const name = param.key_ptr;
+        try fbuf.print("{s} {s}", .{ ty.fmt(), name });
+    }
     try fbuf.writeAll(")");
     try fbuf.writeAll(" {\n");
     for (self.blocks.items) |block| {

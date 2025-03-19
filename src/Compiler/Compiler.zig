@@ -116,7 +116,7 @@ fn compileConstantExpr(self: *const Self, expr: *const Expr) CompileStatus!IRVal
             }
         },
         ExprData.Variable => {
-            const variable = data.Variable; 
+            const variable = data.Variable;
             if (self.module.findGlobal(variable.name.lexeme)) |glbl| {
                 return IRValue.init_constant(glbl.value);
             }
@@ -277,11 +277,19 @@ pub fn compile(self: *Self) CompileStatus!void {
         const ret_ty = self.resolveValType(func.getReturnType());
         const linkage = func.linkage;
 
+        const params = func.getParams();
+        var param_map = std.StringHashMap(Type).init(self.allocator);
+        for (params.*) |param| {
+            const ty = self.resolveValType(param.getType());
+            try param_map.put(param.getName().lexeme, ty);
+        }
+
         const f = try Function.init(
             &self.module,
             name,
             ret_ty,
             linkage,
+            param_map,
             self.allocator,
         );
 

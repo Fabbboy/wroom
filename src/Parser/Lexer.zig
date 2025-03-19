@@ -163,6 +163,13 @@ fn lex(self: *Self) Token {
                 return self.getTokenWithValue(TokenKind.Assign, .{ .Assign = op });
             }
 
+            if (self.getChar() == '/') {
+                while (self.getChar() != '\n') {
+                    self.advance();
+                }
+                return self.lex();
+            }
+
             switch (c) {
                 '*' => return self.getToken(TokenKind.Star),
                 '/' => return self.getToken(TokenKind.Slash),
